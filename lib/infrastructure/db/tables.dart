@@ -61,3 +61,21 @@ class Enrichments extends Table {
   TextColumn get model => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 }
+
+/// Fila de push de mutações read/star (Fase 2 — outbox pattern). A UI
+/// aplica a mudança localmente de forma otimista; uma entrada aqui garante
+/// que ela chegue ao provider remoto mesmo que a primeira tentativa falhe.
+///
+/// `@DataClassName('OutboxEntryRow')` evita colisão com a classe de domínio
+/// `OutboxEntry` (Freezed) — mesmo motivo do `WorkItemRow` em `WorkItems`.
+@DataClassName('OutboxEntryRow')
+class OutboxEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get workItemId => text()();
+  TextColumn get articleId => text()();
+  /// markRead | markUnread | star | unstar
+  TextColumn get action => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  TextColumn get lastError => text().nullable()();
+}

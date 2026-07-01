@@ -13,7 +13,7 @@ part 'database.g.dart';
 /// eventos/enriquecimentos). Suporte nativo (Android/iOS/desktop) apenas
 /// nesta fase — web/WASM fica para uma iteração futura (ver EVOLUTION-PLAN,
 /// Fase 1: "web via WASM/OPFS" listado como risco a validar cedo no CI).
-@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments])
+@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 

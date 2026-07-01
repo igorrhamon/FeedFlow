@@ -1977,12 +1977,477 @@ class EnrichmentsCompanion extends UpdateCompanion<Enrichment> {
   }
 }
 
+class $OutboxEntriesTable extends OutboxEntries
+    with TableInfo<$OutboxEntriesTable, OutboxEntryRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OutboxEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _workItemIdMeta = const VerificationMeta(
+    'workItemId',
+  );
+  @override
+  late final GeneratedColumn<String> workItemId = GeneratedColumn<String>(
+    'work_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _articleIdMeta = const VerificationMeta(
+    'articleId',
+  );
+  @override
+  late final GeneratedColumn<String> articleId = GeneratedColumn<String>(
+    'article_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _actionMeta = const VerificationMeta('action');
+  @override
+  late final GeneratedColumn<String> action = GeneratedColumn<String>(
+    'action',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workItemId,
+    articleId,
+    action,
+    createdAt,
+    attempts,
+    lastError,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'outbox_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OutboxEntryRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('work_item_id')) {
+      context.handle(
+        _workItemIdMeta,
+        workItemId.isAcceptableOrUnknown(
+          data['work_item_id']!,
+          _workItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_workItemIdMeta);
+    }
+    if (data.containsKey('article_id')) {
+      context.handle(
+        _articleIdMeta,
+        articleId.isAcceptableOrUnknown(data['article_id']!, _articleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_articleIdMeta);
+    }
+    if (data.containsKey('action')) {
+      context.handle(
+        _actionMeta,
+        action.isAcceptableOrUnknown(data['action']!, _actionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actionMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  OutboxEntryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OutboxEntryRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      workItemId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}work_item_id'],
+          )!,
+      articleId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}article_id'],
+          )!,
+      action:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}action'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      attempts:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}attempts'],
+          )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+    );
+  }
+
+  @override
+  $OutboxEntriesTable createAlias(String alias) {
+    return $OutboxEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class OutboxEntryRow extends DataClass implements Insertable<OutboxEntryRow> {
+  final int id;
+  final String workItemId;
+  final String articleId;
+
+  /// markRead | markUnread | star | unstar
+  final String action;
+  final DateTime createdAt;
+  final int attempts;
+  final String? lastError;
+  const OutboxEntryRow({
+    required this.id,
+    required this.workItemId,
+    required this.articleId,
+    required this.action,
+    required this.createdAt,
+    required this.attempts,
+    this.lastError,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['work_item_id'] = Variable<String>(workItemId);
+    map['article_id'] = Variable<String>(articleId);
+    map['action'] = Variable<String>(action);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    return map;
+  }
+
+  OutboxEntriesCompanion toCompanion(bool nullToAbsent) {
+    return OutboxEntriesCompanion(
+      id: Value(id),
+      workItemId: Value(workItemId),
+      articleId: Value(articleId),
+      action: Value(action),
+      createdAt: Value(createdAt),
+      attempts: Value(attempts),
+      lastError:
+          lastError == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastError),
+    );
+  }
+
+  factory OutboxEntryRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OutboxEntryRow(
+      id: serializer.fromJson<int>(json['id']),
+      workItemId: serializer.fromJson<String>(json['workItemId']),
+      articleId: serializer.fromJson<String>(json['articleId']),
+      action: serializer.fromJson<String>(json['action']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'workItemId': serializer.toJson<String>(workItemId),
+      'articleId': serializer.toJson<String>(articleId),
+      'action': serializer.toJson<String>(action),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'attempts': serializer.toJson<int>(attempts),
+      'lastError': serializer.toJson<String?>(lastError),
+    };
+  }
+
+  OutboxEntryRow copyWith({
+    int? id,
+    String? workItemId,
+    String? articleId,
+    String? action,
+    DateTime? createdAt,
+    int? attempts,
+    Value<String?> lastError = const Value.absent(),
+  }) => OutboxEntryRow(
+    id: id ?? this.id,
+    workItemId: workItemId ?? this.workItemId,
+    articleId: articleId ?? this.articleId,
+    action: action ?? this.action,
+    createdAt: createdAt ?? this.createdAt,
+    attempts: attempts ?? this.attempts,
+    lastError: lastError.present ? lastError.value : this.lastError,
+  );
+  OutboxEntryRow copyWithCompanion(OutboxEntriesCompanion data) {
+    return OutboxEntryRow(
+      id: data.id.present ? data.id.value : this.id,
+      workItemId:
+          data.workItemId.present ? data.workItemId.value : this.workItemId,
+      articleId: data.articleId.present ? data.articleId.value : this.articleId,
+      action: data.action.present ? data.action.value : this.action,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OutboxEntryRow(')
+          ..write('id: $id, ')
+          ..write('workItemId: $workItemId, ')
+          ..write('articleId: $articleId, ')
+          ..write('action: $action, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workItemId,
+    articleId,
+    action,
+    createdAt,
+    attempts,
+    lastError,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OutboxEntryRow &&
+          other.id == this.id &&
+          other.workItemId == this.workItemId &&
+          other.articleId == this.articleId &&
+          other.action == this.action &&
+          other.createdAt == this.createdAt &&
+          other.attempts == this.attempts &&
+          other.lastError == this.lastError);
+}
+
+class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntryRow> {
+  final Value<int> id;
+  final Value<String> workItemId;
+  final Value<String> articleId;
+  final Value<String> action;
+  final Value<DateTime> createdAt;
+  final Value<int> attempts;
+  final Value<String?> lastError;
+  const OutboxEntriesCompanion({
+    this.id = const Value.absent(),
+    this.workItemId = const Value.absent(),
+    this.articleId = const Value.absent(),
+    this.action = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+  });
+  OutboxEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String workItemId,
+    required String articleId,
+    required String action,
+    required DateTime createdAt,
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+  }) : workItemId = Value(workItemId),
+       articleId = Value(articleId),
+       action = Value(action),
+       createdAt = Value(createdAt);
+  static Insertable<OutboxEntryRow> custom({
+    Expression<int>? id,
+    Expression<String>? workItemId,
+    Expression<String>? articleId,
+    Expression<String>? action,
+    Expression<DateTime>? createdAt,
+    Expression<int>? attempts,
+    Expression<String>? lastError,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workItemId != null) 'work_item_id': workItemId,
+      if (articleId != null) 'article_id': articleId,
+      if (action != null) 'action': action,
+      if (createdAt != null) 'created_at': createdAt,
+      if (attempts != null) 'attempts': attempts,
+      if (lastError != null) 'last_error': lastError,
+    });
+  }
+
+  OutboxEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? workItemId,
+    Value<String>? articleId,
+    Value<String>? action,
+    Value<DateTime>? createdAt,
+    Value<int>? attempts,
+    Value<String?>? lastError,
+  }) {
+    return OutboxEntriesCompanion(
+      id: id ?? this.id,
+      workItemId: workItemId ?? this.workItemId,
+      articleId: articleId ?? this.articleId,
+      action: action ?? this.action,
+      createdAt: createdAt ?? this.createdAt,
+      attempts: attempts ?? this.attempts,
+      lastError: lastError ?? this.lastError,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (workItemId.present) {
+      map['work_item_id'] = Variable<String>(workItemId.value);
+    }
+    if (articleId.present) {
+      map['article_id'] = Variable<String>(articleId.value);
+    }
+    if (action.present) {
+      map['action'] = Variable<String>(action.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OutboxEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('workItemId: $workItemId, ')
+          ..write('articleId: $articleId, ')
+          ..write('action: $action, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $WorkItemsTable workItems = $WorkItemsTable(this);
   late final $WorkItemEventsTable workItemEvents = $WorkItemEventsTable(this);
   late final $EnrichmentsTable enrichments = $EnrichmentsTable(this);
+  late final $OutboxEntriesTable outboxEntries = $OutboxEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1991,6 +2456,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     workItems,
     workItemEvents,
     enrichments,
+    outboxEntries,
   ];
 }
 
@@ -2966,6 +3432,251 @@ typedef $$EnrichmentsTableProcessedTableManager =
       Enrichment,
       PrefetchHooks Function()
     >;
+typedef $$OutboxEntriesTableCreateCompanionBuilder =
+    OutboxEntriesCompanion Function({
+      Value<int> id,
+      required String workItemId,
+      required String articleId,
+      required String action,
+      required DateTime createdAt,
+      Value<int> attempts,
+      Value<String?> lastError,
+    });
+typedef $$OutboxEntriesTableUpdateCompanionBuilder =
+    OutboxEntriesCompanion Function({
+      Value<int> id,
+      Value<String> workItemId,
+      Value<String> articleId,
+      Value<String> action,
+      Value<DateTime> createdAt,
+      Value<int> attempts,
+      Value<String?> lastError,
+    });
+
+class $$OutboxEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $OutboxEntriesTable> {
+  $$OutboxEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workItemId => $composableBuilder(
+    column: $table.workItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get articleId => $composableBuilder(
+    column: $table.articleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get action => $composableBuilder(
+    column: $table.action,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$OutboxEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $OutboxEntriesTable> {
+  $$OutboxEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get workItemId => $composableBuilder(
+    column: $table.workItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get articleId => $composableBuilder(
+    column: $table.articleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get action => $composableBuilder(
+    column: $table.action,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OutboxEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $OutboxEntriesTable> {
+  $$OutboxEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get workItemId => $composableBuilder(
+    column: $table.workItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get articleId =>
+      $composableBuilder(column: $table.articleId, builder: (column) => column);
+
+  GeneratedColumn<String> get action =>
+      $composableBuilder(column: $table.action, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+}
+
+class $$OutboxEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $OutboxEntriesTable,
+          OutboxEntryRow,
+          $$OutboxEntriesTableFilterComposer,
+          $$OutboxEntriesTableOrderingComposer,
+          $$OutboxEntriesTableAnnotationComposer,
+          $$OutboxEntriesTableCreateCompanionBuilder,
+          $$OutboxEntriesTableUpdateCompanionBuilder,
+          (
+            OutboxEntryRow,
+            BaseReferences<_$AppDatabase, $OutboxEntriesTable, OutboxEntryRow>,
+          ),
+          OutboxEntryRow,
+          PrefetchHooks Function()
+        > {
+  $$OutboxEntriesTableTableManager(_$AppDatabase db, $OutboxEntriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$OutboxEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$OutboxEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$OutboxEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> workItemId = const Value.absent(),
+                Value<String> articleId = const Value.absent(),
+                Value<String> action = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+              }) => OutboxEntriesCompanion(
+                id: id,
+                workItemId: workItemId,
+                articleId: articleId,
+                action: action,
+                createdAt: createdAt,
+                attempts: attempts,
+                lastError: lastError,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String workItemId,
+                required String articleId,
+                required String action,
+                required DateTime createdAt,
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+              }) => OutboxEntriesCompanion.insert(
+                id: id,
+                workItemId: workItemId,
+                articleId: articleId,
+                action: action,
+                createdAt: createdAt,
+                attempts: attempts,
+                lastError: lastError,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$OutboxEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $OutboxEntriesTable,
+      OutboxEntryRow,
+      $$OutboxEntriesTableFilterComposer,
+      $$OutboxEntriesTableOrderingComposer,
+      $$OutboxEntriesTableAnnotationComposer,
+      $$OutboxEntriesTableCreateCompanionBuilder,
+      $$OutboxEntriesTableUpdateCompanionBuilder,
+      (
+        OutboxEntryRow,
+        BaseReferences<_$AppDatabase, $OutboxEntriesTable, OutboxEntryRow>,
+      ),
+      OutboxEntryRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2976,4 +3687,6 @@ class $AppDatabaseManager {
       $$WorkItemEventsTableTableManager(_db, _db.workItemEvents);
   $$EnrichmentsTableTableManager get enrichments =>
       $$EnrichmentsTableTableManager(_db, _db.enrichments);
+  $$OutboxEntriesTableTableManager get outboxEntries =>
+      $$OutboxEntriesTableTableManager(_db, _db.outboxEntries);
 }

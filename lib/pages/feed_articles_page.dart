@@ -116,7 +116,16 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
     }
   }
 
+  /// Fase 2 (docs/EVOLUTION-PLAN.md): quando há persistência local, a
+  /// mutação passa pelo outbox — falha de rede não desfaz o estado local
+  /// nem mostra erro, fica pendente para reenvio depois. Sem persistência
+  /// local (web), mantém o comportamento anterior: rollback + SnackBar.
   Future<void> _markAsReadWithRollback(String articleId) async {
+    final sync = DatabaseProvider.syncService;
+    if (sync != null) {
+      await sync.markAsRead(widget.provider, widget.provider.providerId, articleId);
+      return;
+    }
     try {
       await widget.provider.markAsRead(articleId);
     } catch (_) {
@@ -159,16 +168,16 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
     }
   }
 
-  /// Fase 1 da evolução do FeedFlow (docs/EVOLUTION-PLAN.md): grava os
-  /// artigos também no banco local, sem afetar o fluxo visível da tela.
-  /// Fire-and-forget e nunca deve propagar erro para a UI.
+  /// Fase 1/2 da evolução do FeedFlow (docs/EVOLUTION-PLAN.md): grava os
+  /// artigos também no banco local via [SyncService.ingest], sem afetar o
+  /// fluxo visível da tela. Fire-and-forget e nunca deve propagar erro.
   Future<void> _shadowWriteWorkItems(List<Article> articles) async {
     if (articles.isEmpty) return;
     try {
       if (!await AppSettings.getLocalPersistenceEnabled()) return;
-      final repo = DatabaseProvider.repository;
-      if (repo == null) return;
-      await repo.upsertFromArticles(articles, widget.provider.providerId);
+      final sync = DatabaseProvider.syncService;
+      if (sync == null) return;
+      await sync.ingest(articles, widget.provider.providerId);
     } catch (_) {
       // Shadow-write é best-effort; nunca deve quebrar a leitura de artigos.
     }
@@ -204,6 +213,17 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
 
   Future<void> _toggleFavorite(String articleId) async {
     final isFav = favoriteIds.contains(articleId);
+    final sync = DatabaseProvider.syncService;
+    if (sync != null) {
+      if (isFav) {
+        await sync.unstar(widget.provider, widget.provider.providerId, articleId);
+        setState(() => favoriteIds.remove(articleId));
+      } else {
+        await sync.star(widget.provider, widget.provider.providerId, articleId);
+        setState(() => favoriteIds.add(articleId));
+      }
+      return;
+    }
     if (isFav) {
       await widget.provider.unstarArticle(articleId);
       setState(() => favoriteIds.remove(articleId));
