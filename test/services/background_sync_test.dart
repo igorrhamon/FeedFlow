@@ -157,5 +157,16 @@ void main() {
 
       expect(outcome, BackgroundSyncOutcome.unknownError);
     });
+
+    test('não busca artigos nem atualiza o widget para providers que não usam IDs Google Reader', () async {
+      final fake = _FakeFeedProvider(
+        getArticlesError: Exception('getArticles não deveria ser chamado para este provider'),
+      );
+      await seedSession('miniflux', fake);
+
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+    });
   });
 }
