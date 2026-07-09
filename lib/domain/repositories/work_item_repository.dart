@@ -31,5 +31,10 @@ abstract class WorkItemRepository {
   /// Retorna o número de itens removidos.
   Future<int> purgeOlderThan(DateTime cutoff, {List<TriageStatus>? statuses});
 
+  /// Contagem reativa de não lidos por feed — retorna um mapa
+  /// `{feedId -> contagem}` filtrando `isRead == false`.
+  /// Útil para badges no home.
+  Stream<Map<String, int>> watchUnreadCountsByFeed();
+
   Future<void> close();
 }

@@ -3,6 +3,7 @@ import '../providers/feed_provider.dart';
 import '../models/feed.dart';
 import '../models/category.dart';
 import '../widget/feed_widget_service.dart';
+import '../infrastructure/db/database_provider.dart';
 import 'feed_articles_page.dart';
 import 'folder_feeds_page.dart';
 
@@ -33,16 +34,16 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadFeeds();
+    _loadFeedsAndCategories();
   }
 
   @override
   void didUpdateWidget(HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _loadFeeds();
+    _loadFeedsAndCategories();
   }
 
-  Future<void> _loadFeeds() async {
+  Future<void> _loadFeedsAndCategories() async {
     setState(() {
       loading = true;
       error = null;
@@ -50,13 +51,11 @@ class _HomePageState extends State<HomePage> {
     try {
       final results = await Future.wait([
         widget.provider.getFeeds(),
-        widget.provider.getUnreadCounts(),
         widget.provider.getCategories(),
       ]);
 
       feeds = results[0] as List<Feed>;
-      unreadCounts = results[1] as Map<String, int>;
-      categories = results[2] as List<Category>;
+      categories = results[1] as List<Category>;
 
       final byFolder = <String, List<Feed>>{};
       final uncategorized = <Feed>[];
@@ -147,6 +146,26 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Se há repositório local (não é web), usar stream de contagens locais
+    final hasLocalRepo = DatabaseProvider.repository != null;
+
+    if (hasLocalRepo) {
+      return StreamBuilder<Map<String, int>>(
+        stream: DatabaseProvider.repository!.watchUnreadCountsByFeed(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            unreadCounts = snapshot.data ?? {};
+          }
+          return _buildContent(context);
+        },
+      );
+    } else {
+      // Fallback remoto para web
+      return _buildContent(context);
+    }
+  }
+
+  Widget _buildContent(BuildContext context) {
     Widget body;
     if (loading) {
       body = const Center(
@@ -164,77 +183,82 @@ class _HomePageState extends State<HomePage> {
             Text(error!, style: const TextStyle(color: _textSecondary)),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: _loadFeeds,
+              onPressed: _loadFeedsAndCategories,
               child: const Text('Tentar novamente', style: TextStyle(color: _accent)),
             ),
           ],
         ),
       );
     } else {
-      final totalUnread = unreadCounts['user/-/state/com.google/reading-list'] ?? 0;
+      // Para contagem total (remoto), agrupar contagens por feed
+      final totalUnread = unreadCounts.values.fold<int>(0, (sum, count) => sum + count);
       final categoryNames = categories.map((c) => c.name).toList()..sort();
       body = RefreshIndicator(
         key: const ValueKey('content'),
-      color: _accent,
-      backgroundColor: _surface,
-      onRefresh: _loadFeeds,
-      child: ListView(
-        children: [
-          _sectionHeader('INÍCIO'),
-          _smartStreamTile(
-            context,
-            icon: Icons.all_inbox_rounded,
-            title: 'Todos os artigos',
-            subtitle: totalUnread > 0 ? '$totalUnread não lidos' : null,
-            streamId: 'user/-/state/com.google/reading-list',
-            streamTitle: 'Todos os artigos',
-            hasUnread: totalUnread > 0,
-          ),
-          _smartStreamTile(
-            context,
-            icon: Icons.circle_notifications_rounded,
-            title: 'Não lidos',
-            subtitle: totalUnread > 0 ? '$totalUnread artigos' : 'Nenhum',
-            streamId: 'user/-/state/com.google/reading-list',
-            streamTitle: 'Não lidos',
-            hasUnread: totalUnread > 0,
-          ),
-          const Divider(color: _divider, height: 1),
-          if (categoryNames.isNotEmpty) ...[
-            _sectionHeader('PASTAS'),
-            ...categoryNames.map((name) {
-              final folderFeeds = feedsByFolder[name] ?? [];
-              final folderUnread = unreadCounts['user/-/label/$name'] ?? 0;
-              return _FolderSection(
-                key: ValueKey('folder_$name'),
-                name: name,
-                unreadCount: folderUnread,
-                feeds: folderFeeds,
-                unreadCounts: unreadCounts,
-                onFolderTap: () => _openFolderFeed(context, name),
-                onFeedTap: (feed) => _openFeed(context, feed),
-              );
-            }),
-            const Divider(color: _divider, height: 1),
-          ],
-          if (uncategorizedFeeds.isNotEmpty) ...[
-            _sectionHeader('SEM CATEGORIA'),
-            ...uncategorizedFeeds.map((feed) {
-              final count = unreadCounts[feed.id] ?? 0;
-              return _feedTile(context, feed: feed, title: feed.title, count: count, isLast: false);
-            }),
-          ],
-          if (feeds.isEmpty && categoryNames.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-              child: Text(
-                'Nenhum feed. Toque em + para adicionar.',
-                style: TextStyle(color: _textSecondary, fontSize: 14),
-              ),
+        color: _accent,
+        backgroundColor: _surface,
+        onRefresh: _loadFeedsAndCategories,
+        child: ListView(
+          children: [
+            _sectionHeader('INÍCIO'),
+            _smartStreamTile(
+              context,
+              icon: Icons.all_inbox_rounded,
+              title: 'Todos os artigos',
+              subtitle: totalUnread > 0 ? '$totalUnread não lidos' : null,
+              streamId: 'user/-/state/com.google/reading-list',
+              streamTitle: 'Todos os artigos',
+              hasUnread: totalUnread > 0,
             ),
-          const SizedBox(height: 80),
-        ],
-      ),
+            _smartStreamTile(
+              context,
+              icon: Icons.circle_notifications_rounded,
+              title: 'Não lidos',
+              subtitle: totalUnread > 0 ? '$totalUnread artigos' : 'Nenhum',
+              streamId: 'user/-/state/com.google/reading-list',
+              streamTitle: 'Não lidos',
+              hasUnread: totalUnread > 0,
+            ),
+            const Divider(color: _divider, height: 1),
+            if (categoryNames.isNotEmpty) ...[
+              _sectionHeader('PASTAS'),
+              ...categoryNames.map((name) {
+                final folderFeeds = feedsByFolder[name] ?? [];
+                // Para categorias/pastas, somar unread dos feeds nela
+                var folderUnread = 0;
+                for (final feed in folderFeeds) {
+                  folderUnread += unreadCounts[feed.id] ?? 0;
+                }
+                return _FolderSection(
+                  key: ValueKey('folder_$name'),
+                  name: name,
+                  unreadCount: folderUnread,
+                  feeds: folderFeeds,
+                  unreadCounts: unreadCounts,
+                  onFolderTap: () => _openFolderFeed(context, name),
+                  onFeedTap: (feed) => _openFeed(context, feed),
+                );
+              }),
+              const Divider(color: _divider, height: 1),
+            ],
+            if (uncategorizedFeeds.isNotEmpty) ...[
+              _sectionHeader('SEM CATEGORIA'),
+              ...uncategorizedFeeds.map((feed) {
+                final count = unreadCounts[feed.id] ?? 0;
+                return _feedTile(context, feed: feed, title: feed.title, count: count, isLast: false);
+              }),
+            ],
+            if (feeds.isEmpty && categoryNames.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+                child: Text(
+                  'Nenhum feed. Toque em + para adicionar.',
+                  style: TextStyle(color: _textSecondary, fontSize: 14),
+                ),
+              ),
+            const SizedBox(height: 80),
+          ],
+        ),
       );
     }
     return AnimatedSwitcher(
