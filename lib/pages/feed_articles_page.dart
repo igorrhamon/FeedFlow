@@ -132,7 +132,6 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
   }
 
   Future<void> _loadArticles() async {
-    print('[FeedArticlesPage] _loadArticles called. filter=$_filter, feed=${widget.feed.id}');
     setState(() {
       loading = true;
       error = null;
@@ -144,7 +143,6 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
         excludeRead: _filter == ArticleFilter.unreadOnly,
         includeOnlyRead: _filter == ArticleFilter.readOnly,
       );
-      print('[FeedArticlesPage] _loadArticles result: ${result.articles.length} articles, cont=${result.continuation}');
       setState(() {
         articles..clear()..addAll(result.articles);
         _continuation = result.continuation;
@@ -226,7 +224,6 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
   }
 
   void _setFilter(ArticleFilter filter) {
-    print('[FeedArticlesPage] _setFilter called: $filter (current=$_filter)');
     setState(() {
       _filter = filter;
       articles.clear();
@@ -404,7 +401,6 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
                   : _filter == ArticleFilter.unreadOnly
                       ? ArticleFilter.readOnly
                       : ArticleFilter.all;
-              print('[FeedArticlesPage] Filter button pressed: $_filter -> $next');
               _setFilter(next);
             },
           ),

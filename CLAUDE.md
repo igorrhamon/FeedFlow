@@ -19,9 +19,8 @@ Note: AGENTS.md still documents the pre-multi-provider architecture (single `Old
   - `provider_registry.dart` — factory/registry (`ProviderRegistry.create(id)`, `getAvailableProviders()`)
   - `provider_init.dart` — registers all 9 providers at startup (`initializeProviders()`, called from `main()`)
   - `auth/auth_config.dart` — Freezed auth config classes per auth type (`GoogleLoginAuthConfig`, `OAuth2AuthConfig`, `ApiKeyAuthConfig`, `BasicAuthConfig`, `LocalOpmlAuthConfig`)
-- **`lib/services/`**: `provider_settings.dart` (encrypted credential/settings storage via `flutter_secure_storage`, per-provider) and `old_reader_api.dart` (legacy raw HTTP client, now wrapped by `TheOldReaderProvider` rather than called directly by pages).
+- **`lib/services/`**: `provider_settings.dart` (encrypted credential/settings storage via `flutter_secure_storage`, per-provider), `old_reader_api.dart` (legacy raw HTTP client, now wrapped by `TheOldReaderProvider`), and `background_sync.dart` / `background_sync_scheduler.dart` (Android background sync).
 - **`lib/pages/`**: Material Design 3 UI. All pages consume `FeedProvider`, not `OldReaderApi`, directly.
-- **`lib/managers/`**: `favorites_manager.dart` — local-only favorites state (SharedPreferences, not synced with providers).
 - **`lib/widget/feed_widget_service.dart`**: Android home-screen widget integration (`home_widget` package, app group `io.feedflow.app`).
 - **`proxy/`**: Node.js Express server, web builds only (CORS bypass for providers that don't send CORS headers).
 
@@ -119,10 +118,11 @@ lib/
 │   └── feedly/                      # feedly_provider.dart + feedly_auth.dart (OAuth2 + refresh)
 ├── services/
 │   ├── provider_settings.dart       # Encrypted per-provider credential/settings storage
-│   └── old_reader_api.dart          # Legacy raw HTTP client, wrapped by TheOldReaderProvider
-├── managers/favorites_manager.dart  # Local-only favorites (SharedPreferences)
+│   ├── old_reader_api.dart          # Legacy raw HTTP client, wrapped by TheOldReaderProvider
+│   ├── background_sync.dart         # Android background sync
+│   └── background_sync_scheduler.dart # Android background sync scheduler
 ├── widget/feed_widget_service.dart  # Android home-screen widget
-└── pages/                           # login_screen, home_page, feed_articles_page(+_xml),
+└── pages/                           # login_screen, home_page, feed_articles_page,
                                       # article_page, favorites_page, folders_page,
                                       # folder_feeds_page, add_feed_page, subscriptions_page,
                                       # search_page, settings_page
@@ -139,7 +139,7 @@ tests/           # login.spec.ts (Playwright E2E, web only)
 - Auth: `POST /accounts/ClientLogin` (Email/Passwd) → token sent as `Authorization: GoogleLogin auth=<token>` on every request.
 - `subscription/quickadd` requires `quickadd` as a **query parameter**, not in the request body — the proxy (`proxy/proxy.js`, ~line 100+) moves it from body to query string for web.
 - Pagination: `stream/items/ids` / `stream/contents` support `n` (limit, max 10000/1000), `c` (continuation), `nt`/`ot` (timestamps). `tag/list`, `subscription/list`, `unread-count` return everything at once — no pagination.
-- Article content can be JSON or Atom XML; `feed_articles_page.dart` tries JSON first, falls back to XML (`feed_articles_page_xml.dart`).
+- Article content can be JSON or Atom XML; `feed_articles_page.dart` tries JSON first, falls back to XML parsing.
 - `getItemsContentsApi` batches item content fetches in groups of 250.
 
 ### Other providers
@@ -150,10 +150,6 @@ tests/           # login.spec.ts (Playwright E2E, web only)
 - **NewsBlur**: Basic Auth, story hashes instead of integer IDs, folder-based organization.
 - **Feedly**: OAuth2 via `FeedlyAuth` (authorize + token refresh), `https://cloud.feedly.com`; read-mostly — mutation methods (addFeed, createCategory, markAllAsRead, search, OPML, preferences, etc.) return gracefully rather than being implemented.
 - **Local OPML**: no network, parses an OPML file for a read-only feed list.
-
-### Dead code
-
-- Duplicate legacy files exist at `lib/` root (e.g. `lib/home_page.dart`, `lib/favorites_page.dart`) alongside the active versions in `lib/pages/`. Still picked up by `flutter analyze` — avoid modifying them.
 
 ### Navigation
 

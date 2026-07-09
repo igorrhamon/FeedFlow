@@ -434,7 +434,9 @@ lib/
 │       └── local_opml_provider.dart
 ├── services/
 │   ├── provider_settings.dart       # Credential/settings storage
-│   └── old_reader_api.dart          # Legacy API (used by TheOldReaderProvider)
+│   ├── old_reader_api.dart          # Legacy API (used by TheOldReaderProvider)
+│   ├── background_sync.dart         # Android background sync
+│   └── background_sync_scheduler.dart # Android background sync scheduler
 ├── widget/
 │   └── feed_widget_service.dart     # Home screen widget (home_widget)
 └── pages/                           # All pages use FeedProvider
@@ -452,11 +454,12 @@ lib/
 
 test/
 ├── models/                          # Model unit tests
+├── services/                        # Service unit tests
+│   └── background_sync_test.dart
 ├── providers/                       # Provider unit tests
 │   ├── inoreader/
 │   └── feedly/
 ├── widget_test.dart
-├── favorites_manager_test.dart
 └── old_reader_api_test.dart
 ```
 

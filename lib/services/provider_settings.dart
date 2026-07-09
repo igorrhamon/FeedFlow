@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../providers/auth/auth_config.dart';
+import '../providers/provider_registry.dart';
 
 class ProviderSettings {
   static const _storage = FlutterSecureStorage();
@@ -84,10 +85,10 @@ class ProviderSettings {
 
   static Future<Map<String, bool>> getConnectedProviders() async {
     final result = <String, bool>{};
-    final providers = ['theoldreader', 'feedly', 'inoreader', 'freshrss', 'miniflux', 'ttrss', 'feedbin', 'newsblur', 'local_opml'];
-    for (final id in providers) {
-      final auth = await loadAuthConfig(id);
-      result[id] = auth != null;
+    final providers = ProviderRegistry.getAvailableProviders();
+    for (final info in providers) {
+      final auth = await loadAuthConfig(info.id);
+      result[info.id] = auth != null;
     }
     return result;
   }

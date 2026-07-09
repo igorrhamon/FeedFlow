@@ -10,8 +10,9 @@ class FeedbinProvider implements FeedProvider {
   String? _username;
   String? _password;
   BasicAuthConfig? _config;
+  final http.Client _client;
 
-  FeedbinProvider();
+  FeedbinProvider({http.Client? client}) : _client = client ?? http.Client();
 
   static const _defaultBaseUrl = 'https://api.feedbin.com/v2';
 
@@ -44,7 +45,7 @@ class FeedbinProvider implements FeedProvider {
     try {
       final basicConfig = config as BasicAuthConfig;
       final credentials = base64Encode(utf8.encode('${basicConfig.username}:${basicConfig.password}'));
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/authentication/api_token.json'),
         headers: {
           'Authorization': 'Basic $credentials',
@@ -83,7 +84,7 @@ class FeedbinProvider implements FeedProvider {
   Future<bool> validateToken() async {
     if (_username == null) return false;
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/authentication/api_token.json'),
         headers: _headers,
       );
@@ -99,7 +100,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<List<Feed>> getFeeds() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/subscriptions.json'),
         headers: _headers,
       );
@@ -126,7 +127,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<FeedResult> addFeed(String feedUrl, {String? category}) async {
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$_defaultBaseUrl/subscriptions.json'),
         headers: _headers,
         body: jsonEncode({'feed_url': feedUrl}),
@@ -147,7 +148,7 @@ class FeedbinProvider implements FeedProvider {
 
   @override
   Future<void> removeFeed(String feedId) async {
-    await http.delete(
+    await _client.delete(
       Uri.parse('$_defaultBaseUrl/subscriptions/$feedId.json'),
       headers: _headers,
     );
@@ -155,7 +156,7 @@ class FeedbinProvider implements FeedProvider {
 
   @override
   Future<void> renameFeed(String feedId, String newTitle) async {
-    await http.post(
+    await _client.post(
       Uri.parse('$_defaultBaseUrl/taggings.json'),
       headers: _headers,
       body: jsonEncode({
@@ -168,7 +169,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<void> moveFeed(String feedId, String? categoryId) async {
     if (categoryId != null) {
-      await http.post(
+      await _client.post(
         Uri.parse('$_defaultBaseUrl/taggings.json'),
         headers: _headers,
         body: jsonEncode({
@@ -182,7 +183,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<List<Category>> getCategories() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/taggings.json'),
         headers: _headers,
       );
@@ -240,7 +241,7 @@ class FeedbinProvider implements FeedProvider {
       var url = '$_defaultBaseUrl/entries.json?feed_id=$streamId&per_page=$limit';
       if (excludeRead) url += '&unread=true';
 
-      final response = await http.get(Uri.parse(url), headers: _headers);
+      final response = await _client.get(Uri.parse(url), headers: _headers);
       if (response.statusCode != 200) return ArticleListResult(articles: []);
 
       final data = jsonDecode(response.body);
@@ -257,7 +258,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<Article?> getArticle(String articleId) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/entries/$articleId.json'),
         headers: _headers,
       );
@@ -273,7 +274,7 @@ class FeedbinProvider implements FeedProvider {
   Future<List<Article>> getArticlesByIds(List<String> ids) async {
     try {
       final idsParam = ids.join(',');
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/entries.json?ids=$idsParam'),
         headers: _headers,
       );
@@ -290,7 +291,7 @@ class FeedbinProvider implements FeedProvider {
 
   @override
   Future<void> markAsRead(String articleId) async {
-    await http.post(
+    await _client.post(
       Uri.parse('$_defaultBaseUrl/unread_entries.json'),
       headers: _headers,
       body: jsonEncode({'unread_entries': [int.tryParse(articleId) ?? 0]}),
@@ -299,7 +300,7 @@ class FeedbinProvider implements FeedProvider {
 
   @override
   Future<void> markAsUnread(String articleId) async {
-    await http.post(
+    await _client.post(
       Uri.parse('$_defaultBaseUrl/unread_entries.json'),
       headers: _headers,
       body: jsonEncode({'unread_entries': [int.tryParse(articleId) ?? 0]}),
@@ -309,7 +310,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<void> markAllAsRead(String streamId, {DateTime? before}) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/entries.json?feed_id=$streamId&unread=true'),
         headers: _headers,
       );
@@ -317,7 +318,7 @@ class FeedbinProvider implements FeedProvider {
         final data = jsonDecode(response.body);
         if (data is List) {
           final ids = data.map((e) => (e as Map<String, dynamic>)['id'] as int).toList();
-          await http.post(
+          await _client.post(
             Uri.parse('$_defaultBaseUrl/unread_entries.json'),
             headers: _headers,
             body: jsonEncode({'unread_entries': ids}),
@@ -329,7 +330,7 @@ class FeedbinProvider implements FeedProvider {
 
   @override
   Future<void> starArticle(String articleId) async {
-    await http.post(
+    await _client.post(
       Uri.parse('$_defaultBaseUrl/starred_entries.json'),
       headers: _headers,
       body: jsonEncode({'starred_entries': [int.tryParse(articleId) ?? 0]}),
@@ -338,7 +339,7 @@ class FeedbinProvider implements FeedProvider {
 
   @override
   Future<void> unstarArticle(String articleId) async {
-    await http.delete(
+    await _client.delete(
       Uri.parse('$_defaultBaseUrl/starred_entries.json'),
       headers: _headers,
       body: jsonEncode({'starred_entries': [int.tryParse(articleId) ?? 0]}),
@@ -348,7 +349,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<Map<String, int>> getUnreadCounts() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/unread_count.json'),
         headers: _headers,
       );
@@ -371,7 +372,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<ArticleListResult> search(String query, {int limit = 20, String? continuation}) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/search.json?query=${Uri.encodeComponent(query)}&per_page=$limit'),
         headers: _headers,
       );
@@ -392,7 +393,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<ArticleListResult> getStarredArticles({int limit = 20, String? continuation}) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/starred_entries.json?per_page=$limit'),
         headers: _headers,
       );
@@ -414,7 +415,7 @@ class FeedbinProvider implements FeedProvider {
   @override
   Future<String> exportOpml() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_defaultBaseUrl/v1/export'),
         headers: _headers,
       );

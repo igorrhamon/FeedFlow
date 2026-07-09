@@ -35,7 +35,7 @@ Stored via `flutter_secure_storage` (`AuthService` in `lib/services/auth_service
 
 - No state management framework. `MainScaffold` in `lib/main.dart` holds `OldReaderApi` and passes it down via constructor. Pages use `setState`.
 - All API methods live in `lib/services/old_reader_api.dart` (~530 lines, ~40 methods).
-- `lib/pages/` contains UI. `lib/managers/` has only `favorites_manager.dart` (local SharedPreferences, not synced).
+- `lib/pages/` contains UI. Starred articles are managed via `FeedProvider.getStarredArticles()` / `starArticle()` / `unstarArticle()`.
 - `lib/proxy_config.dart` does not exist; proxy port is configured via `OldReaderApi.setProxyPort(int)`.
 
 ## API quirks
@@ -54,7 +54,3 @@ Stored via `flutter_secure_storage` (`AuthService` in `lib/services/auth_service
 - 3 bottom tabs (Feeds, Favoritos, Config.) mapped via `_selectedIndex` (0-2).
 - "Pastas" in the drawer opens via `Navigator.push` (not IndexedStack) — adding it to IndexedStack will crash the NavigationBar assertion.
 - `AddFeedPage` opens via FAB on "Feeds" tab; returns `true` if a feed was added.
-
-## File structure note
-
-There are duplicate old files at `lib/` root level (e.g. `lib/home_page.dart`, `lib/favorites_page.dart`) that coexist with the active versions in `lib/pages/`. These root-level files are dead code but still analyzed — avoid modifying them.

@@ -10,8 +10,9 @@ class MinifluxProvider implements FeedProvider {
   String? _apiKey;
   String? _baseUrl;
   ApiKeyAuthConfig? _config;
+  final http.Client _client;
 
-  MinifluxProvider();
+  MinifluxProvider({http.Client? client}) : _client = client ?? http.Client();
 
   String get _baseUrlResolved => _baseUrl ?? 'https://miniflux.example.com';
 
@@ -42,7 +43,7 @@ class MinifluxProvider implements FeedProvider {
       final apiKeyConfig = config as ApiKeyAuthConfig;
       final baseUrl = apiKeyConfig.baseUrl ?? defaultBaseUrl;
       final testUrl = Uri.parse('$baseUrl/v1/me');
-      final response = await http.get(
+      final response = await _client.get(
         testUrl,
         headers: {
           'X-Auth-Token': apiKeyConfig.apiKey,
@@ -83,7 +84,7 @@ class MinifluxProvider implements FeedProvider {
   Future<bool> validateToken() async {
     if (_apiKey == null) return false;
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/me'),
         headers: _headers,
       );
@@ -99,7 +100,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<List<Feed>> getFeeds() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/feeds'),
         headers: _headers,
       );
@@ -137,7 +138,7 @@ class MinifluxProvider implements FeedProvider {
         body['category_id'] = int.tryParse(category) ?? 0;
       }
 
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$_baseUrlResolved/v1/feeds'),
         headers: _headers,
         body: jsonEncode(body),
@@ -158,7 +159,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> removeFeed(String feedId) async {
-    await http.delete(
+    await _client.delete(
       Uri.parse('$_baseUrlResolved/v1/feeds/$feedId'),
       headers: _headers,
     );
@@ -166,7 +167,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> renameFeed(String feedId, String newTitle) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/feeds/$feedId'),
       headers: _headers,
       body: jsonEncode({'title': newTitle}),
@@ -176,7 +177,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<void> moveFeed(String feedId, String? categoryId) async {
     if (categoryId != null) {
-      await http.put(
+      await _client.put(
         Uri.parse('$_baseUrlResolved/v1/feeds/$feedId'),
         headers: _headers,
         body: jsonEncode({'category_id': int.tryParse(categoryId) ?? 0}),
@@ -187,7 +188,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<List<Category>> getCategories() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/categories'),
         headers: _headers,
       );
@@ -212,7 +213,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<CategoryResult> createCategory(String name) async {
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$_baseUrlResolved/v1/categories'),
         headers: _headers,
         body: jsonEncode({'title': name}),
@@ -233,7 +234,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> renameCategory(String categoryId, String newName) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/categories/$categoryId'),
       headers: _headers,
       body: jsonEncode({'title': newName}),
@@ -242,7 +243,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> deleteCategory(String categoryId) async {
-    await http.delete(
+    await _client.delete(
       Uri.parse('$_baseUrlResolved/v1/categories/$categoryId'),
       headers: _headers,
     );
@@ -262,7 +263,7 @@ class MinifluxProvider implements FeedProvider {
       var url = '$_baseUrlResolved/v1/feeds/$streamId/entries?limit=$limit&order=published_at&direction=desc';
       if (excludeRead) url += '&status=unread';
 
-      final response = await http.get(Uri.parse(url), headers: _headers);
+      final response = await _client.get(Uri.parse(url), headers: _headers);
       if (response.statusCode != 200) {
         return ArticleListResult(articles: []);
       }
@@ -286,7 +287,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<Article?> getArticle(String articleId) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/entries/$articleId'),
         headers: _headers,
       );
@@ -314,7 +315,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> markAsRead(String articleId) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/entries/$articleId'),
       headers: _headers,
       body: jsonEncode({'status': 'read'}),
@@ -323,7 +324,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> markAsUnread(String articleId) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/entries/$articleId'),
       headers: _headers,
       body: jsonEncode({'status': 'unread'}),
@@ -339,7 +340,7 @@ class MinifluxProvider implements FeedProvider {
     if (before != null) {
       body['before'] = before.toUtc().toIso8601String();
     }
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/feeds/$streamId/mark-all-as-read'),
       headers: _headers,
       body: jsonEncode(body),
@@ -348,7 +349,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> starArticle(String articleId) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/entries/$articleId/bookmark'),
       headers: _headers,
     );
@@ -356,7 +357,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> unstarArticle(String articleId) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/entries/$articleId/bookmark'),
       headers: _headers,
     );
@@ -365,7 +366,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<Map<String, int>> getUnreadCounts() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/feeds'),
         headers: _headers,
       );
@@ -388,7 +389,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<ArticleListResult> search(String query, {int limit = 20, String? continuation}) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/search?query=${Uri.encodeComponent(query)}&limit=$limit'),
         headers: _headers,
       );
@@ -408,7 +409,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<ArticleListResult> getStarredArticles({int limit = 20, String? continuation}) async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/entries?starred=true&limit=$limit&order=published_at&direction=desc'),
         headers: _headers,
       );
@@ -429,7 +430,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<String> exportOpml() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/export'),
         headers: _headers,
       );
@@ -468,7 +469,7 @@ class MinifluxProvider implements FeedProvider {
   @override
   Future<Map<String, dynamic>> getPreferences() async {
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$_baseUrlResolved/v1/me'),
         headers: _headers,
       );
@@ -481,7 +482,7 @@ class MinifluxProvider implements FeedProvider {
 
   @override
   Future<void> setPreference(String key, String value) async {
-    await http.put(
+    await _client.put(
       Uri.parse('$_baseUrlResolved/v1/me'),
       headers: _headers,
       body: jsonEncode({key: value}),
