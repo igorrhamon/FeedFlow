@@ -154,4 +154,66 @@ void main() {
       expect(loaded.tags, ['urgente']);
     });
   });
+
+  group('watchByFeedId', () {
+    test('retorna apenas WorkItems do feedId especificado', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', feedId: 'f1'),
+          article(id: 'a2', feedId: 'f1'),
+          article(id: 'a3', feedId: 'f2'),
+        ],
+        'feedbin',
+      );
+
+      final f1Items = await repo.watchByFeedId('f1').first;
+      expect(f1Items.length, 2);
+      expect(f1Items.map((i) => i.articleId).toSet(), {'a1', 'a2'});
+
+      final f2Items = await repo.watchByFeedId('f2').first;
+      expect(f2Items.length, 1);
+      expect(f2Items.single.articleId, 'a3');
+    });
+
+    test('filtra por status quando especificado', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', feedId: 'f1'),
+          article(id: 'a2', feedId: 'f1'),
+        ],
+        'feedbin',
+      );
+      await repo.changeStatus('feedbin:a1', TriageStatus.arquivado);
+
+      final ativos = await repo.watchByFeedId('f1', statuses: [TriageStatus.novo]).first;
+      expect(ativos.length, 1);
+      expect(ativos.single.articleId, 'a2');
+
+      final arquivados =
+          await repo.watchByFeedId('f1', statuses: [TriageStatus.arquivado]).first;
+      expect(arquivados.length, 1);
+      expect(arquivados.single.articleId, 'a1');
+    });
+
+    test('retorna lista vazia quando feedId não existe', () async {
+      await repo.upsertFromArticles([article(id: 'a1', feedId: 'f1')], 'feedbin');
+
+      final result = await repo.watchByFeedId('f999').first;
+      expect(result, isEmpty);
+    });
+
+    test('reage a mudanças via stream', () async {
+      await repo.upsertFromArticles([article(id: 'a1', feedId: 'f1')], 'feedbin');
+
+      final stream = repo.watchByFeedId('f1');
+      final first = await stream.first;
+      expect(first.length, 1);
+
+      // Adiciona outro artigo
+      await repo.upsertFromArticles([article(id: 'a2', feedId: 'f1')], 'feedbin');
+
+      final second = await stream.first;
+      expect(second.length, 2);
+    });
+  });
 }
