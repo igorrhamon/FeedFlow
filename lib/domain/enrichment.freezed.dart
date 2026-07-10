@@ -1,0 +1,330 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'enrichment.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+Enrichment _$EnrichmentFromJson(Map<String, dynamic> json) {
+  return _Enrichment.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Enrichment {
+  /// PK no banco local (auto-increment).
+  int get id => throw _privateConstructorUsedError;
+
+  /// Chave estrangeira para `WorkItems.id`.
+  String get workItemId => throw _privateConstructorUsedError;
+
+  /// Tipo de enriquecimento (summary, translation, etc.).
+  EnrichmentType get type => throw _privateConstructorUsedError;
+
+  /// Conteúdo resultante (texto bruto ou JSON dependendo do tipo).
+  String get content => throw _privateConstructorUsedError;
+
+  /// Modelo LLM usado para gerar este enriquecimento (ex: "gpt-4", "claude-3").
+  /// Nulo se não registrado.
+  String? get model => throw _privateConstructorUsedError;
+
+  /// Timestamp de criação.
+  DateTime get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this Enrichment to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Enrichment
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $EnrichmentCopyWith<Enrichment> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $EnrichmentCopyWith<$Res> {
+  factory $EnrichmentCopyWith(
+    Enrichment value,
+    $Res Function(Enrichment) then,
+  ) = _$EnrichmentCopyWithImpl<$Res, Enrichment>;
+  @useResult
+  $Res call({
+    int id,
+    String workItemId,
+    EnrichmentType type,
+    String content,
+    String? model,
+    DateTime createdAt,
+  });
+}
+
+/// @nodoc
+class _$EnrichmentCopyWithImpl<$Res, $Val extends Enrichment>
+    implements $EnrichmentCopyWith<$Res> {
+  _$EnrichmentCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Enrichment
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? workItemId = null,
+    Object? type = null,
+    Object? content = null,
+    Object? model = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            id:
+                null == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int,
+            workItemId:
+                null == workItemId
+                    ? _value.workItemId
+                    : workItemId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as EnrichmentType,
+            content:
+                null == content
+                    ? _value.content
+                    : content // ignore: cast_nullable_to_non_nullable
+                        as String,
+            model:
+                freezed == model
+                    ? _value.model
+                    : model // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$EnrichmentImplCopyWith<$Res>
+    implements $EnrichmentCopyWith<$Res> {
+  factory _$$EnrichmentImplCopyWith(
+    _$EnrichmentImpl value,
+    $Res Function(_$EnrichmentImpl) then,
+  ) = __$$EnrichmentImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    int id,
+    String workItemId,
+    EnrichmentType type,
+    String content,
+    String? model,
+    DateTime createdAt,
+  });
+}
+
+/// @nodoc
+class __$$EnrichmentImplCopyWithImpl<$Res>
+    extends _$EnrichmentCopyWithImpl<$Res, _$EnrichmentImpl>
+    implements _$$EnrichmentImplCopyWith<$Res> {
+  __$$EnrichmentImplCopyWithImpl(
+    _$EnrichmentImpl _value,
+    $Res Function(_$EnrichmentImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Enrichment
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? workItemId = null,
+    Object? type = null,
+    Object? content = null,
+    Object? model = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$EnrichmentImpl(
+        id:
+            null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int,
+        workItemId:
+            null == workItemId
+                ? _value.workItemId
+                : workItemId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as EnrichmentType,
+        content:
+            null == content
+                ? _value.content
+                : content // ignore: cast_nullable_to_non_nullable
+                    as String,
+        model:
+            freezed == model
+                ? _value.model
+                : model // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$EnrichmentImpl implements _Enrichment {
+  const _$EnrichmentImpl({
+    required this.id,
+    required this.workItemId,
+    required this.type,
+    required this.content,
+    this.model,
+    required this.createdAt,
+  });
+
+  factory _$EnrichmentImpl.fromJson(Map<String, dynamic> json) =>
+      _$$EnrichmentImplFromJson(json);
+
+  /// PK no banco local (auto-increment).
+  @override
+  final int id;
+
+  /// Chave estrangeira para `WorkItems.id`.
+  @override
+  final String workItemId;
+
+  /// Tipo de enriquecimento (summary, translation, etc.).
+  @override
+  final EnrichmentType type;
+
+  /// Conteúdo resultante (texto bruto ou JSON dependendo do tipo).
+  @override
+  final String content;
+
+  /// Modelo LLM usado para gerar este enriquecimento (ex: "gpt-4", "claude-3").
+  /// Nulo se não registrado.
+  @override
+  final String? model;
+
+  /// Timestamp de criação.
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'Enrichment(id: $id, workItemId: $workItemId, type: $type, content: $content, model: $model, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$EnrichmentImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.workItemId, workItemId) ||
+                other.workItemId == workItemId) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.content, content) || other.content == content) &&
+            (identical(other.model, model) || other.model == model) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, workItemId, type, content, model, createdAt);
+
+  /// Create a copy of Enrichment
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$EnrichmentImplCopyWith<_$EnrichmentImpl> get copyWith =>
+      __$$EnrichmentImplCopyWithImpl<_$EnrichmentImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$EnrichmentImplToJson(this);
+  }
+}
+
+abstract class _Enrichment implements Enrichment {
+  const factory _Enrichment({
+    required final int id,
+    required final String workItemId,
+    required final EnrichmentType type,
+    required final String content,
+    final String? model,
+    required final DateTime createdAt,
+  }) = _$EnrichmentImpl;
+
+  factory _Enrichment.fromJson(Map<String, dynamic> json) =
+      _$EnrichmentImpl.fromJson;
+
+  /// PK no banco local (auto-increment).
+  @override
+  int get id;
+
+  /// Chave estrangeira para `WorkItems.id`.
+  @override
+  String get workItemId;
+
+  /// Tipo de enriquecimento (summary, translation, etc.).
+  @override
+  EnrichmentType get type;
+
+  /// Conteúdo resultante (texto bruto ou JSON dependendo do tipo).
+  @override
+  String get content;
+
+  /// Modelo LLM usado para gerar este enriquecimento (ex: "gpt-4", "claude-3").
+  /// Nulo se não registrado.
+  @override
+  String? get model;
+
+  /// Timestamp de criação.
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of Enrichment
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$EnrichmentImplCopyWith<_$EnrichmentImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
