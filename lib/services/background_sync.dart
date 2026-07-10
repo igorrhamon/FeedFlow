@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import '../infrastructure/db/database_provider.dart';
 import '../providers/provider_registry.dart';
 import '../widget/feed_widget_service.dart';
 import 'provider_settings.dart';
@@ -31,6 +32,16 @@ class BackgroundSync {
       if (!authResult.success) return BackgroundSyncOutcome.authFailed;
 
       await provider.getUnreadCounts();
+
+      // Tenta reenviar mutações read/star pendentes. Persistência local é best-effort:
+      // não pode derrubar o sync remoto bem-sucedido.
+      try {
+        await DatabaseProvider.syncService?.flushOutbox(provider);
+      } catch (_) {
+        // Silenciosamente ignora falhas de persistência local (ex.: MissingPluginException
+        // de path_provider em teste).
+      }
+
       if (_googleReaderCompatibleProviders.contains(providerId)) {
         final articlesResult = await provider.getArticles(
           streamId: _readingListStreamId,
@@ -38,6 +49,15 @@ class BackgroundSync {
           excludeRead: true,
         );
         await FeedWidgetService.update(articlesResult.articles);
+
+        // Shadow-write dos artigos buscados para o repositório local. Persistência
+        // local é best-effort: não pode derrubar o sync remoto bem-sucedido.
+        try {
+          await DatabaseProvider.syncService?.ingest(articlesResult.articles, providerId);
+        } catch (_) {
+          // Silenciosamente ignora falhas de persistência local (ex.: MissingPluginException
+          // de path_provider em teste).
+        }
       }
       return BackgroundSyncOutcome.success;
     } on SocketException {
