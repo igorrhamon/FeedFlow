@@ -52,6 +52,11 @@ class WorkItemEvents extends Table {
 /// Enriquecimentos de IA (resumo, tradução, classificação, ...) associados a
 /// um [WorkItem]. Schema criado nesta fase; nada ainda o popula — ver Fase 5
 /// do plano de evolução (Enricher/LLM adapters).
+///
+/// `@DataClassName('EnrichmentsData')` evita colisão com a classe de domínio
+/// `Enrichment` (Freezed) — o drift nomearia a row class `Enrichment` por
+/// padrão (singular de `Enrichments`).
+@DataClassName('EnrichmentsData')
 class Enrichments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get workItemId => text()();
