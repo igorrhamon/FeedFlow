@@ -52,22 +52,24 @@ class AppDatabase extends _$AppDatabase {
 
   /// Cria a tabela virtual FTS5 e triggers para sincronização.
   static Future<void> _createFts5Index(Migrator m) async {
-    // Tabela virtual FTS5 com tokenizer padrão (Whitespace),
-    // columns: title, content, author, tags_plaintext
-    await m.customStatement(
+    // Tabela virtual FTS5 com tokenizer padrão. Não usa "external content"
+    // (content=work_items) porque tags_plaintext não é uma coluna real de
+    // work_items (lá é tags_json serializado) — os triggers abaixo
+    // sincronizam manualmente, então a FTS5 mantém sua própria cópia dos
+    // dados indexados. rowid é mantido igual ao de work_items para permitir
+    // join direto na busca.
+    await m.issueCustomQuery(
       '''CREATE VIRTUAL TABLE IF NOT EXISTS work_items_fts
          USING fts5(
            title,
            content,
            author,
-           tags_plaintext,
-           content=work_items,
-           content_rowid=rowid
+           tags_plaintext
          )''',
     );
 
     // AFTER INSERT trigger: popula FTS quando um WorkItem é inserido
-    await m.customStatement(
+    await m.issueCustomQuery(
       '''CREATE TRIGGER IF NOT EXISTS work_items_ai AFTER INSERT ON work_items BEGIN
            INSERT INTO work_items_fts(rowid, title, content, author, tags_plaintext)
            VALUES (new.rowid, new.title, new.content, new.author, new.tags_json);
@@ -75,7 +77,7 @@ class AppDatabase extends _$AppDatabase {
     );
 
     // AFTER UPDATE trigger: atualiza FTS quando um WorkItem é atualizado
-    await m.customStatement(
+    await m.issueCustomQuery(
       '''CREATE TRIGGER IF NOT EXISTS work_items_au AFTER UPDATE ON work_items BEGIN
            UPDATE work_items_fts
            SET title = new.title, content = new.content, author = new.author, tags_plaintext = new.tags_json
@@ -84,7 +86,7 @@ class AppDatabase extends _$AppDatabase {
     );
 
     // AFTER DELETE trigger: remove da FTS quando um WorkItem é deletado
-    await m.customStatement(
+    await m.issueCustomQuery(
       '''CREATE TRIGGER IF NOT EXISTS work_items_ad AFTER DELETE ON work_items BEGIN
            DELETE FROM work_items_fts WHERE rowid = old.rowid;
          END''',

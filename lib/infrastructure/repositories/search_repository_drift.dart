@@ -33,7 +33,7 @@ class SearchRepositoryDrift implements SearchRepository {
           WHERE work_items_fts.rowid = w.rowid
         )
         ''',
-        variables: [query],
+        variables: [Variable.withString(query)],
       ).get();
 
       // Converte rows para WorkItem domain objects
@@ -48,7 +48,7 @@ class SearchRepositoryDrift implements SearchRepository {
 
   /// Converte uma linha da query customizada para um [WorkItem] domain object.
   WorkItem _rowToWorkItem(QueryRow row) {
-    final tagsJson = row.read<String>('tags_json') ?? '[]';
+    final tagsJson = row.read<String>('tags_json');
     final tags = (jsonDecode(tagsJson) as List).cast<String>();
     return WorkItem(
       id: row.read('id'),

@@ -1,7 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/domain/triage_status.dart';
-import 'package:feedflow/domain/work_item.dart';
 import 'package:feedflow/infrastructure/db/database.dart';
 import 'package:feedflow/infrastructure/repositories/search_repository_drift.dart';
 import 'package:feedflow/infrastructure/repositories/work_item_repository_drift.dart';
@@ -189,7 +188,7 @@ void main() {
       expect(results.length, 2); // Ambos ainda existem, só mudou status
 
       // Agora purga items arquivados
-      await workItemRepo.purgeOlderThan(DateTime.now());
+      await workItemRepo.purgeOlderThan(DateTime.now().add(const Duration(seconds: 1)));
 
       // Busca novamente deve retornar apenas o segundo
       final afterPurge = await searchRepo.search('Article');
@@ -198,7 +197,6 @@ void main() {
     });
 
     test('busca retorna WorkItem com todos os campos preservados', () async {
-      final now = DateTime.now();
       await workItemRepo.upsertFromArticles(
         [
           article(
