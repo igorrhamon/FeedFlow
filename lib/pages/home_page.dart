@@ -3,6 +3,7 @@ import '../providers/feed_provider.dart';
 import '../models/feed.dart';
 import '../models/category.dart';
 import '../widget/feed_widget_service.dart';
+import '../infrastructure/db/database_provider.dart';
 import 'feed_articles_page.dart';
 import 'folder_feeds_page.dart';
 
@@ -320,68 +321,75 @@ class _HomePageState extends State<HomePage> {
     required int count,
     required bool isLast,
   }) {
-    final hasUnread = count > 0;
     return Column(
       children: [
         InkWell(
           onTap: () => _openFeed(context, feed),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              border: hasUnread
-                  ? const Border(left: BorderSide(color: _accent, width: 3))
-                  : null,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: _avatarColor(title).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _feedInitial(title),
-                    style: TextStyle(
-                      color: _avatarColor(title),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
+          child: StreamBuilder<int>(
+            stream: DatabaseProvider.repository?.watchUnreadCountByFeed(feed.id),
+            initialData: count,
+            builder: (context, snapshot) {
+              final localCount = snapshot.data ?? count;
+              final hasUnread = localCount > 0;
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  border: hasUnread
+                      ? const Border(left: BorderSide(color: _accent, width: 3))
+                      : null,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: _textPrimary,
-                      fontSize: 14,
-                      fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _avatarColor(title).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        _feedInitial(title),
+                        style: TextStyle(
+                          color: _avatarColor(title),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: _textPrimary,
+                          fontSize: 14,
+                          fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (hasUnread) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _accent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          localCount > 999 ? '999+' : localCount.toString(),
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right_rounded, color: _textSecondary, size: 18),
+                  ],
                 ),
-                if (hasUnread) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: _accent,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      count > 999 ? '999+' : count.toString(),
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-                const SizedBox(width: 4),
-                const Icon(Icons.chevron_right_rounded, color: _textSecondary, size: 18),
-              ],
-            ),
+              );
+            },
           ),
         ),
         if (!isLast)
@@ -498,46 +506,53 @@ class _FolderSectionState extends State<_FolderSection> {
             children: _expanded && widget.feeds.isNotEmpty
                 ? widget.feeds.map((feed) {
                     final count = widget.unreadCounts[feed.id] ?? 0;
-                    final hasFeedUnread = count > 0;
                     return InkWell(
                       onTap: () => widget.onFeedTap(feed),
-                      child: Container(
-                        padding: const EdgeInsets.only(left: 66, right: 20, top: 10, bottom: 10),
-                        decoration: BoxDecoration(
-                          border: hasFeedUnread
-                              ? const Border(left: BorderSide(color: _accent, width: 2))
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                feed.title,
-                                style: TextStyle(
-                                  color: _textPrimary,
-                                  fontSize: 13,
-                                  fontWeight: hasFeedUnread ? FontWeight.w500 : FontWeight.w400,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                      child: StreamBuilder<int>(
+                        stream: DatabaseProvider.repository?.watchUnreadCountByFeed(feed.id),
+                        initialData: count,
+                        builder: (context, snapshot) {
+                          final localCount = snapshot.data ?? count;
+                          final hasFeedUnread = localCount > 0;
+                          return Container(
+                            padding: const EdgeInsets.only(left: 66, right: 20, top: 10, bottom: 10),
+                            decoration: BoxDecoration(
+                              border: hasFeedUnread
+                                  ? const Border(left: BorderSide(color: _accent, width: 2))
+                                  : null,
                             ),
-                            if (hasFeedUnread) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: _accent.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    feed.title,
+                                    style: TextStyle(
+                                      color: _textPrimary,
+                                      fontSize: 13,
+                                      fontWeight: hasFeedUnread ? FontWeight.w500 : FontWeight.w400,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                child: Text(
-                                  count > 999 ? '999+' : count.toString(),
-                                  style: const TextStyle(color: _accent, fontSize: 11, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                                if (hasFeedUnread) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: _accent.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      localCount > 999 ? '999+' : localCount.toString(),
+                                      style: const TextStyle(color: _accent, fontSize: 11, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     );
                   }).toList()

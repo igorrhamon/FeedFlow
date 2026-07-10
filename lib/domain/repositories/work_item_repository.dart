@@ -34,5 +34,13 @@ abstract class WorkItemRepository {
   /// Query reativa por artigos favoritos (starred) — ordenado por data mais recente primeiro.
   Stream<List<WorkItem>> watchStarred();
 
+  /// Contagem reativa de itens não lidos por feed.
+  Stream<int> watchUnreadCountByFeed(String feedId);
+
+  /// Query reativa por feedId — filtra [WorkItem]s de um feed específico,
+  /// ordenados por ingestão decrescente. Usado por `feed_articles_page.dart`
+  /// para carregar artigos localmente.
+  Stream<List<WorkItem>> watchByFeedId(String feedId);
+
   Future<void> close();
 }
