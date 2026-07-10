@@ -1,5 +1,8 @@
 {
   "enabledPlugins": {
     "android-development-assistant@pluginagentmarketplace-android": true
+  },
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
   }
 }
