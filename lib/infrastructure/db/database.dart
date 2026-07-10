@@ -18,7 +18,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          // v1 -> v2: Fase 2 introduziu OutboxEntries. Instalações que só
+          // viram a Fase 1 (schemaVersion 1, sem essa tabela) precisam
+          // dessa migração — sem ela, o insert no outbox falha com
+          // "no such table: outbox_entries" na primeira tentativa de
+          // marcar como lido/favoritar depois do upgrade.
+          if (from < 2) {
+            await m.createTable(outboxEntries);
+          }
+        },
+      );
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {
