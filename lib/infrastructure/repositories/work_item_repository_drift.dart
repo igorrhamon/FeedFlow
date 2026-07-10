@@ -129,23 +129,6 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
   }
 
   @override
-  Stream<int> watchUnreadCountByFeed(String feedId) {
-    final countExp = _db.workItems.id.count();
-    final query = _db.selectOnly(_db.workItems)
-      ..addColumns([countExp])
-      ..where(_db.workItems.feedId.equals(feedId) & _db.workItems.isRead.equals(false));
-    return query.watchSingle().map((row) => row.read(countExp) ?? 0);
-  }
-
-  @override
-  Stream<List<WorkItem>> watchByFeedId(String feedId) {
-    final query = _db.select(_db.workItems)
-      ..where((t) => t.feedId.equals(feedId))
-      ..orderBy([(t) => OrderingTerm.desc(t.ingestedAt)]);
-    return query.watch().map((rows) => rows.map(_toDomain).toList());
-  }
-
-  @override
   Future<void> close() => _db.close();
 
   WorkItem _toDomain(WorkItemRow row) {
