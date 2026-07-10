@@ -1,8 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/domain/rule.dart';
-import 'package:feedflow/domain/work_item.dart';
-import 'package:feedflow/domain/triage_status.dart';
-import 'package:feedflow/models/article.dart';
 
 void main() {
   group('Condition serialization', () {
