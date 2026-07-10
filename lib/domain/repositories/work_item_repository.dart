@@ -31,5 +31,8 @@ abstract class WorkItemRepository {
   /// Retorna o número de itens removidos.
   Future<int> purgeOlderThan(DateTime cutoff, {List<TriageStatus>? statuses});
 
+  /// Query reativa por artigos favoritos (starred) — ordenado por data mais recente primeiro.
+  Stream<List<WorkItem>> watchStarred();
+
   Future<void> close();
 }

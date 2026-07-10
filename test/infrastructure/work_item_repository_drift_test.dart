@@ -154,4 +154,53 @@ void main() {
       expect(loaded.tags, ['urgente']);
     });
   });
+
+  group('watchStarred', () {
+    test('retorna apenas itens favoritos', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', isStarred: true),
+          article(id: 'a2', isStarred: false),
+          article(id: 'a3', isStarred: true),
+        ],
+        'feedbin',
+      );
+
+      final starred = await repo.watchStarred().first;
+
+      expect(starred.length, 2);
+      expect(starred.every((item) => item.isStarred), true);
+      // Verifica que os dois favoritos estão presentes (ordem dentro do lote pode variar)
+      expect(
+        starred.map((item) => item.articleId).toSet(),
+        {'a1', 'a3'},
+      );
+    });
+
+    test('watchStarred reage a mudanças de isStarred', () async {
+      await repo.upsertFromArticles([article(id: 'a1', isStarred: false)], 'feedbin');
+
+      final starredStream = repo.watchStarred();
+
+      // Inicialmente vazio
+      var starred = await starredStream.first;
+      expect(starred, isEmpty);
+
+      // Marca como favorito
+      final item = await repo.byId('feedbin:a1');
+      await repo.save(item!.copyWith(isStarred: true));
+
+      // Stream deve emitir nova lista com o item
+      starred = await starredStream.first;
+      expect(starred.length, 1);
+      expect(starred.single.articleId, 'a1');
+    });
+
+    test('watchStarred está vazio quando não há favoritos', () async {
+      await repo.upsertFromArticles([article(id: 'a1'), article(id: 'a2')], 'feedbin');
+
+      final starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+    });
+  });
 }

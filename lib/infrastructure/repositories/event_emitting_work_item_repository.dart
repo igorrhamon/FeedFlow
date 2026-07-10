@@ -93,6 +93,11 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
   }
 
   @override
+  Stream<List<WorkItem>> watchStarred() {
+    return _delegate.watchStarred();
+  }
+
+  @override
   Future<void> close() {
     return _delegate.close();
   }
