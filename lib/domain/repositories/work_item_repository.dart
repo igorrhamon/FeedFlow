@@ -31,5 +31,13 @@ abstract class WorkItemRepository {
   /// Retorna o número de itens removidos.
   Future<int> purgeOlderThan(DateTime cutoff, {List<TriageStatus>? statuses});
 
+  /// Contagem reativa de itens não lidos por feed.
+  Stream<int> watchUnreadCountByFeed(String feedId);
+
+  /// Query reativa por feedId — filtra [WorkItem]s de um feed específico,
+  /// ordenados por ingestão decrescente. Usado por `feed_articles_page.dart`
+  /// para carregar artigos localmente.
+  Stream<List<WorkItem>> watchByFeedId(String feedId);
+
   Future<void> close();
 }

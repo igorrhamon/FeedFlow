@@ -93,6 +93,16 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
   }
 
   @override
+  Stream<int> watchUnreadCountByFeed(String feedId) {
+    return _delegate.watchUnreadCountByFeed(feedId);
+  }
+
+  @override
+  Stream<List<WorkItem>> watchByFeedId(String feedId) {
+    return _delegate.watchByFeedId(feedId);
+  }
+
+  @override
   Future<void> close() {
     return _delegate.close();
   }
