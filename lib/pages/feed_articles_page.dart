@@ -234,7 +234,27 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
   }
 
   Future<void> _markAllAsRead() async {
-    await widget.provider.markAllAsRead(widget.feed.id);
+    final sync = DatabaseProvider.syncService;
+    if (sync != null) {
+      // Local-first: marque cada artigo não lido via SyncService
+      // (que aplicará a mudança localmente + enfileirará no outbox).
+      for (final article in articles) {
+        if (!article.isRead) {
+          try {
+            await sync.markAsRead(widget.provider, widget.provider.providerId, article.id);
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro ao marcar artigo como lido: $e')),
+            );
+          }
+        }
+      }
+    } else {
+      // Fallback web: chamada remota direta ao provider.
+      await widget.provider.markAllAsRead(widget.feed.id);
+    }
+
     setState(() {
       for (final article in articles) {
         if (!article.isRead) {
