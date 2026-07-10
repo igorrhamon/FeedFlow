@@ -8,7 +8,6 @@ import '../../models/category.dart';
 
 class NewsBlurProvider implements FeedProvider {
   String? _username;
-  String? _password;
   String? _baseUrl;
   BasicAuthConfig? _config;
 
@@ -54,7 +53,6 @@ class NewsBlurProvider implements FeedProvider {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         if (data['authenticated'] == true) {
           _username = basicConfig.username;
-          _password = basicConfig.password;
           _baseUrl = baseUrl;
           _config = BasicAuthConfig(
             providerId: providerId,
@@ -78,7 +76,6 @@ class NewsBlurProvider implements FeedProvider {
   @override
   Future<void> logout() async {
     _username = null;
-    _password = null;
     _baseUrl = null;
     _config = null;
   }

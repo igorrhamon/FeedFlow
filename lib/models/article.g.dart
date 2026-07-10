@@ -64,7 +64,7 @@ _$ArticleListResultImpl _$$ArticleListResultImplFromJson(
 Map<String, dynamic> _$$ArticleListResultImplToJson(
   _$ArticleListResultImpl instance,
 ) => <String, dynamic>{
-  'articles': instance.articles,
+  'articles': instance.articles.map((e) => e.toJson()).toList(),
   'continuation': instance.continuation,
   'totalCount': instance.totalCount,
 };

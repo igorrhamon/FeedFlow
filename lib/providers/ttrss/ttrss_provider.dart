@@ -9,7 +9,6 @@ import '../../models/category.dart';
 class TtrssProvider implements FeedProvider {
   String? _sessionId;
   String? _baseUrl;
-  String? _username;
   BasicAuthConfig? _config;
 
   TtrssProvider();
@@ -88,7 +87,6 @@ class TtrssProvider implements FeedProvider {
           if (sid != null && sid.isNotEmpty) {
             _sessionId = sid;
             _baseUrl = baseUrl;
-            _username = basicConfig.username;
             _config = BasicAuthConfig(
               providerId: providerId,
               username: basicConfig.username,
@@ -116,7 +114,6 @@ class TtrssProvider implements FeedProvider {
     }
     _sessionId = null;
     _baseUrl = null;
-    _username = null;
     _config = null;
   }
 

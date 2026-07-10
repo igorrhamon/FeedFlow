@@ -3,9 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:feedflow/providers/miniflux/miniflux_provider.dart';
-import 'package:feedflow/models/feed.dart';
-import 'package:feedflow/models/article.dart';
-import 'package:feedflow/providers/auth/auth_config.dart';
 
 void main() {
   group('MinifluxProvider', () {
