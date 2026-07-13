@@ -32,4 +32,8 @@ abstract class WorkItemRepository {
   Future<int> purgeOlderThan(DateTime cutoff, {List<TriageStatus>? statuses});
 
   Future<void> close();
+
+  /// Query reativa por artigos marcados como favoritos (isStarred == true).
+  /// Ordenados por data de ingestão (mais recentes primeiro).
+  Stream<List<WorkItem>> watchStarred();
 }
