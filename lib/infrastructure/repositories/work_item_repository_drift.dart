@@ -131,6 +131,14 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
   @override
   Future<void> close() => _db.close();
 
+  @override
+  Stream<List<WorkItem>> watchStarred() {
+    final query = _db.select(_db.workItems)
+      ..where((t) => t.isStarred.equals(true))
+      ..orderBy([(t) => OrderingTerm.desc(t.ingestedAt)]);
+    return query.watch().map((rows) => rows.map(_toDomain).toList());
+  }
+
   WorkItem _toDomain(WorkItemRow row) {
     final tags = (jsonDecode(row.tagsJson) as List).cast<String>();
     return WorkItem(

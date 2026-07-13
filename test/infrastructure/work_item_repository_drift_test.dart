@@ -154,4 +154,81 @@ void main() {
       expect(loaded.tags, ['urgente']);
     });
   });
+
+  group('watchStarred', () {
+    test('retorna apenas itens com isStarred == true', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', isStarred: true),
+          article(id: 'a2', isStarred: false),
+          article(id: 'a3', isStarred: true),
+        ],
+        'feedbin',
+      );
+
+      final starred = await repo.watchStarred().first;
+      expect(starred.length, 2);
+      expect(starred.map((s) => s.articleId), containsAll(['a1', 'a3']));
+    });
+
+    test('reage a mudanças de isStarred', () async {
+      await repo.upsertFromArticles([article(id: 'a1', isStarred: false)], 'feedbin');
+      var starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+
+      // Marcar como favorito
+      final item = (await repo.byId('feedbin:a1'))!;
+      await repo.save(item.copyWith(isStarred: true));
+      starred = await repo.watchStarred().first;
+      expect(starred.length, 1);
+      expect(starred.single.articleId, 'a1');
+
+      // Desmarcar como favorito
+      await repo.save(item.copyWith(isStarred: false));
+      starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+    });
+
+    test('ordena por data de ingestão (mais recentes primeiro)', () async {
+      final now = DateTime.now();
+      final item1 = WorkItem(
+        id: 'feedbin:old',
+        providerId: 'feedbin',
+        articleId: 'old',
+        feedId: 'f1',
+        title: 'Antigo',
+        isStarred: true,
+        ingestedAt: now.subtract(const Duration(hours: 2)),
+        updatedAt: now.subtract(const Duration(hours: 2)),
+      );
+      final item2 = WorkItem(
+        id: 'feedbin:new',
+        providerId: 'feedbin',
+        articleId: 'new',
+        feedId: 'f1',
+        title: 'Recente',
+        isStarred: true,
+        ingestedAt: now,
+        updatedAt: now,
+      );
+
+      await repo.save(item1);
+      await repo.save(item2);
+
+      final starred = await repo.watchStarred().first;
+      expect(starred.length, 2);
+      expect(starred[0].articleId, 'new', reason: 'item mais recente deve vir primeiro');
+      expect(starred[1].articleId, 'old');
+    });
+
+    test('lista vazia se nenhum item marcado como favorito', () async {
+      await repo.upsertFromArticles(
+        [article(id: 'a1', isStarred: false), article(id: 'a2', isStarred: false)],
+        'feedbin',
+      );
+
+      final starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+    });
+  });
 }
