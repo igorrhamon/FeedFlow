@@ -48,7 +48,7 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
     for (final article in articles) {
       _eventBus.publish(
         ArticleIngested(
-          workItemId: '${providerId}:${article.id}',
+          workItemId: '$providerId:${article.id}',
           providerId: providerId,
           articleId: article.id,
           feedId: article.feedId,

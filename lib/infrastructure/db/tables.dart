@@ -97,7 +97,7 @@ class Rules extends Table {
   TextColumn get triggerType => text()();
   /// JSON serializado de Condition — desserializa com `Condition.fromJson`
   TextColumn get conditionsJson => text()();
-  /// JSON serializado de List<ActionInvocation> — desserializa com
+  /// JSON serializado de `List&lt;ActionInvocation&gt;` — desserializa com
   /// `jsonDecode` e `ActionInvocation.fromJson` em loop
   TextColumn get actionsJson => text()();
   BoolColumn get stopOnMatch => boolean().withDefault(const Constant(false))();
