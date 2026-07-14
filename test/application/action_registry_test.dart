@@ -10,7 +10,7 @@ void main() {
     });
 
     test('register and get an action', () {
-      final action = _TestAction();
+      final action = _TestAction('test');
       ActionRegistry.register('test', () => action);
 
       final retrieved = ActionRegistry.get('test');

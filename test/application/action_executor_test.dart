@@ -105,7 +105,7 @@ void main() {
     group('executeAll', () {
       test('executes all actions in sequence', () async {
         final invocations = [
-          ActionInvocation(actionId: 'success-1', params: {}),
+          ActionInvocation(actionId: 'success', params: {}),
           ActionInvocation(actionId: 'success-2', params: {}),
         ];
 

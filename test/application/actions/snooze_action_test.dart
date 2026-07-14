@@ -59,9 +59,11 @@ void main() {
       expect(updated, isNotNull);
       expect(updated!.snoozedUntil, isNotNull);
       expect(updated.snoozedUntil!.isAfter(now), isTrue);
-      // Should be roughly 1 day in the future (within 10 seconds tolerance)
+      // Drift persiste DateTime com precisão de segundos — compara com
+      // tolerância em vez de inDays (que trunca e é sensível a perda de
+      // sub-segundo perto da fronteira do dia).
       final diff = updated.snoozedUntil!.difference(now);
-      expect(diff.inDays, equals(1));
+      expect(diff.inSeconds, closeTo(const Duration(days: 1).inSeconds, 2));
     });
 
     test('snoozes item for custom days from params', () async {
@@ -75,7 +77,7 @@ void main() {
       expect(updated, isNotNull);
       expect(updated!.snoozedUntil, isNotNull);
       final diff = updated.snoozedUntil!.difference(now);
-      expect(diff.inDays, equals(3));
+      expect(diff.inSeconds, closeTo(const Duration(days: 3).inSeconds, 2));
     });
 
     test('snoozes item for 0 days (immediate wake)', () async {
