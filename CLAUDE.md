@@ -122,7 +122,7 @@ lib/
 │   ├── background_sync.dart         # Android background sync
 │   └── background_sync_scheduler.dart # Android background sync scheduler
 ├── widget/feed_widget_service.dart  # Android home-screen widget
-└── pages/                           # login_screen, home_page, feed_articles_page(+_xml),
+└── pages/                           # login_screen, home_page, feed_articles_page,
                                       # article_page, favorites_page, folders_page,
                                       # folder_feeds_page, add_feed_page, subscriptions_page,
                                       # search_page, settings_page
@@ -139,7 +139,7 @@ tests/           # login.spec.ts (Playwright E2E, web only)
 - Auth: `POST /accounts/ClientLogin` (Email/Passwd) → token sent as `Authorization: GoogleLogin auth=<token>` on every request.
 - `subscription/quickadd` requires `quickadd` as a **query parameter**, not in the request body — the proxy (`proxy/proxy.js`, ~line 100+) moves it from body to query string for web.
 - Pagination: `stream/items/ids` / `stream/contents` support `n` (limit, max 10000/1000), `c` (continuation), `nt`/`ot` (timestamps). `tag/list`, `subscription/list`, `unread-count` return everything at once — no pagination.
-- Article content can be JSON or Atom XML; `feed_articles_page.dart` tries JSON first, falls back to XML (`feed_articles_page_xml.dart`).
+- Article content can be JSON or Atom XML; `feed_articles_page.dart` tries JSON first, falls back to XML parsing.
 - `getItemsContentsApi` batches item content fetches in groups of 250.
 
 ### Other providers
