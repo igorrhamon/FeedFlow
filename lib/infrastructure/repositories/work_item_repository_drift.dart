@@ -129,6 +129,20 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
   }
 
   @override
+  Stream<List<WorkItem>> watchByFeedId(String feedId, {List<TriageStatus>? statuses}) {
+    final query = _db.select(_db.workItems)
+      ..where((t) => t.feedId.equals(feedId))
+      ..orderBy([(t) => OrderingTerm.desc(t.ingestedAt)]);
+
+    if (statuses != null && statuses.isNotEmpty) {
+      final names = statuses.map((s) => s.name).toList();
+      query.where((t) => t.status.isIn(names));
+    }
+
+    return query.watch().map((rows) => rows.map(_toDomain).toList());
+  }
+
+  @override
   Future<void> close() => _db.close();
 
   @override

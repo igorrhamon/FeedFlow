@@ -31,6 +31,10 @@ abstract class WorkItemRepository {
   /// Retorna o número de itens removidos.
   Future<int> purgeOlderThan(DateTime cutoff, {List<TriageStatus>? statuses});
 
+  /// Query reativa por feedId — a base para leitura local de artigos em uma
+  /// página de feed específica. Opcionalmente filtra por statuses.
+  Stream<List<WorkItem>> watchByFeedId(String feedId, {List<TriageStatus>? statuses});
+
   Future<void> close();
 
   /// Query reativa por artigos marcados como favoritos (isStarred == true).
