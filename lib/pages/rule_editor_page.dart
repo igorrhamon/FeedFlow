@@ -20,7 +20,12 @@ import '../infrastructure/db/database_provider.dart';
 /// - Formulário simplificado: nome, trigger, enabled, stopOnMatch, order, condição simples, actionId
 /// - Dry-run: avalia a condição contra uma amostra de WorkItems reais, mostra preview
 class RuleEditorPage extends StatefulWidget {
-  const RuleEditorPage({super.key});
+  /// Permite injetar repositórios em testes de widget. Em produção, ambos
+  /// ficam `null` e a página resolve via [DatabaseProvider] (singletons).
+  final RuleRepository? ruleRepository;
+  final WorkItemRepository? workItemRepository;
+
+  const RuleEditorPage({super.key, this.ruleRepository, this.workItemRepository});
 
   @override
   State<RuleEditorPage> createState() => _RuleEditorPageState();
@@ -85,8 +90,8 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
   @override
   void initState() {
     super.initState();
-    _ruleRepository = DatabaseProvider.ruleRepository!;
-    _workItemRepository = DatabaseProvider.repository!;
+    _ruleRepository = widget.ruleRepository ?? DatabaseProvider.ruleRepository!;
+    _workItemRepository = widget.workItemRepository ?? DatabaseProvider.repository!;
 
     _nameController = TextEditingController();
     _fieldController = TextEditingController();
