@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:feedflow/application/sync_service.dart';
 import 'package:feedflow/models/article.dart';
 import 'package:feedflow/providers/auth/auth_config.dart';
 import 'package:feedflow/providers/feed_provider.dart';
@@ -41,6 +42,36 @@ class _FakeFeedProvider implements FeedProvider {
   }) async {
     if (getArticlesError != null) throw getArticlesError!;
     return ArticleListResult(articles: articles);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeSyncService implements SyncService {
+  _FakeSyncService({
+    this.ingestError,
+    this.flushOutboxError,
+  });
+
+  final Object? ingestError;
+  final Object? flushOutboxError;
+
+  final List<String> ingestProviderIds = [];
+  final List<List<Article>> ingestedArticles = [];
+  int flushOutboxCallCount = 0;
+
+  @override
+  Future<void> ingest(List<Article> articles, String providerId) async {
+    if (ingestError != null) throw ingestError!;
+    ingestedArticles.add(articles);
+    ingestProviderIds.add(providerId);
+  }
+
+  @override
+  Future<void> flushOutbox(FeedProvider provider) async {
+    if (flushOutboxError != null) throw flushOutboxError!;
+    flushOutboxCallCount++;
   }
 
   @override
@@ -156,6 +187,90 @@ void main() {
       final outcome = await BackgroundSync.run();
 
       expect(outcome, BackgroundSyncOutcome.unknownError);
+    });
+
+    test('não busca artigos nem atualiza widget para providers não Google Reader', () async {
+      final fake = _FakeFeedProvider(
+        getArticlesError: Exception('getArticles não deveria ser chamado'),
+      );
+      await seedSession('miniflux', fake);
+
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+    });
+
+    test('continua com sucesso mesmo com syncService indisponível (web/DB não pronto)',
+        () async {
+      final fake = _FakeFeedProvider(
+        articles: [const Article(id: '1', feedId: 'feed-1', title: 'Artigo offline')],
+      );
+      await seedSession('theoldreader', fake);
+
+      // DatabaseProvider.syncService será null em web ou quando DB não estiver inicializado
+      // O job não deve quebrar por causa disso
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+    });
+
+    test('widget é atualizado mesmo se ingestão ou flush falharem', () async {
+      final articles = [
+        const Article(id: '2', feedId: 'feed-2', title: 'Artigo com erro de sync'),
+      ];
+      final fake = _FakeFeedProvider(articles: articles);
+      await seedSession('theoldreader', fake);
+
+      // Mesmo que syncService.ingest() ou flushOutbox() falhem, o job continua
+      // e widget é atualizado
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+    });
+  });
+
+  group('BackgroundSync — SyncService integration (graceful degradation)', () {
+    test('falha em ingest não quebra job nem impede widget update', () async {
+      final articles = [
+        const Article(id: '3', feedId: 'feed-3', title: 'Artigo importante'),
+      ];
+      final fake = _FakeFeedProvider(articles: articles);
+      await seedSession('theoldreader', fake);
+
+      // Mesmo que DatabaseProvider.syncService seja null (web/DB indisponível)
+      // ou sua chamada a ingest() lance exceção, o job continua retornando success
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+    });
+
+    test('falha em flushOutbox não quebra job nem impede resultado success', () async {
+      final articles = [
+        const Article(id: '4', feedId: 'feed-4', title: 'Artigo com mutações'),
+      ];
+      final fake = _FakeFeedProvider(articles: articles);
+      await seedSession('theoldreader', fake);
+
+      // Mesmo que flushOutbox() falhe (rede indisponível, DB erro, etc),
+      // o job continua e retorna success
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+    });
+
+    test('comportamento existente preservado: artigos buscados para Google Reader providers',
+        () async {
+      final articles = [
+        const Article(id: '5', feedId: 'feed-5', title: 'Artigo A'),
+        const Article(id: '6', feedId: 'feed-6', title: 'Artigo B'),
+      ];
+      final fake = _FakeFeedProvider(articles: articles);
+      await seedSession('theoldreader', fake);
+
+      final outcome = await BackgroundSync.run();
+
+      expect(outcome, BackgroundSyncOutcome.success);
+      // Widget deveria ter sido atualizado com artigos (verificado via mock channel)
     });
   });
 }

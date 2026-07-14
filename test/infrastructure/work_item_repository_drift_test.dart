@@ -210,4 +210,143 @@ void main() {
       expect(counts['feed-sport'], isNull); // todos lidos
     });
   });
+
+  group('watchByFeedId', () {
+    test('retorna apenas WorkItems do feedId especificado', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', feedId: 'f1'),
+          article(id: 'a2', feedId: 'f1'),
+          article(id: 'a3', feedId: 'f2'),
+        ],
+        'feedbin',
+      );
+
+      final f1Items = await repo.watchByFeedId('f1').first;
+      expect(f1Items.length, 2);
+      expect(f1Items.map((i) => i.articleId).toSet(), {'a1', 'a2'});
+
+      final f2Items = await repo.watchByFeedId('f2').first;
+      expect(f2Items.length, 1);
+      expect(f2Items.single.articleId, 'a3');
+    });
+
+    test('filtra por status quando especificado', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', feedId: 'f1'),
+          article(id: 'a2', feedId: 'f1'),
+        ],
+        'feedbin',
+      );
+      await repo.changeStatus('feedbin:a1', TriageStatus.arquivado);
+
+      final ativos = await repo.watchByFeedId('f1', statuses: [TriageStatus.novo]).first;
+      expect(ativos.length, 1);
+      expect(ativos.single.articleId, 'a2');
+
+      final arquivados =
+          await repo.watchByFeedId('f1', statuses: [TriageStatus.arquivado]).first;
+      expect(arquivados.length, 1);
+      expect(arquivados.single.articleId, 'a1');
+    });
+
+    test('retorna lista vazia quando feedId não existe', () async {
+      await repo.upsertFromArticles([article(id: 'a1', feedId: 'f1')], 'feedbin');
+
+      final result = await repo.watchByFeedId('f999').first;
+      expect(result, isEmpty);
+    });
+
+    test('reage a mudanças via stream', () async {
+      await repo.upsertFromArticles([article(id: 'a1', feedId: 'f1')], 'feedbin');
+
+      final stream = repo.watchByFeedId('f1');
+      final first = await stream.first;
+      expect(first.length, 1);
+
+      // Adiciona outro artigo
+      await repo.upsertFromArticles([article(id: 'a2', feedId: 'f1')], 'feedbin');
+
+      final second = await stream.first;
+      expect(second.length, 2);
+    });
+  });
+
+  group('watchStarred', () {
+    test('retorna apenas itens com isStarred == true', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', isStarred: true),
+          article(id: 'a2', isStarred: false),
+          article(id: 'a3', isStarred: true),
+        ],
+        'feedbin',
+      );
+
+      final starred = await repo.watchStarred().first;
+      expect(starred.length, 2);
+      expect(starred.map((s) => s.articleId), containsAll(['a1', 'a3']));
+    });
+
+    test('reage a mudanças de isStarred', () async {
+      await repo.upsertFromArticles([article(id: 'a1', isStarred: false)], 'feedbin');
+      var starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+
+      // Marcar como favorito
+      final item = (await repo.byId('feedbin:a1'))!;
+      await repo.save(item.copyWith(isStarred: true));
+      starred = await repo.watchStarred().first;
+      expect(starred.length, 1);
+      expect(starred.single.articleId, 'a1');
+
+      // Desmarcar como favorito
+      await repo.save(item.copyWith(isStarred: false));
+      starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+    });
+
+    test('ordena por data de ingestão (mais recentes primeiro)', () async {
+      final now = DateTime.now();
+      final item1 = WorkItem(
+        id: 'feedbin:old',
+        providerId: 'feedbin',
+        articleId: 'old',
+        feedId: 'f1',
+        title: 'Antigo',
+        isStarred: true,
+        ingestedAt: now.subtract(const Duration(hours: 2)),
+        updatedAt: now.subtract(const Duration(hours: 2)),
+      );
+      final item2 = WorkItem(
+        id: 'feedbin:new',
+        providerId: 'feedbin',
+        articleId: 'new',
+        feedId: 'f1',
+        title: 'Recente',
+        isStarred: true,
+        ingestedAt: now,
+        updatedAt: now,
+      );
+
+      await repo.save(item1);
+      await repo.save(item2);
+
+      final starred = await repo.watchStarred().first;
+      expect(starred.length, 2);
+      expect(starred[0].articleId, 'new', reason: 'item mais recente deve vir primeiro');
+      expect(starred[1].articleId, 'old');
+    });
+
+    test('lista vazia se nenhum item marcado como favorito', () async {
+      await repo.upsertFromArticles(
+        [article(id: 'a1', isStarred: false), article(id: 'a2', isStarred: false)],
+        'feedbin',
+      );
+
+      final starred = await repo.watchStarred().first;
+      expect(starred, isEmpty);
+    });
+  });
 }

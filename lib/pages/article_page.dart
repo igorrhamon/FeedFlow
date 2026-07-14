@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../domain/work_item.dart';
 import '../providers/feed_provider.dart';
 import '../models/article.dart';
 
@@ -29,6 +30,7 @@ class _ArticlePageState extends State<ArticlePage> {
   String _getArticleId() {
     final a = widget.article;
     if (a is Article) return a.id;
+    if (a is WorkItem) return a.articleId;
     if (a is Map) return a['id'] as String? ?? '';
     return '';
   }
@@ -36,6 +38,7 @@ class _ArticlePageState extends State<ArticlePage> {
   String _getTitle() {
     final a = widget.article;
     if (a is Article) return a.title;
+    if (a is WorkItem) return a.title;
     if (a is Map) return a['title'] as String? ?? 'Artigo';
     return 'Artigo';
   }
@@ -43,6 +46,7 @@ class _ArticlePageState extends State<ArticlePage> {
   String _getAuthor() {
     final a = widget.article;
     if (a is Article) return a.author ?? '';
+    if (a is WorkItem) return a.author ?? '';
     if (a is Map) return a['author'] as String? ?? '';
     return '';
   }
@@ -50,6 +54,7 @@ class _ArticlePageState extends State<ArticlePage> {
   DateTime? _getPublished() {
     final a = widget.article;
     if (a is Article) return a.published;
+    if (a is WorkItem) return a.published;
     if (a is Map) {
       final published = a['published'];
       if (published is DateTime) return published;
@@ -64,6 +69,9 @@ class _ArticlePageState extends State<ArticlePage> {
   String _getContent() {
     final a = widget.article;
     if (a is Article) {
+      return (a.content?.isNotEmpty == true) ? a.content! : (a.summary ?? '');
+    }
+    if (a is WorkItem) {
       return (a.content?.isNotEmpty == true) ? a.content! : (a.summary ?? '');
     }
     if (a is Map) {

@@ -36,5 +36,13 @@ abstract class WorkItemRepository {
   /// Útil para badges no home.
   Stream<Map<String, int>> watchUnreadCountsByFeed();
 
+  /// Query reativa por feedId — a base para leitura local de artigos em uma
+  /// página de feed específica. Opcionalmente filtra por statuses.
+  Stream<List<WorkItem>> watchByFeedId(String feedId, {List<TriageStatus>? statuses});
+
   Future<void> close();
+
+  /// Query reativa por artigos marcados como favoritos (isStarred == true).
+  /// Ordenados por data de ingestão (mais recentes primeiro).
+  Stream<List<WorkItem>> watchStarred();
 }
