@@ -8,6 +8,8 @@ import 'providers/provider_registry.dart';
 
 import 'services/background_sync_scheduler.dart';
 import 'services/provider_settings.dart';
+import 'application/actions/actions_init.dart';
+import 'infrastructure/db/database_provider.dart';
 
 import 'pages/login_page.dart';
 import 'pages/splash_screen.dart';
@@ -23,6 +25,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FeedWidgetService.initialize();
   initializeProviders();
+  final repo = DatabaseProvider.repository;
+  if (repo != null) {
+    initializeActions(repo);
+  }
   if (Platform.isAndroid) {
     await BackgroundSyncScheduler.initialize();
   }
