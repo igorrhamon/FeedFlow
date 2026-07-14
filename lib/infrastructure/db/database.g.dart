@@ -1571,7 +1571,7 @@ class WorkItemEventsCompanion extends UpdateCompanion<WorkItemEvent> {
 }
 
 class $EnrichmentsTable extends Enrichments
-    with TableInfo<$EnrichmentsTable, Enrichment> {
+    with TableInfo<$EnrichmentsTable, EnrichmentsRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1656,7 +1656,7 @@ class $EnrichmentsTable extends Enrichments
   static const String $name = 'enrichments';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Enrichment> instance, {
+    Insertable<EnrichmentsRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1711,9 +1711,9 @@ class $EnrichmentsTable extends Enrichments
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Enrichment map(Map<String, dynamic> data, {String? tablePrefix}) {
+  EnrichmentsRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Enrichment(
+    return EnrichmentsRow(
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -1752,7 +1752,7 @@ class $EnrichmentsTable extends Enrichments
   }
 }
 
-class Enrichment extends DataClass implements Insertable<Enrichment> {
+class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
   final int id;
   final String workItemId;
 
@@ -1761,7 +1761,7 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
   final String content;
   final String? model;
   final DateTime createdAt;
-  const Enrichment({
+  const EnrichmentsRow({
     required this.id,
     required this.workItemId,
     required this.type,
@@ -1795,12 +1795,12 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
     );
   }
 
-  factory Enrichment.fromJson(
+  factory EnrichmentsRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Enrichment(
+    return EnrichmentsRow(
       id: serializer.fromJson<int>(json['id']),
       workItemId: serializer.fromJson<String>(json['workItemId']),
       type: serializer.fromJson<String>(json['type']),
@@ -1822,14 +1822,14 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
     };
   }
 
-  Enrichment copyWith({
+  EnrichmentsRow copyWith({
     int? id,
     String? workItemId,
     String? type,
     String? content,
     Value<String?> model = const Value.absent(),
     DateTime? createdAt,
-  }) => Enrichment(
+  }) => EnrichmentsRow(
     id: id ?? this.id,
     workItemId: workItemId ?? this.workItemId,
     type: type ?? this.type,
@@ -1837,8 +1837,8 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
     model: model.present ? model.value : this.model,
     createdAt: createdAt ?? this.createdAt,
   );
-  Enrichment copyWithCompanion(EnrichmentsCompanion data) {
-    return Enrichment(
+  EnrichmentsRow copyWithCompanion(EnrichmentsCompanion data) {
+    return EnrichmentsRow(
       id: data.id.present ? data.id.value : this.id,
       workItemId:
           data.workItemId.present ? data.workItemId.value : this.workItemId,
@@ -1851,7 +1851,7 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
 
   @override
   String toString() {
-    return (StringBuffer('Enrichment(')
+    return (StringBuffer('EnrichmentsRow(')
           ..write('id: $id, ')
           ..write('workItemId: $workItemId, ')
           ..write('type: $type, ')
@@ -1868,7 +1868,7 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Enrichment &&
+      (other is EnrichmentsRow &&
           other.id == this.id &&
           other.workItemId == this.workItemId &&
           other.type == this.type &&
@@ -1877,7 +1877,7 @@ class Enrichment extends DataClass implements Insertable<Enrichment> {
           other.createdAt == this.createdAt);
 }
 
-class EnrichmentsCompanion extends UpdateCompanion<Enrichment> {
+class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
   final Value<int> id;
   final Value<String> workItemId;
   final Value<String> type;
@@ -1903,7 +1903,7 @@ class EnrichmentsCompanion extends UpdateCompanion<Enrichment> {
        type = Value(type),
        content = Value(content),
        createdAt = Value(createdAt);
-  static Insertable<Enrichment> custom({
+  static Insertable<EnrichmentsRow> custom({
     Expression<int>? id,
     Expression<String>? workItemId,
     Expression<String>? type,
@@ -2697,7 +2697,7 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
   /// JSON serializado de Condition — desserializa com `Condition.fromJson`
   final String conditionsJson;
 
-  /// JSON serializado de List<ActionInvocation> — desserializa com
+  /// JSON serializado de `List&lt;ActionInvocation&gt;` — desserializa com
   /// `jsonDecode` e `ActionInvocation.fromJson` em loop
   final String actionsJson;
   final bool stopOnMatch;
@@ -3887,17 +3887,17 @@ class $$EnrichmentsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $EnrichmentsTable,
-          Enrichment,
+          EnrichmentsRow,
           $$EnrichmentsTableFilterComposer,
           $$EnrichmentsTableOrderingComposer,
           $$EnrichmentsTableAnnotationComposer,
           $$EnrichmentsTableCreateCompanionBuilder,
           $$EnrichmentsTableUpdateCompanionBuilder,
           (
-            Enrichment,
-            BaseReferences<_$AppDatabase, $EnrichmentsTable, Enrichment>,
+            EnrichmentsRow,
+            BaseReferences<_$AppDatabase, $EnrichmentsTable, EnrichmentsRow>,
           ),
-          Enrichment,
+          EnrichmentsRow,
           PrefetchHooks Function()
         > {
   $$EnrichmentsTableTableManager(_$AppDatabase db, $EnrichmentsTable table)
@@ -3963,17 +3963,17 @@ typedef $$EnrichmentsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $EnrichmentsTable,
-      Enrichment,
+      EnrichmentsRow,
       $$EnrichmentsTableFilterComposer,
       $$EnrichmentsTableOrderingComposer,
       $$EnrichmentsTableAnnotationComposer,
       $$EnrichmentsTableCreateCompanionBuilder,
       $$EnrichmentsTableUpdateCompanionBuilder,
       (
-        Enrichment,
-        BaseReferences<_$AppDatabase, $EnrichmentsTable, Enrichment>,
+        EnrichmentsRow,
+        BaseReferences<_$AppDatabase, $EnrichmentsTable, EnrichmentsRow>,
       ),
-      Enrichment,
+      EnrichmentsRow,
       PrefetchHooks Function()
     >;
 typedef $$OutboxEntriesTableCreateCompanionBuilder =

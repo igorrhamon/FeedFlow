@@ -52,6 +52,11 @@ class WorkItemEvents extends Table {
 /// Enriquecimentos de IA (resumo, tradução, classificação, ...) associados a
 /// um [WorkItem]. Schema criado nesta fase; nada ainda o popula — ver Fase 5
 /// do plano de evolução (Enricher/LLM adapters).
+///
+/// `@DataClassName('EnrichmentsRow')` evita colisão com a classe de domínio
+/// `Enrichment` (Freezed) — o drift nomearia a row class `Enrichment` por
+/// padrão (singular de `Enrichments`).
+@DataClassName('EnrichmentsRow')
 class Enrichments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get workItemId => text()();
@@ -97,7 +102,7 @@ class Rules extends Table {
   TextColumn get triggerType => text()();
   /// JSON serializado de Condition — desserializa com `Condition.fromJson`
   TextColumn get conditionsJson => text()();
-  /// JSON serializado de List<ActionInvocation> — desserializa com
+  /// JSON serializado de `List&lt;ActionInvocation&gt;` — desserializa com
   /// `jsonDecode` e `ActionInvocation.fromJson` em loop
   TextColumn get actionsJson => text()();
   BoolColumn get stopOnMatch => boolean().withDefault(const Constant(false))();

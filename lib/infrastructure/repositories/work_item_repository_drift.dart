@@ -129,7 +129,49 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
   }
 
   @override
+  Stream<Map<String, int>> watchUnreadCountsByFeed() {
+    final countExp = _db.workItems.id.count();
+    final query = _db.selectOnly(_db.workItems)
+      ..addColumns([_db.workItems.feedId, countExp])
+      ..where(_db.workItems.isRead.equals(false))
+      ..groupBy([_db.workItems.feedId]);
+    return query.watch().map((rows) {
+      final result = <String, int>{};
+      for (final row in rows) {
+        final feedId = row.read(_db.workItems.feedId);
+        final count = row.read(countExp) ?? 0;
+        if (feedId != null && feedId.isNotEmpty) {
+          result[feedId] = count;
+        }
+      }
+      return result;
+    });
+  }
+
+  @override
+  Stream<List<WorkItem>> watchByFeedId(String feedId, {List<TriageStatus>? statuses}) {
+    final query = _db.select(_db.workItems)
+      ..where((t) => t.feedId.equals(feedId))
+      ..orderBy([(t) => OrderingTerm.desc(t.ingestedAt)]);
+
+    if (statuses != null && statuses.isNotEmpty) {
+      final names = statuses.map((s) => s.name).toList();
+      query.where((t) => t.status.isIn(names));
+    }
+
+    return query.watch().map((rows) => rows.map(_toDomain).toList());
+  }
+
+  @override
   Future<void> close() => _db.close();
+
+  @override
+  Stream<List<WorkItem>> watchStarred() {
+    final query = _db.select(_db.workItems)
+      ..where((t) => t.isStarred.equals(true))
+      ..orderBy([(t) => OrderingTerm.desc(t.ingestedAt)]);
+    return query.watch().map((rows) => rows.map(_toDomain).toList());
+  }
 
   WorkItem _toDomain(WorkItemRow row) {
     final tags = (jsonDecode(row.tagsJson) as List).cast<String>();

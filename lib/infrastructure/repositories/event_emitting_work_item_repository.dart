@@ -48,7 +48,7 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
     for (final article in articles) {
       _eventBus.publish(
         ArticleIngested(
-          workItemId: '${providerId}:${article.id}',
+          workItemId: '$providerId:${article.id}',
           providerId: providerId,
           articleId: article.id,
           feedId: article.feedId,
@@ -95,5 +95,20 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
   @override
   Future<void> close() {
     return _delegate.close();
+  }
+
+  @override
+  Stream<List<WorkItem>> watchByFeedId(String feedId, {List<TriageStatus>? statuses}) {
+    return _delegate.watchByFeedId(feedId, statuses: statuses);
+  }
+
+  @override
+  Stream<List<WorkItem>> watchStarred() {
+    return _delegate.watchStarred();
+  }
+
+  @override
+  Stream<Map<String, int>> watchUnreadCountsByFeed() {
+    return _delegate.watchUnreadCountsByFeed();
   }
 }

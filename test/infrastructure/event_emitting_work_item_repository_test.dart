@@ -72,10 +72,10 @@ void main() {
 
       // Primeiro evento é ArticleIngested (antes de limpar events), depois StatusChanged
       final statusChangedEvents =
-          events.where((e) => e is StatusChanged).toList();
+          events.whereType<StatusChanged>().toList();
       expect(statusChangedEvents.length, 1);
 
-      final statusChanged = statusChangedEvents.first as StatusChanged;
+      final statusChanged = statusChangedEvents.first;
       expect(statusChanged.workItemId, 'feedbin:a1');
       expect(statusChanged.fromStatus, 'novo');
       expect(statusChanged.toStatus, 'triado');

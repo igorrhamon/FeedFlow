@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import '../infrastructure/db/database_provider.dart';
+import '../models/article.dart';
+import '../providers/feed_provider.dart';
 import '../providers/provider_registry.dart';
 import '../widget/feed_widget_service.dart';
 import 'provider_settings.dart';
@@ -31,14 +34,25 @@ class BackgroundSync {
       if (!authResult.success) return BackgroundSyncOutcome.authFailed;
 
       await provider.getUnreadCounts();
+
+      // Busca e processa artigos para providers Google Reader-compatible
       if (_googleReaderCompatibleProviders.contains(providerId)) {
         final articlesResult = await provider.getArticles(
           streamId: _readingListStreamId,
           limit: _maxWidgetArticles,
           excludeRead: true,
         );
+
+        // Integra artigos buscados na persistência local (sem quebrar se DB não estiver disponível)
+        await _ingestArticlesWithFallback(articlesResult.articles, providerId);
+
+        // Atualiza o widget Android com artigos buscados
         await FeedWidgetService.update(articlesResult.articles);
       }
+
+      // Tenta reenviar mutações pendentes (read/star feitas offline)
+      await _flushOutboxWithFallback(provider);
+
       return BackgroundSyncOutcome.success;
     } on SocketException {
       return BackgroundSyncOutcome.networkError;
@@ -46,6 +60,38 @@ class BackgroundSync {
       return BackgroundSyncOutcome.networkError;
     } catch (_) {
       return BackgroundSyncOutcome.unknownError;
+    }
+  }
+
+  /// Chama `syncService.ingest()` com graceful degradation se DB não estiver disponível.
+  /// Erros de ingestão não derubam o job de background — apenas são ignorados com fallback.
+  static Future<void> _ingestArticlesWithFallback(
+    List<Article> articles,
+    String providerId,
+  ) async {
+    try {
+      final syncService = DatabaseProvider.syncService;
+      if (syncService != null) {
+        await syncService.ingest(articles, providerId);
+      }
+    } catch (e) {
+      // Log ou ignore: ingestão falhou, mas widget já foi atualizado.
+      // Não propaga erro — o job continua e tenta novamente na próxima execução.
+    }
+  }
+
+  /// Tenta reenviar entradas pendentes do outbox (read/star feitas offline).
+  /// Graceful degradation: se DB não estiver disponível, ignora silenciosamente.
+  /// Erros de flush não derubam o job.
+  static Future<void> _flushOutboxWithFallback(FeedProvider provider) async {
+    try {
+      final syncService = DatabaseProvider.syncService;
+      if (syncService != null) {
+        await syncService.flushOutbox(provider);
+      }
+    } catch (e) {
+      // Log ou ignore: flush falhou, mas não quebra o job de background.
+      // Entradas permanecem no outbox para tentar de novo depois.
     }
   }
 }
