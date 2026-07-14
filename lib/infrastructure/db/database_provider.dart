@@ -3,9 +3,11 @@ import 'package:flutter/foundation.dart';
 import '../../application/event_bus.dart';
 import '../../application/sync_service.dart';
 import '../../domain/repositories/outbox_repository.dart';
+import '../../domain/repositories/search_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
 import '../repositories/outbox_repository_drift.dart';
+import '../repositories/search_repository_drift.dart';
 import '../repositories/work_item_repository_drift.dart';
 import 'database.dart';
 
@@ -19,6 +21,7 @@ class DatabaseProvider {
   static AppDatabase? _database;
   static WorkItemRepository? _workItemRepository;
   static OutboxRepository? _outboxRepository;
+  static SearchRepository? _searchRepository;
   static SyncService? _syncService;
 
   static WorkItemRepository? get repository {
@@ -34,6 +37,12 @@ class DatabaseProvider {
     if (kIsWeb) return null;
     _database ??= AppDatabase();
     return _outboxRepository ??= OutboxRepositoryDrift(_database!);
+  }
+
+  static SearchRepository? get searchRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _searchRepository ??= SearchRepositoryDrift(_database!);
   }
 
   static SyncService? get syncService {

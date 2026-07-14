@@ -96,4 +96,19 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
   Future<void> close() {
     return _delegate.close();
   }
+
+  @override
+  Stream<List<WorkItem>> watchByFeedId(String feedId, {List<TriageStatus>? statuses}) {
+    return _delegate.watchByFeedId(feedId, statuses: statuses);
+  }
+
+  @override
+  Stream<List<WorkItem>> watchStarred() {
+    return _delegate.watchStarred();
+  }
+
+  @override
+  Stream<Map<String, int>> watchUnreadCountsByFeed() {
+    return _delegate.watchUnreadCountsByFeed();
+  }
 }

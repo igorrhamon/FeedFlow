@@ -2697,7 +2697,7 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
   /// JSON serializado de Condition — desserializa com `Condition.fromJson`
   final String conditionsJson;
 
-  /// JSON serializado de List<ActionInvocation> — desserializa com
+  /// JSON serializado de `List&lt;ActionInvocation&gt;` — desserializa com
   /// `jsonDecode` e `ActionInvocation.fromJson` em loop
   final String actionsJson;
   final bool stopOnMatch;
