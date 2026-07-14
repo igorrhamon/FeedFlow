@@ -233,8 +233,21 @@ class _FeedArticlesPageState extends State<FeedArticlesPage>
     }
   }
 
+  /// Marca todos os artigos carregados nesta página como lidos. Quando há
+  /// persistência local, enfileira via outbox (Fase 2 — docs/EVOLUTION-PLAN.md);
+  /// sem persistência (web), chama direto no provider.
   Future<void> _markAllAsRead() async {
-    await widget.provider.markAllAsRead(widget.feed.id);
+    final sync = DatabaseProvider.syncService;
+    final unreadArticles = articles.where((a) => !a.isRead).toList();
+
+    if (sync != null) {
+      for (final article in unreadArticles) {
+        await sync.markAsRead(widget.provider, widget.provider.providerId, article.id);
+      }
+    } else {
+      await widget.provider.markAllAsRead(widget.feed.id);
+    }
+
     setState(() {
       for (final article in articles) {
         if (!article.isRead) {

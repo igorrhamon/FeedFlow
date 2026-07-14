@@ -14,19 +14,34 @@ part 'database.g.dart';
 /// eventos/enriquecimentos). Suporte nativo (Android/iOS/desktop) apenas
 /// nesta fase — web/WASM fica para uma iteração futura (ver EVOLUTION-PLAN,
 /// Fase 1: "web via WASM/OPFS" listado como risco a validar cedo no CI).
-@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries])
+@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries, Rules])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
+      onCreate: (m) => m.createAll(),
       onUpgrade: (m, from, to) async {
+        // v1 -> v2: Fase 2 introduziu OutboxEntries. Instalações que só
+        // viram a Fase 1 (schemaVersion 1, sem essa tabela) precisam
+        // dessa migração — sem ela, o insert no outbox falha com
+        // "no such table: outbox_entries" na primeira tentativa de
+        // marcar como lido/favoritar depois do upgrade.
         if (from < 2) {
-          await _migrateV1toV2(m);
+          await m.createTable(outboxEntries);
+        }
+        // v2 -> v3: busca full-text local via FTS5 (work_items_fts) — ver
+        // [_migrateV2toV3] para o backfill.
+        if (from < 3) {
+          await _migrateV2toV3(m);
+        }
+        // v3 -> v4: motor de regras (Fase 3) introduziu a tabela Rules.
+        if (from < 4) {
+          await m.createTable(rules);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar
@@ -119,13 +134,13 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  /// Migração de schema v1 → v2: cria tabela virtual FTS5 para busca full-text
+  /// Migração de schema v2 → v3: cria tabela virtual FTS5 para busca full-text
   /// e faz backfill dos dados já existentes em `work_items` (bancos novos não
   /// têm o que popular aqui). Os triggers em si — que mantêm o índice
   /// sincronizado dali em diante — são criados de forma idempotente por
   /// [_ensureFtsSchemaObjects], chamado a partir de `beforeOpen` logo depois
   /// desta migração (ver [migration]).
-  static Future<void> _migrateV1toV2(Migrator m) async {
+  static Future<void> _migrateV2toV3(Migrator m) async {
     // Cria a tabela virtual FTS5 antes do backfill (o backfill insere
     // diretamente nela).
     await _ensureFtsSchemaObjects(m.database.customStatement);

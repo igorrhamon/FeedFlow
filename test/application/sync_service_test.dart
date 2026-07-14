@@ -129,4 +129,60 @@ void main() {
       expect(provider.markAsReadCalls, isEmpty);
     });
   });
+
+  group('markAllAsRead (multiple articles)', () {
+    test('enfileira markAsRead para cada artigo quando local-first', () async {
+      await sync.ingest(
+        [
+          Article(id: 'a1', feedId: 'f1', title: 'T1', isRead: false),
+          Article(id: 'a2', feedId: 'f1', title: 'T2', isRead: false),
+          Article(id: 'a3', feedId: 'f1', title: 'T3', isRead: true),
+        ],
+        'fake',
+      );
+      final provider = FakeFeedProvider();
+
+      // Simula o comportamento do _markAllAsRead em feed_articles_page.dart:
+      // marca todos os não-lidos como lidos individualmente via SyncService.
+      for (final article in [
+        Article(id: 'a1', feedId: 'f1', title: 'T1', isRead: false),
+        Article(id: 'a2', feedId: 'f1', title: 'T2', isRead: false),
+      ]) {
+        await sync.markAsRead(provider, 'fake', article.id);
+      }
+
+      final items = await workItems.watchByStatus(TriageStatus.values).first;
+      expect(items.where((i) => i.isRead).length, 3,
+          reason: 'todos os artigos devem estar marcados como lidos localmente');
+
+      expect(provider.markAsReadCalls, ['a1', 'a2'],
+          reason: 'provider deve ter sido chamado para cada artigo não-lido');
+    });
+
+    test('enfileira no outbox em caso de falha de rede durante markAllAsRead', () async {
+      await sync.ingest(
+        [
+          Article(id: 'a1', feedId: 'f1', title: 'T1', isRead: false),
+          Article(id: 'a2', feedId: 'f1', title: 'T2', isRead: false),
+        ],
+        'fake',
+      );
+      final failingProvider = FakeFeedProvider(markAsReadThrows: true);
+
+      for (final article in [
+        Article(id: 'a1', feedId: 'f1', title: 'T1', isRead: false),
+        Article(id: 'a2', feedId: 'f1', title: 'T2', isRead: false),
+      ]) {
+        await sync.markAsRead(failingProvider, 'fake', article.id);
+      }
+
+      final items = await workItems.watchByStatus(TriageStatus.values).first;
+      expect(items.where((i) => i.isRead).length, 2,
+          reason: 'estado local permanece lido mesmo com falha de rede');
+
+      final pending = await outbox.pending();
+      expect(pending.length, 2, reason: 'ambos os markAsRead devem estar pendentes');
+      expect(pending.map((e) => e.articleId).toSet(), {'a1', 'a2'});
+    });
+  });
 }

@@ -144,7 +144,7 @@ Map<String, dynamic> _$$FeedResultImplToJson(_$FeedResultImpl instance) =>
       'success': instance.success,
       'feedId': instance.feedId,
       'error': instance.error,
-      'feed': instance.feed,
+      'feed': instance.feed?.toJson(),
     };
 
 _$CategoryResultImpl _$$CategoryResultImplFromJson(Map<String, dynamic> json) =>
@@ -164,7 +164,7 @@ Map<String, dynamic> _$$CategoryResultImplToJson(
   'success': instance.success,
   'categoryId': instance.categoryId,
   'error': instance.error,
-  'category': instance.category,
+  'category': instance.category?.toJson(),
 };
 
 _$OpmlImportResultImpl _$$OpmlImportResultImplFromJson(
@@ -185,6 +185,6 @@ Map<String, dynamic> _$$OpmlImportResultImplToJson(
   _$OpmlImportResultImpl instance,
 ) => <String, dynamic>{
   'success': instance.success,
-  'feeds': instance.feeds,
+  'feeds': instance.feeds.map((e) => e.toJson()).toList(),
   'errors': instance.errors,
 };
