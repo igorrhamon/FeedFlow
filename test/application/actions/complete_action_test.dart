@@ -69,11 +69,16 @@ void main() {
       expect(updated!.status, equals(TriageStatus.concluido));
     });
 
-    test('works with item in any status', () async {
-      for (final status in TriageStatus.values) {
-        // Skip already concluido to test transition
-        if (status == TriageStatus.concluido) continue;
-
+    test('works with any status that pode transicionar para concluido', () async {
+      // arquivado não transiciona diretamente para concluido (ver
+      // kTriageTransitions em lib/domain/triage_status.dart) — não é um bug
+      // da ação, é a FSM de triagem sendo respeitada.
+      const validStartStatuses = [
+        TriageStatus.novo,
+        TriageStatus.triado,
+        TriageStatus.emAndamento,
+      ];
+      for (final status in validStartStatuses) {
         final item = createTestItem(
           id: 'test-item-$status',
           status: status,

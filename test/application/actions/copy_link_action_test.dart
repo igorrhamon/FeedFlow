@@ -3,6 +3,8 @@ import 'package:feedflow/application/actions/copy_link_action.dart';
 import 'package:feedflow/domain/work_item.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('CopyLinkAction', () {
     final action = CopyLinkAction();
 
