@@ -84,3 +84,30 @@ class OutboxEntries extends Table {
   IntColumn get attempts => integer().withDefault(const Constant(0))();
   TextColumn get lastError => text().nullable()();
 }
+
+/// Regras de automação (Fase 3 — motor de regras). Uma regra é um tripé:
+/// gatilho (onIngested, onStatusChanged, etc.) → árvore de condições →
+/// lista de ações. Execução real de ações é stubada na Fase 3; a partir
+/// da Fase 4 integra-se com ActionRegistry/executor real.
+///
+/// `conditionsJson` e `actionsJson` são serialização JSON que desserializa
+/// para `Condition` e `List<ActionInvocation>` via `jsonDecode` + `fromJson`.
+/// `@DataClassName('RuleRow')` evita colisão com a classe de domínio `Rule`.
+@DataClassName('RuleRow')
+class Rules extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  /// onIngested | onStatusChanged | manual | schedule
+  TextColumn get triggerType => text()();
+  /// JSON serializado de Condition — desserializa com `Condition.fromJson`
+  TextColumn get conditionsJson => text()();
+  /// JSON serializado de `List&lt;ActionInvocation&gt;` — desserializa com
+  /// `jsonDecode` e `ActionInvocation.fromJson` em loop
+  TextColumn get actionsJson => text()();
+  BoolColumn get stopOnMatch => boolean().withDefault(const Constant(false))();
+  IntColumn get order => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

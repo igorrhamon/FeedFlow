@@ -23,7 +23,7 @@ Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'unreadCount': instance.unreadCount,
-      'feeds': instance.feeds,
+      'feeds': instance.feeds.map((e) => e.toJson()).toList(),
     };
 
 _$UnreadCountImpl _$$UnreadCountImplFromJson(Map<String, dynamic> json) =>
