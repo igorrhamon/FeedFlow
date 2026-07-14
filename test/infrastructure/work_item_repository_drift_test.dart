@@ -155,6 +155,62 @@ void main() {
     });
   });
 
+  group('watchUnreadCountsByFeed', () {
+    test('agrupa não lidos por feedId', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', feedId: 'f1', isRead: false),
+          article(id: 'a2', feedId: 'f1', isRead: false),
+          article(id: 'a3', feedId: 'f2', isRead: false),
+          article(id: 'a4', feedId: 'f2', isRead: true), // lido — não conta
+        ],
+        'feedbin',
+      );
+
+      final counts = await repo.watchUnreadCountsByFeed().first;
+
+      expect(counts['f1'], 2);
+      expect(counts['f2'], 1);
+      expect(counts['f3'], isNull);
+    });
+
+    test('reage a mudanças de isRead', () async {
+      await repo.upsertFromArticles([article(id: 'a1', feedId: 'f1', isRead: false)], 'feedbin');
+
+      // Primeiro snapshot: 1 não lido
+      var counts = await repo.watchUnreadCountsByFeed().first;
+      expect(counts['f1'], 1);
+
+      // Marca como lido via upsert
+      await repo.upsertFromArticles([article(id: 'a1', feedId: 'f1', isRead: true)], 'feedbin');
+
+      // Segundo snapshot: 0 não lidos
+      counts = await repo.watchUnreadCountsByFeed().first;
+      expect(counts['f1'], isNull); // feed desaparece do mapa se não tem não lidos
+    });
+
+    test('múltiplos feeds misturados', () async {
+      await repo.upsertFromArticles(
+        [
+          article(id: 'a1', feedId: 'feed-tech', isRead: false),
+          article(id: 'a2', feedId: 'feed-tech', isRead: false),
+          article(id: 'a3', feedId: 'feed-tech', isRead: true),
+          article(id: 'a4', feedId: 'feed-news', isRead: false),
+          article(id: 'a5', feedId: 'feed-news', isRead: false),
+          article(id: 'a6', feedId: 'feed-news', isRead: false),
+          article(id: 'a7', feedId: 'feed-sport', isRead: true),
+        ],
+        'feedbin',
+      );
+
+      final counts = await repo.watchUnreadCountsByFeed().first;
+
+      expect(counts['feed-tech'], 2);
+      expect(counts['feed-news'], 3);
+      expect(counts['feed-sport'], isNull); // todos lidos
+    });
+  });
+
   group('watchByFeedId', () {
     test('retorna apenas WorkItems do feedId especificado', () async {
       await repo.upsertFromArticles(

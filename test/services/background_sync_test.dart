@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:feedflow/application/sync_service.dart';
 import 'package:feedflow/models/article.dart';
 import 'package:feedflow/providers/auth/auth_config.dart';
 import 'package:feedflow/providers/feed_provider.dart';
@@ -42,36 +41,6 @@ class _FakeFeedProvider implements FeedProvider {
   }) async {
     if (getArticlesError != null) throw getArticlesError!;
     return ArticleListResult(articles: articles);
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _FakeSyncService implements SyncService {
-  _FakeSyncService({
-    this.ingestError,
-    this.flushOutboxError,
-  });
-
-  final Object? ingestError;
-  final Object? flushOutboxError;
-
-  final List<String> ingestProviderIds = [];
-  final List<List<Article>> ingestedArticles = [];
-  int flushOutboxCallCount = 0;
-
-  @override
-  Future<void> ingest(List<Article> articles, String providerId) async {
-    if (ingestError != null) throw ingestError!;
-    ingestedArticles.add(articles);
-    ingestProviderIds.add(providerId);
-  }
-
-  @override
-  Future<void> flushOutbox(FeedProvider provider) async {
-    if (flushOutboxError != null) throw flushOutboxError!;
-    flushOutboxCallCount++;
   }
 
   @override
