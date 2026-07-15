@@ -111,3 +111,21 @@ class Rules extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Filas de trabalho (Fase 4 — versão simplificada anterior ao compilador SQL).
+/// Uma fila é um conjunto persistente de WorkItems definido por um QuerySpec,
+/// exibido via ícone e nome no UI.
+///
+/// `@DataClassName('QueueRow')` evita colisão com a classe de domínio `Queue`.
+@DataClassName('QueueRow')
+class Queues extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get icon => text()(); // nome do ícone Material (ex: 'inbox', 'star')
+  IntColumn get order => integer()();
+  /// JSON serializado de QuerySpec — desserializa com `QuerySpec.fromJson`
+  TextColumn get querySpecJson => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
