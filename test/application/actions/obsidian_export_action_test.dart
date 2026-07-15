@@ -1,8 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/application/actions/obsidian_export_action.dart';
-import 'package:feedflow/application/integrations/obsidian_integration.dart';
-import 'package:feedflow/domain/work_item.dart';
-import 'package:feedflow/domain/triage_status.dart';
 
 void main() {
   setUpAll(() {
