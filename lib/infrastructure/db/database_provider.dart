@@ -3,11 +3,13 @@ import 'package:flutter/foundation.dart';
 import '../../application/event_bus.dart';
 import '../../application/sync_service.dart';
 import '../../domain/repositories/outbox_repository.dart';
+import '../../domain/repositories/queue_repository.dart';
 import '../../domain/repositories/rule_repository.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
 import '../repositories/outbox_repository_drift.dart';
+import '../repositories/queue_repository_drift.dart';
 import '../repositories/rule_repository_drift.dart';
 import '../repositories/search_repository_drift.dart';
 import '../repositories/work_item_repository_drift.dart';
@@ -25,6 +27,7 @@ class DatabaseProvider {
   static OutboxRepository? _outboxRepository;
   static SearchRepository? _searchRepository;
   static RuleRepository? _ruleRepository;
+  static QueueRepository? _queueRepository;
   static SyncService? _syncService;
 
   static WorkItemRepository? get repository {
@@ -52,6 +55,12 @@ class DatabaseProvider {
     if (kIsWeb) return null;
     _database ??= AppDatabase();
     return _ruleRepository ??= RuleRepositoryDrift(_database!);
+  }
+
+  static QueueRepository? get queueRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _queueRepository ??= QueueRepositoryDrift(_database!);
   }
 
   static SyncService? get syncService {
