@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../application/condition_evaluator.dart';
 import '../application/query_evaluator.dart';
 import '../domain/query_spec.dart';
 import '../domain/queue.dart';
@@ -575,7 +574,7 @@ class _QueueEditorPageState extends State<QueueEditorPage> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit),
-                                    onPressed: () => _editQueue(queue),
+                                    onPressed: () => setState(() => _editQueue(queue)),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),

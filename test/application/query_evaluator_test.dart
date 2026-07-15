@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:the_old_reader/application/query_evaluator.dart';
-import 'package:the_old_reader/domain/query_spec.dart';
-import 'package:the_old_reader/domain/rule.dart';
-import 'package:the_old_reader/domain/triage_status.dart';
-import 'package:the_old_reader/domain/work_item.dart';
+import 'package:feedflow/application/query_evaluator.dart';
+import 'package:feedflow/domain/query_spec.dart';
+import 'package:feedflow/domain/rule.dart';
+import 'package:feedflow/domain/triage_status.dart';
+import 'package:feedflow/domain/work_item.dart';
 
 void main() {
   group('QueryEvaluator', () {

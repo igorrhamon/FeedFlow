@@ -1,17 +1,17 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:the_old_reader/domain/query_spec.dart';
-import 'package:the_old_reader/domain/queue.dart';
-import 'package:the_old_reader/domain/repositories/queue_repository.dart';
-import 'package:the_old_reader/domain/repositories/work_item_repository.dart';
-import 'package:the_old_reader/domain/rule.dart';
-import 'package:the_old_reader/domain/triage_status.dart';
-import 'package:the_old_reader/domain/work_item.dart';
-import 'package:the_old_reader/infrastructure/db/database.dart';
-import 'package:the_old_reader/infrastructure/repositories/queue_repository_drift.dart';
-import 'package:the_old_reader/infrastructure/repositories/work_item_repository_drift.dart';
-import 'package:the_old_reader/pages/queue_editor_page.dart';
+import 'package:feedflow/domain/query_spec.dart';
+import 'package:feedflow/domain/queue.dart';
+import 'package:feedflow/domain/repositories/queue_repository.dart';
+import 'package:feedflow/domain/repositories/work_item_repository.dart';
+import 'package:feedflow/domain/rule.dart';
+import 'package:feedflow/domain/triage_status.dart';
+import 'package:feedflow/domain/work_item.dart';
+import 'package:feedflow/infrastructure/db/database.dart';
+import 'package:feedflow/infrastructure/repositories/queue_repository_drift.dart';
+import 'package:feedflow/infrastructure/repositories/work_item_repository_drift.dart';
+import 'package:feedflow/pages/queue_editor_page.dart';
 
 void main() {
   late AppDatabase db;
@@ -90,7 +90,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Nome e campo de filtro ficam vazios por padrão → disparam mensagens de validação
-      expect(find.text('é obrigatório'), findsWidgets);
+      expect(find.textContaining('é obrigatório'), findsWidgets);
       // Nenhuma fila deve ter sido criada com o formulário inválido.
       expect(await queueRepo.list(), isEmpty);
     });
@@ -102,7 +102,7 @@ void main() {
 
       // Preenche o formulário
       await tester.enterText(find.widgetWithText(TextFormField, 'Nome da Fila'), 'My Queue');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Ícone'), 'star');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Ícone (ex: inbox, star, check)'), 'star');
 
       // Preenche o filtro
       await tester.tap(find.widgetWithText(DropdownButtonFormField<String>, 'Campo'));
@@ -113,7 +113,7 @@ void main() {
       // Preenche o operador
       await tester.tap(find.widgetWithText(DropdownButtonFormField<String>, 'Operador'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('equals'));
+      await tester.tap(find.text('equals').last);
       await tester.pumpAndSettle();
 
       // Preenche o valor
@@ -145,7 +145,7 @@ void main() {
         ingestedAt: now,
         updatedAt: now,
       );
-      await workItemRepo.upsertFromArticles([testItem], 'provider');
+      await workItemRepo.save(testItem);
 
       await tester.pumpWidget(buildPage());
       await tester.pumpAndSettle();

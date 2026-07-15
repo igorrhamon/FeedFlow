@@ -2983,6 +2983,368 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
   }
 }
 
+class $QueuesTable extends Queues with TableInfo<$QueuesTable, QueueRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QueuesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _orderMeta = const VerificationMeta('order');
+  @override
+  late final GeneratedColumn<int> order = GeneratedColumn<int>(
+    'order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _querySpecJsonMeta = const VerificationMeta(
+    'querySpecJson',
+  );
+  @override
+  late final GeneratedColumn<String> querySpecJson = GeneratedColumn<String>(
+    'query_spec_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, icon, order, querySpecJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'queues';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<QueueRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iconMeta);
+    }
+    if (data.containsKey('order')) {
+      context.handle(
+        _orderMeta,
+        order.isAcceptableOrUnknown(data['order']!, _orderMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_orderMeta);
+    }
+    if (data.containsKey('query_spec_json')) {
+      context.handle(
+        _querySpecJsonMeta,
+        querySpecJson.isAcceptableOrUnknown(
+          data['query_spec_json']!,
+          _querySpecJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_querySpecJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  QueueRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QueueRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      icon:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}icon'],
+          )!,
+      order:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}order'],
+          )!,
+      querySpecJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}query_spec_json'],
+          )!,
+    );
+  }
+
+  @override
+  $QueuesTable createAlias(String alias) {
+    return $QueuesTable(attachedDatabase, alias);
+  }
+}
+
+class QueueRow extends DataClass implements Insertable<QueueRow> {
+  final String id;
+  final String name;
+  final String icon;
+  final int order;
+
+  /// JSON serializado de QuerySpec — desserializa com `QuerySpec.fromJson`
+  final String querySpecJson;
+  const QueueRow({
+    required this.id,
+    required this.name,
+    required this.icon,
+    required this.order,
+    required this.querySpecJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['icon'] = Variable<String>(icon);
+    map['order'] = Variable<int>(order);
+    map['query_spec_json'] = Variable<String>(querySpecJson);
+    return map;
+  }
+
+  QueuesCompanion toCompanion(bool nullToAbsent) {
+    return QueuesCompanion(
+      id: Value(id),
+      name: Value(name),
+      icon: Value(icon),
+      order: Value(order),
+      querySpecJson: Value(querySpecJson),
+    );
+  }
+
+  factory QueueRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return QueueRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<String>(json['icon']),
+      order: serializer.fromJson<int>(json['order']),
+      querySpecJson: serializer.fromJson<String>(json['querySpecJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<String>(icon),
+      'order': serializer.toJson<int>(order),
+      'querySpecJson': serializer.toJson<String>(querySpecJson),
+    };
+  }
+
+  QueueRow copyWith({
+    String? id,
+    String? name,
+    String? icon,
+    int? order,
+    String? querySpecJson,
+  }) => QueueRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    icon: icon ?? this.icon,
+    order: order ?? this.order,
+    querySpecJson: querySpecJson ?? this.querySpecJson,
+  );
+  QueueRow copyWithCompanion(QueuesCompanion data) {
+    return QueueRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      order: data.order.present ? data.order.value : this.order,
+      querySpecJson:
+          data.querySpecJson.present
+              ? data.querySpecJson.value
+              : this.querySpecJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QueueRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('order: $order, ')
+          ..write('querySpecJson: $querySpecJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, icon, order, querySpecJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QueueRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.order == this.order &&
+          other.querySpecJson == this.querySpecJson);
+}
+
+class QueuesCompanion extends UpdateCompanion<QueueRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> icon;
+  final Value<int> order;
+  final Value<String> querySpecJson;
+  final Value<int> rowid;
+  const QueuesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.order = const Value.absent(),
+    this.querySpecJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  QueuesCompanion.insert({
+    required String id,
+    required String name,
+    required String icon,
+    required int order,
+    required String querySpecJson,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       icon = Value(icon),
+       order = Value(order),
+       querySpecJson = Value(querySpecJson);
+  static Insertable<QueueRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? icon,
+    Expression<int>? order,
+    Expression<String>? querySpecJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (order != null) 'order': order,
+      if (querySpecJson != null) 'query_spec_json': querySpecJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  QueuesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? icon,
+    Value<int>? order,
+    Value<String>? querySpecJson,
+    Value<int>? rowid,
+  }) {
+    return QueuesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      order: order ?? this.order,
+      querySpecJson: querySpecJson ?? this.querySpecJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (order.present) {
+      map['order'] = Variable<int>(order.value);
+    }
+    if (querySpecJson.present) {
+      map['query_spec_json'] = Variable<String>(querySpecJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QueuesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('order: $order, ')
+          ..write('querySpecJson: $querySpecJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2991,6 +3353,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $EnrichmentsTable enrichments = $EnrichmentsTable(this);
   late final $OutboxEntriesTable outboxEntries = $OutboxEntriesTable(this);
   late final $RulesTable rules = $RulesTable(this);
+  late final $QueuesTable queues = $QueuesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3001,6 +3364,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     enrichments,
     outboxEntries,
     rules,
+    queues,
   ];
 }
 
@@ -4486,6 +4850,209 @@ typedef $$RulesTableProcessedTableManager =
       RuleRow,
       PrefetchHooks Function()
     >;
+typedef $$QueuesTableCreateCompanionBuilder =
+    QueuesCompanion Function({
+      required String id,
+      required String name,
+      required String icon,
+      required int order,
+      required String querySpecJson,
+      Value<int> rowid,
+    });
+typedef $$QueuesTableUpdateCompanionBuilder =
+    QueuesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> icon,
+      Value<int> order,
+      Value<String> querySpecJson,
+      Value<int> rowid,
+    });
+
+class $$QueuesTableFilterComposer
+    extends Composer<_$AppDatabase, $QueuesTable> {
+  $$QueuesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get querySpecJson => $composableBuilder(
+    column: $table.querySpecJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$QueuesTableOrderingComposer
+    extends Composer<_$AppDatabase, $QueuesTable> {
+  $$QueuesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get querySpecJson => $composableBuilder(
+    column: $table.querySpecJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$QueuesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $QueuesTable> {
+  $$QueuesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<String> get querySpecJson => $composableBuilder(
+    column: $table.querySpecJson,
+    builder: (column) => column,
+  );
+}
+
+class $$QueuesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $QueuesTable,
+          QueueRow,
+          $$QueuesTableFilterComposer,
+          $$QueuesTableOrderingComposer,
+          $$QueuesTableAnnotationComposer,
+          $$QueuesTableCreateCompanionBuilder,
+          $$QueuesTableUpdateCompanionBuilder,
+          (QueueRow, BaseReferences<_$AppDatabase, $QueuesTable, QueueRow>),
+          QueueRow,
+          PrefetchHooks Function()
+        > {
+  $$QueuesTableTableManager(_$AppDatabase db, $QueuesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$QueuesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$QueuesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$QueuesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int> order = const Value.absent(),
+                Value<String> querySpecJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => QueuesCompanion(
+                id: id,
+                name: name,
+                icon: icon,
+                order: order,
+                querySpecJson: querySpecJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String icon,
+                required int order,
+                required String querySpecJson,
+                Value<int> rowid = const Value.absent(),
+              }) => QueuesCompanion.insert(
+                id: id,
+                name: name,
+                icon: icon,
+                order: order,
+                querySpecJson: querySpecJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$QueuesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $QueuesTable,
+      QueueRow,
+      $$QueuesTableFilterComposer,
+      $$QueuesTableOrderingComposer,
+      $$QueuesTableAnnotationComposer,
+      $$QueuesTableCreateCompanionBuilder,
+      $$QueuesTableUpdateCompanionBuilder,
+      (QueueRow, BaseReferences<_$AppDatabase, $QueuesTable, QueueRow>),
+      QueueRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4500,4 +5067,6 @@ class $AppDatabaseManager {
       $$OutboxEntriesTableTableManager(_db, _db.outboxEntries);
   $$RulesTableTableManager get rules =>
       $$RulesTableTableManager(_db, _db.rules);
+  $$QueuesTableTableManager get queues =>
+      $$QueuesTableTableManager(_db, _db.queues);
 }

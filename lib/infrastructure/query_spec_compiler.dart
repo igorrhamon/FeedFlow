@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 
 import '../domain/query_spec.dart';
 import '../domain/rule.dart';
+import '../domain/triage_status.dart';
 import '../domain/work_item.dart';
 import 'db/database.dart';
 
@@ -12,52 +13,46 @@ import 'db/database.dart';
 /// banco de dados. Serve como alternativa otimizada em memória (via
 /// [QueryEvaluator]) para consultas que precisam filtrar/ordenar o banco.
 ///
-/// **Limitações implementadas nesta versão:**
-/// - Suporta `SimpleCondition` com operadores: equals, notEquals, contains,
-///   notContains, in, notIn, startsWith, endsWith, greaterThan, lessThan,
-///   exists, notExists.
-/// - Suporta `CompoundCondition` com combinadores: 'all' (AND), 'any' (OR),
-///   'not' (NOT).
+/// Limitações implementadas nesta versão:
+/// - Suporta SimpleCondition com operadores: equals, notEquals, contains,
+///   notContains, in, notIn, startsWith, endsWith, exists, notExists.
+///   greaterThan/lessThan só são suportados para campos de data
+///   (published, updated, ingestedAt, updatedAt) — para outros campos,
+///   degrada para "sem filtro" (log de warning).
+/// - Suporta CompoundCondition com combinadores: all (AND), any (OR),
+///   not (NOT).
 /// - Campos suportados: status, priority, tags, feedId, providerId, title,
 ///   author, summary, content, url, isRead, isStarred, isSnoozed, published,
 ///   updated, ingestedAt, updatedAt.
-/// - Operadores/campos não suportados no compilador SQL retornam em log de
-///   warning e a query ignora essa parte (comportamento degradado, não erro).
 class QuerySpecCompiler {
   QuerySpecCompiler(this._db);
 
   final AppDatabase _db;
 
-  /// Executa o [QuerySpec] contra o banco, retornando a lista de [WorkItem]s
+  /// Executa o QuerySpec contra o banco, retornando a lista de WorkItems
   /// que casam com o filtro, ordenados conforme especificado.
   Future<List<WorkItem>> run(QuerySpec spec) async {
-    // Constrói a expressão WHERE a partir do filtro
-    Expression<bool>? whereClause;
+    Expression<bool> whereClause;
     try {
       whereClause = _compileCondition(spec.filter);
     } catch (e) {
       developer.log(
-        'QuerySpecCompiler: erro ao compilar filtro — $e',
+        'QuerySpecCompiler: erro ao compilar filtro: $e',
         name: 'feedflow.query_spec_compiler',
         level: 900,
       );
-      // Se falhar, retorna vazio
       return [];
     }
 
-    // Constrói a query sobre work_items
-    var query = _db.select(_db.workItems);
+    final query = _db.select(_db.workItems)..where((_) => whereClause);
 
-    if (whereClause != null) {
-      query = query..where((_) => whereClause);
-    }
-
-    // Aplica ordenação se especificada
     if (spec.sortField != null) {
-      query = _applySortOrder(query, spec.sortField!, spec.sortDescending);
+      final term = _getSortTerm(spec.sortField!, spec.sortDescending);
+      if (term != null) {
+        query.orderBy([(_) => term]);
+      }
     }
 
-    // Executa e mapeia para [WorkItem]
     final rows = await query.get();
     return rows.map(_workItemRowToDomain).toList();
   }
@@ -68,18 +63,17 @@ class QuerySpecCompiler {
     } else if (condition is CompoundCondition) {
       return _compileCompoundCondition(condition);
     }
-    throw StateError('Condição desconhecida: $condition');
+    throw StateError('Condicao desconhecida: $condition');
   }
 
   Expression<bool> _compileSimpleCondition(SimpleCondition cond) {
     final col = _getColumn(cond.field);
     if (col == null) {
       developer.log(
-        'QuerySpecCompiler: campo não suportado — ${cond.field}',
+        'QuerySpecCompiler: campo nao suportado: ${cond.field}',
         name: 'feedflow.query_spec_compiler',
         level: 900,
       );
-      // Retorna "true" (nenhum filtro) se campo não for reconhecido
       return const Constant<bool>(true);
     }
 
@@ -88,13 +82,13 @@ class QuerySpecCompiler {
         return col.equals(cond.value);
 
       case 'notEquals':
-        return col.not().equals(cond.value);
+        return col.equals(cond.value).not();
 
       case 'contains':
         if (col is TextColumn) {
           return col.like('%${cond.value}%');
         }
-        return const Constant<bool>(true); // fallback para tipo incompatível
+        return const Constant<bool>(true);
 
       case 'notContains':
         if (col is TextColumn) {
@@ -127,10 +121,28 @@ class QuerySpecCompiler {
         return const Constant<bool>(true);
 
       case 'greaterThan':
-        return col.isBiggerThan(cond.value);
+        if (col is DateTimeColumn) {
+          final dt = _parseDateTime(cond.value);
+          if (dt != null) return col.isBiggerThanValue(dt);
+        }
+        developer.log(
+          'QuerySpecCompiler: greaterThan so suportado para campos de data nesta versao',
+          name: 'feedflow.query_spec_compiler',
+          level: 900,
+        );
+        return const Constant<bool>(true);
 
       case 'lessThan':
-        return col.isSmallerThan(cond.value);
+        if (col is DateTimeColumn) {
+          final dt = _parseDateTime(cond.value);
+          if (dt != null) return col.isSmallerThanValue(dt);
+        }
+        developer.log(
+          'QuerySpecCompiler: lessThan so suportado para campos de data nesta versao',
+          name: 'feedflow.query_spec_compiler',
+          level: 900,
+        );
+        return const Constant<bool>(true);
 
       case 'exists':
         return col.isNotNull();
@@ -140,12 +152,18 @@ class QuerySpecCompiler {
 
       default:
         developer.log(
-          'QuerySpecCompiler: operador não suportado — ${cond.operator}',
+          'QuerySpecCompiler: operador nao suportado: ${cond.operator}',
           name: 'feedflow.query_spec_compiler',
           level: 900,
         );
         return const Constant<bool>(true);
     }
+  }
+
+  DateTime? _parseDateTime(dynamic value) {
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 
   Expression<bool> _compileCompoundCondition(CompoundCondition cond) {
@@ -157,20 +175,17 @@ class QuerySpecCompiler {
 
     switch (cond.combinator) {
       case 'all':
-        // AND lógico: combina com &
         return compiled.reduce((a, b) => a & b);
 
       case 'any':
-        // OR lógico: combina com |
         return compiled.reduce((a, b) => a | b);
 
       case 'not':
-        // NOT lógico: nega a primeira sub-condition
         return compiled.first.not();
 
       default:
         developer.log(
-          'QuerySpecCompiler: combinador desconhecido — ${cond.combinator}',
+          'QuerySpecCompiler: combinador desconhecido: ${cond.combinator}',
           name: 'feedflow.query_spec_compiler',
           level: 900,
         );
@@ -178,15 +193,13 @@ class QuerySpecCompiler {
     }
   }
 
-  /// Retorna a coluna drift correspondente ao nome do campo, ou null
-  /// se não for suportada.
   Expression<dynamic>? _getColumn(String field) {
     switch (field) {
       case 'status':
         return _db.workItems.status;
       case 'priority':
         return _db.workItems.priority;
-      case 'tags': // Nota: tags_json é serializado; contains faz match no JSON
+      case 'tags':
         return _db.workItems.tagsJson;
       case 'feedId':
         return _db.workItems.feedId;
@@ -207,7 +220,6 @@ class QuerySpecCompiler {
       case 'isStarred':
         return _db.workItems.isStarred;
       case 'isSnoozed':
-        // isSnoozed é derivado (snoozedUntil != null && isFuture), simulamos como "snoozedUntil IS NOT NULL"
         return _db.workItems.snoozedUntil.isNotNull();
       case 'published':
         return _db.workItems.published;
@@ -222,36 +234,20 @@ class QuerySpecCompiler {
     }
   }
 
-  SelectStatement _applySortOrder(
-    SelectStatement<dynamic, dynamic> query,
-    String sortField,
-    bool descending,
-  ) {
-    final term = _getSortTerm(sortField, descending);
-    if (term == null) {
-      return query;
-    }
-    return query..orderBy([term]);
-  }
-
   OrderingTerm? _getSortTerm(String sortField, bool descending) {
     final col = _getColumn(sortField);
-    if (col == null) {
+    if (col == null || col is! Expression<Comparable<Object>>) {
       developer.log(
-        'QuerySpecCompiler: campo de ordenação não suportado — $sortField',
+        'QuerySpecCompiler: campo de ordenacao nao suportado: $sortField',
         name: 'feedflow.query_spec_compiler',
         level: 900,
       );
       return null;
     }
 
-    return descending
-        ? OrderingTerm.desc(col as Expression<Comparable<dynamic>>)
-        : OrderingTerm.asc(col as Expression<Comparable<dynamic>>);
+    return descending ? OrderingTerm.desc(col) : OrderingTerm.asc(col);
   }
 
-  /// Mapeia [WorkItemRow] para [WorkItem] (reaproveitando o padrão de
-  /// [WorkItemRepositoryDrift]).
   WorkItem _workItemRowToDomain(WorkItemRow row) {
     return WorkItem(
       id: row.id,

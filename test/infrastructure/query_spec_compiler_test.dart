@@ -1,12 +1,12 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:the_old_reader/domain/query_spec.dart';
-import 'package:the_old_reader/domain/rule.dart';
-import 'package:the_old_reader/domain/triage_status.dart';
-import 'package:the_old_reader/domain/work_item.dart';
-import 'package:the_old_reader/infrastructure/db/database.dart';
-import 'package:the_old_reader/infrastructure/query_spec_compiler.dart';
-import 'package:the_old_reader/infrastructure/repositories/work_item_repository_drift.dart';
+import 'package:feedflow/domain/query_spec.dart';
+import 'package:feedflow/domain/rule.dart';
+import 'package:feedflow/domain/triage_status.dart';
+import 'package:feedflow/domain/work_item.dart';
+import 'package:feedflow/infrastructure/db/database.dart';
+import 'package:feedflow/infrastructure/query_spec_compiler.dart';
+import 'package:feedflow/infrastructure/repositories/work_item_repository_drift.dart';
 
 void main() {
   late AppDatabase db;
@@ -53,11 +53,9 @@ void main() {
       final item3 =
           _createTestItem(id: '1:3', title: 'Breaking Again', status: TriageStatus.arquivado);
 
-      await workItemRepo.upsertFromArticles([
-        item1.copyWith(articleId: 'art1'),
-        item2.copyWith(articleId: 'art2'),
-        item3.copyWith(articleId: 'art3'),
-      ], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -77,11 +75,9 @@ void main() {
       final item2 = _createTestItem(id: '1:2', title: 'Old News');
       final item3 = _createTestItem(id: '1:3', title: 'Breaking Again');
 
-      await workItemRepo.upsertFromArticles([
-        item1.copyWith(articleId: 'art1'),
-        item2.copyWith(articleId: 'art2'),
-        item3.copyWith(articleId: 'art3'),
-      ], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -101,11 +97,9 @@ void main() {
       final item2 = _createTestItem(id: '1:2', status: TriageStatus.arquivado);
       final item3 = _createTestItem(id: '1:3', status: TriageStatus.concluido);
 
-      await workItemRepo.upsertFromArticles([
-        item1.copyWith(articleId: 'art1'),
-        item2.copyWith(articleId: 'art2'),
-        item3.copyWith(articleId: 'art3'),
-      ], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -153,7 +147,9 @@ void main() {
         updatedAt: now,
       );
 
-      await workItemRepo.upsertFromArticles([item1, item2, item3], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -202,7 +198,9 @@ void main() {
         updatedAt: now,
       );
 
-      await workItemRepo.upsertFromArticles([item1, item2, item3], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -227,11 +225,9 @@ void main() {
       final item3 =
           _createTestItem(id: '1:3', title: 'Breaking Again', status: TriageStatus.arquivado);
 
-      await workItemRepo.upsertFromArticles([
-        item1.copyWith(articleId: 'art1'),
-        item2.copyWith(articleId: 'art2'),
-        item3.copyWith(articleId: 'art3'),
-      ], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -247,7 +243,6 @@ void main() {
       final sqlResult = await compiler.run(spec);
 
       // Filtra em memória
-      final allItems = await workItemRepo.watchByStatus(TriageStatus.values).first;
       final memoryResult = [item1, item2, item3];
 
       // Ambos devem retornar os mesmos IDs
@@ -265,11 +260,9 @@ void main() {
       final item2 = _createTestItem(id: '1:2', title: 'Old News');
       final item3 = _createTestItem(id: '1:3', title: 'Breaking Again');
 
-      await workItemRepo.upsertFromArticles([
-        item1.copyWith(articleId: 'art1'),
-        item2.copyWith(articleId: 'art2'),
-        item3.copyWith(articleId: 'art3'),
-      ], 'provider');
+      await workItemRepo.save(item1);
+      await workItemRepo.save(item2);
+      await workItemRepo.save(item3);
 
       final spec = QuerySpec(
         filter: const Condition.simple(
@@ -286,7 +279,7 @@ void main() {
 
     test('retorna lista vazia para nenhuma correspondência', () async {
       final item1 = _createTestItem(id: '1:1', status: TriageStatus.novo);
-      await workItemRepo.upsertFromArticles([item1.copyWith(articleId: 'art1')], 'provider');
+      await workItemRepo.save(item1);
 
       final spec = QuerySpec(
         filter: const Condition.simple(

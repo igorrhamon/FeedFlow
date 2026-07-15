@@ -1,10 +1,10 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:the_old_reader/domain/queue.dart';
-import 'package:the_old_reader/domain/query_spec.dart';
-import 'package:the_old_reader/domain/rule.dart';
-import 'package:the_old_reader/infrastructure/db/database.dart';
-import 'package:the_old_reader/infrastructure/repositories/queue_repository_drift.dart';
+import 'package:feedflow/domain/queue.dart';
+import 'package:feedflow/domain/query_spec.dart';
+import 'package:feedflow/domain/rule.dart';
+import 'package:feedflow/infrastructure/db/database.dart';
+import 'package:feedflow/infrastructure/repositories/queue_repository_drift.dart';
 
 void main() {
   late AppDatabase db;
