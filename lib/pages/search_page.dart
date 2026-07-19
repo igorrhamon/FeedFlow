@@ -163,7 +163,7 @@ class _SearchPageState extends State<SearchPage> {
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
           decoration: InputDecoration(
             hintText: 'Buscar artigos...',
-            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7)),
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7)),
             border: InputBorder.none,
           ),
           onSubmitted: _search,

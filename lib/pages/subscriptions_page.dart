@@ -124,7 +124,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage> {
       builder: (ctx) => AlertDialog(
         title: const Text('Atribuir a categoria'),
         content: DropdownButtonFormField<String>(
-          value: selectedCategory,
+          initialValue: selectedCategory,
           decoration: const InputDecoration(
             labelText: 'Categoria',
             border: OutlineInputBorder(),
@@ -154,6 +154,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage> {
         await widget.provider.moveFeed(sub.id, result);
         await _loadSubscriptions();
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao atualizar categoria: $e')),
         );
@@ -193,10 +194,12 @@ class _SubscriptionsPageState extends State<SubscriptionsPage> {
       try {
         await widget.provider.createCategory(result);
         await _loadCategories();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Categoria "$result" criada com sucesso')),
         );
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao criar categoria: $e')),
         );
@@ -284,7 +287,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage> {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
