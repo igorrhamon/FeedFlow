@@ -9,17 +9,16 @@ import '../../domain/llm_provider_id.dart';
 import '../../domain/work_item.dart';
 import 'llm_prompts.dart';
 
-/// Adapter de Anthropic Claude (via Messages API) para enriquecimento de
-/// artigos. Suporta resumo automático sob demanda.
+/// Adapter de OpenRouter (API compatível com o formato de chat completions
+/// da OpenAI) para enriquecimento de artigos.
 ///
-/// Chave de API lida via `flutter_secure_storage` — armazenada e gerenciada
-/// como as demais credenciais de auth do FeedFlow
-/// (ver `lib/services/provider_settings.dart`).
+/// Chave de API lida via `flutter_secure_storage`
+/// (`LlmProviderId.openRouter.credentialKey`).
 ///
 /// Padrão de uso em testes: injetar um `http.Client` customizado
 /// (via `MockClient`) para evitar chamadas de rede reais.
-class LlmAdapter implements Enricher {
-  LlmAdapter({
+class OpenRouterAdapter implements Enricher {
+  OpenRouterAdapter({
     http.Client? httpClient,
     FlutterSecureStorage? secureStorage,
   })  : _httpClient = httpClient ?? http.Client(),
@@ -28,13 +27,12 @@ class LlmAdapter implements Enricher {
   final http.Client _httpClient;
   final FlutterSecureStorage _storage;
 
-  static const String _apiBaseUrl = 'https://api.anthropic.com/v1';
-  static const String _apiVersion = '2024-06-01';
-  static final String _credentialKey = LlmProviderId.anthropic.credentialKey;
-  static const String _model = 'claude-3-5-sonnet-20241022';
+  static const String _apiBaseUrl = 'https://openrouter.ai/api/v1';
+  static final String _credentialKey = LlmProviderId.openRouter.credentialKey;
+  static const String _model = 'openai/gpt-4o-mini';
 
   @override
-  String get id => LlmProviderId.anthropic.id;
+  String get id => LlmProviderId.openRouter.id;
 
   @override
   Set<EnrichmentType> get capabilities => {
@@ -51,11 +49,7 @@ class LlmAdapter implements Enricher {
 
     switch (req.type) {
       case EnrichmentType.summary:
-        return _run(
-          item,
-          type: EnrichmentType.summary,
-          prompt: summaryPrompt,
-        );
+        return _run(item, type: EnrichmentType.summary, prompt: summaryPrompt);
       case EnrichmentType.translation:
         final targetLanguage = req.targetLanguage;
         if (targetLanguage == null || targetLanguage.isEmpty) {
@@ -88,7 +82,7 @@ class LlmAdapter implements Enricher {
     final apiKey = await _storage.read(key: _credentialKey);
     if (apiKey == null || apiKey.isEmpty) {
       throw Exception(
-          'Anthropic API key not configured. Set it via secure storage.');
+          'OpenRouter API key not configured. Set it via secure storage.');
     }
 
     final content = item.content ?? item.summary ?? item.title;
@@ -98,7 +92,6 @@ class LlmAdapter implements Enricher {
 
     final requestBody = {
       'model': _model,
-      'max_tokens': 300,
       'messages': [
         {
           'role': 'user',
@@ -109,11 +102,10 @@ class LlmAdapter implements Enricher {
 
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_apiBaseUrl/messages'),
+        Uri.parse('$_apiBaseUrl/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': _apiVersion,
+          'Authorization': 'Bearer $apiKey',
         },
         body: jsonEncode(requestBody),
       );
@@ -125,20 +117,19 @@ class LlmAdapter implements Enricher {
       }
 
       final responseData = jsonDecode(response.body);
-      final contentList = responseData['content'] as List<dynamic>?;
-      final resultText = (contentList != null && contentList.isNotEmpty)
-          ? contentList.first['text'] as String?
-          : null;
+      final choices = responseData['choices'] as List<dynamic>?;
+      String? resultText;
+      if (choices != null && choices.isNotEmpty) {
+        final message = choices.first['message'] as Map<String, dynamic>?;
+        resultText = message?['content'] as String?;
+      }
 
       if (resultText == null || resultText.isEmpty) {
-        throw Exception('Empty response from Anthropic API');
+        throw Exception('Empty response from OpenRouter API');
       }
 
       final usage = responseData['usage'] as Map<String, dynamic>?;
-      final tokensUsed = usage == null
-          ? null
-          : ((usage['input_tokens'] as int? ?? 0) +
-              (usage['output_tokens'] as int? ?? 0));
+      final tokensUsed = usage == null ? null : usage['total_tokens'] as int?;
 
       return Enrichment(
         workItemId: item.id,

@@ -11,7 +11,7 @@ import '../../domain/repositories/queue_repository.dart';
 import '../../domain/repositories/rule_repository.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
-import '../llm/llm_adapter.dart';
+import '../llm/llm_enricher_router.dart';
 import '../repositories/enrichment_repository_drift.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
 import '../repositories/outbox_repository_drift.dart';
@@ -104,10 +104,13 @@ class DatabaseProvider {
     return _enrichmentRepository ??= EnrichmentRepositoryDrift(_database!);
   }
 
-  /// Enricher de IA usado pelas ações de enriquecimento (WS-13). Web
-  /// segue indisponível — sem persistência local para guardar o resultado.
+  /// Enricher de IA usado pelas ações de enriquecimento (WS-13). Delega ao
+  /// provedor ativo (`LlmSettings`/`lib/pages/llm_settings_page.dart`) a
+  /// cada chamada — trocar de provedor na tela de configurações tem efeito
+  /// imediato, sem reiniciar o app. Web segue indisponível — sem
+  /// persistência local para guardar o resultado.
   static Enricher? get enricher {
     if (kIsWeb) return null;
-    return _enricher ??= LlmAdapter();
+    return _enricher ??= LlmEnricherRouter();
   }
 }

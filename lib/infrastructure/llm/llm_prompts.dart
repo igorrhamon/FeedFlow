@@ -1,0 +1,33 @@
+/// Prompts compartilhados pelos adapters de LLM (Anthropic, OpenRouter,
+/// Google AI Studio) — mesmo texto para os 3 provedores, extraído aqui para
+/// não triplicar a string entre `llm_adapter.dart`, `openrouter_adapter.dart`
+/// e `google_ai_studio_adapter.dart`.
+library;
+
+String summaryPrompt(String content) =>
+    '''Por favor, resuma o seguinte texto em 2-3 frases concisas e bem estruturadas.
+Mantenha os pontos-chave e não adicione informações que não estejam no texto original.
+
+Texto:
+$content
+
+Resumo:''';
+
+String translationPrompt(String content, String targetLanguage) =>
+    '''Traduza o seguinte texto para o idioma "$targetLanguage".
+Preserve o sentido original e não adicione comentários fora da tradução.
+
+Texto:
+$content
+
+Tradução:''';
+
+String classificationPrompt(String content) =>
+    '''Classifique o texto abaixo com uma ou mais categorias curtas
+(ex.: tecnologia, política, esporte, economia), separadas por vírgula.
+Responda apenas com as categorias, sem explicações.
+
+Texto:
+$content
+
+Categorias:''';
