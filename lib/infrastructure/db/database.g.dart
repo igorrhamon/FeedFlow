@@ -1350,7 +1350,8 @@ class WorkItemEvent extends DataClass implements Insertable<WorkItemEvent> {
   final String workItemId;
   final DateTime timestamp;
 
-  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched | ingested
+  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched
+  /// | ingested | workflowCompleted
   final String type;
 
   /// user | rule | sync
@@ -1640,6 +1641,39 @@ class $EnrichmentsTable extends Enrichments
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _languageMeta = const VerificationMeta(
+    'language',
+  );
+  @override
+  late final GeneratedColumn<String> language = GeneratedColumn<String>(
+    'language',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tokensUsedMeta = const VerificationMeta(
+    'tokensUsed',
+  );
+  @override
+  late final GeneratedColumn<int> tokensUsed = GeneratedColumn<int>(
+    'tokens_used',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _costEstimateMeta = const VerificationMeta(
+    'costEstimate',
+  );
+  @override
+  late final GeneratedColumn<double> costEstimate = GeneratedColumn<double>(
+    'cost_estimate',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1648,6 +1682,9 @@ class $EnrichmentsTable extends Enrichments
     content,
     model,
     createdAt,
+    language,
+    tokensUsed,
+    costEstimate,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1705,6 +1742,27 @@ class $EnrichmentsTable extends Enrichments
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
+      );
+    }
+    if (data.containsKey('tokens_used')) {
+      context.handle(
+        _tokensUsedMeta,
+        tokensUsed.isAcceptableOrUnknown(data['tokens_used']!, _tokensUsedMeta),
+      );
+    }
+    if (data.containsKey('cost_estimate')) {
+      context.handle(
+        _costEstimateMeta,
+        costEstimate.isAcceptableOrUnknown(
+          data['cost_estimate']!,
+          _costEstimateMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1743,6 +1801,18 @@ class $EnrichmentsTable extends Enrichments
             DriftSqlType.dateTime,
             data['${effectivePrefix}created_at'],
           )!,
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      ),
+      tokensUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tokens_used'],
+      ),
+      costEstimate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cost_estimate'],
+      ),
     );
   }
 
@@ -1761,6 +1831,16 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
   final String content;
   final String? model;
   final DateTime createdAt;
+
+  /// Idioma do conteúdo gerado (ex.: 'pt', 'en'), usado sobretudo por
+  /// enriquecimentos de tradução. Adicionado na WS-13 (schemaVersion 7).
+  final String? language;
+
+  /// Tokens consumidos pela chamada ao LLM, para auditoria de custo.
+  final int? tokensUsed;
+
+  /// Custo estimado (USD) da chamada ao LLM.
+  final double? costEstimate;
   const EnrichmentsRow({
     required this.id,
     required this.workItemId,
@@ -1768,6 +1848,9 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
     required this.content,
     this.model,
     required this.createdAt,
+    this.language,
+    this.tokensUsed,
+    this.costEstimate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1780,6 +1863,15 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
       map['model'] = Variable<String>(model);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || language != null) {
+      map['language'] = Variable<String>(language);
+    }
+    if (!nullToAbsent || tokensUsed != null) {
+      map['tokens_used'] = Variable<int>(tokensUsed);
+    }
+    if (!nullToAbsent || costEstimate != null) {
+      map['cost_estimate'] = Variable<double>(costEstimate);
+    }
     return map;
   }
 
@@ -1792,6 +1884,18 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
       model:
           model == null && nullToAbsent ? const Value.absent() : Value(model),
       createdAt: Value(createdAt),
+      language:
+          language == null && nullToAbsent
+              ? const Value.absent()
+              : Value(language),
+      tokensUsed:
+          tokensUsed == null && nullToAbsent
+              ? const Value.absent()
+              : Value(tokensUsed),
+      costEstimate:
+          costEstimate == null && nullToAbsent
+              ? const Value.absent()
+              : Value(costEstimate),
     );
   }
 
@@ -1807,6 +1911,9 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
       content: serializer.fromJson<String>(json['content']),
       model: serializer.fromJson<String?>(json['model']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      language: serializer.fromJson<String?>(json['language']),
+      tokensUsed: serializer.fromJson<int?>(json['tokensUsed']),
+      costEstimate: serializer.fromJson<double?>(json['costEstimate']),
     );
   }
   @override
@@ -1819,6 +1926,9 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
       'content': serializer.toJson<String>(content),
       'model': serializer.toJson<String?>(model),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'language': serializer.toJson<String?>(language),
+      'tokensUsed': serializer.toJson<int?>(tokensUsed),
+      'costEstimate': serializer.toJson<double?>(costEstimate),
     };
   }
 
@@ -1829,6 +1939,9 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
     String? content,
     Value<String?> model = const Value.absent(),
     DateTime? createdAt,
+    Value<String?> language = const Value.absent(),
+    Value<int?> tokensUsed = const Value.absent(),
+    Value<double?> costEstimate = const Value.absent(),
   }) => EnrichmentsRow(
     id: id ?? this.id,
     workItemId: workItemId ?? this.workItemId,
@@ -1836,6 +1949,9 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
     content: content ?? this.content,
     model: model.present ? model.value : this.model,
     createdAt: createdAt ?? this.createdAt,
+    language: language.present ? language.value : this.language,
+    tokensUsed: tokensUsed.present ? tokensUsed.value : this.tokensUsed,
+    costEstimate: costEstimate.present ? costEstimate.value : this.costEstimate,
   );
   EnrichmentsRow copyWithCompanion(EnrichmentsCompanion data) {
     return EnrichmentsRow(
@@ -1846,6 +1962,13 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
       content: data.content.present ? data.content.value : this.content,
       model: data.model.present ? data.model.value : this.model,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      language: data.language.present ? data.language.value : this.language,
+      tokensUsed:
+          data.tokensUsed.present ? data.tokensUsed.value : this.tokensUsed,
+      costEstimate:
+          data.costEstimate.present
+              ? data.costEstimate.value
+              : this.costEstimate,
     );
   }
 
@@ -1857,14 +1980,26 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
           ..write('type: $type, ')
           ..write('content: $content, ')
           ..write('model: $model, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('language: $language, ')
+          ..write('tokensUsed: $tokensUsed, ')
+          ..write('costEstimate: $costEstimate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, workItemId, type, content, model, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    workItemId,
+    type,
+    content,
+    model,
+    createdAt,
+    language,
+    tokensUsed,
+    costEstimate,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1874,7 +2009,10 @@ class EnrichmentsRow extends DataClass implements Insertable<EnrichmentsRow> {
           other.type == this.type &&
           other.content == this.content &&
           other.model == this.model &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.language == this.language &&
+          other.tokensUsed == this.tokensUsed &&
+          other.costEstimate == this.costEstimate);
 }
 
 class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
@@ -1884,6 +2022,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
   final Value<String> content;
   final Value<String?> model;
   final Value<DateTime> createdAt;
+  final Value<String?> language;
+  final Value<int?> tokensUsed;
+  final Value<double?> costEstimate;
   const EnrichmentsCompanion({
     this.id = const Value.absent(),
     this.workItemId = const Value.absent(),
@@ -1891,6 +2032,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
     this.content = const Value.absent(),
     this.model = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.language = const Value.absent(),
+    this.tokensUsed = const Value.absent(),
+    this.costEstimate = const Value.absent(),
   });
   EnrichmentsCompanion.insert({
     this.id = const Value.absent(),
@@ -1899,6 +2043,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
     required String content,
     this.model = const Value.absent(),
     required DateTime createdAt,
+    this.language = const Value.absent(),
+    this.tokensUsed = const Value.absent(),
+    this.costEstimate = const Value.absent(),
   }) : workItemId = Value(workItemId),
        type = Value(type),
        content = Value(content),
@@ -1910,6 +2057,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
     Expression<String>? content,
     Expression<String>? model,
     Expression<DateTime>? createdAt,
+    Expression<String>? language,
+    Expression<int>? tokensUsed,
+    Expression<double>? costEstimate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1918,6 +2068,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
       if (content != null) 'content': content,
       if (model != null) 'model': model,
       if (createdAt != null) 'created_at': createdAt,
+      if (language != null) 'language': language,
+      if (tokensUsed != null) 'tokens_used': tokensUsed,
+      if (costEstimate != null) 'cost_estimate': costEstimate,
     });
   }
 
@@ -1928,6 +2081,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
     Value<String>? content,
     Value<String?>? model,
     Value<DateTime>? createdAt,
+    Value<String?>? language,
+    Value<int?>? tokensUsed,
+    Value<double?>? costEstimate,
   }) {
     return EnrichmentsCompanion(
       id: id ?? this.id,
@@ -1936,6 +2092,9 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
       content: content ?? this.content,
       model: model ?? this.model,
       createdAt: createdAt ?? this.createdAt,
+      language: language ?? this.language,
+      tokensUsed: tokensUsed ?? this.tokensUsed,
+      costEstimate: costEstimate ?? this.costEstimate,
     );
   }
 
@@ -1960,6 +2119,15 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (language.present) {
+      map['language'] = Variable<String>(language.value);
+    }
+    if (tokensUsed.present) {
+      map['tokens_used'] = Variable<int>(tokensUsed.value);
+    }
+    if (costEstimate.present) {
+      map['cost_estimate'] = Variable<double>(costEstimate.value);
+    }
     return map;
   }
 
@@ -1971,7 +2139,10 @@ class EnrichmentsCompanion extends UpdateCompanion<EnrichmentsRow> {
           ..write('type: $type, ')
           ..write('content: $content, ')
           ..write('model: $model, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('language: $language, ')
+          ..write('tokensUsed: $tokensUsed, ')
+          ..write('costEstimate: $costEstimate')
           ..write(')'))
         .toString();
   }
@@ -4233,6 +4404,9 @@ typedef $$EnrichmentsTableCreateCompanionBuilder =
       required String content,
       Value<String?> model,
       required DateTime createdAt,
+      Value<String?> language,
+      Value<int?> tokensUsed,
+      Value<double?> costEstimate,
     });
 typedef $$EnrichmentsTableUpdateCompanionBuilder =
     EnrichmentsCompanion Function({
@@ -4242,6 +4416,9 @@ typedef $$EnrichmentsTableUpdateCompanionBuilder =
       Value<String> content,
       Value<String?> model,
       Value<DateTime> createdAt,
+      Value<String?> language,
+      Value<int?> tokensUsed,
+      Value<double?> costEstimate,
     });
 
 class $$EnrichmentsTableFilterComposer
@@ -4280,6 +4457,21 @@ class $$EnrichmentsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tokensUsed => $composableBuilder(
+    column: $table.tokensUsed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get costEstimate => $composableBuilder(
+    column: $table.costEstimate,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4322,6 +4514,21 @@ class $$EnrichmentsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tokensUsed => $composableBuilder(
+    column: $table.tokensUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get costEstimate => $composableBuilder(
+    column: $table.costEstimate,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EnrichmentsTableAnnotationComposer
@@ -4352,6 +4559,19 @@ class $$EnrichmentsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+
+  GeneratedColumn<int> get tokensUsed => $composableBuilder(
+    column: $table.tokensUsed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get costEstimate => $composableBuilder(
+    column: $table.costEstimate,
+    builder: (column) => column,
+  );
 }
 
 class $$EnrichmentsTableTableManager
@@ -4392,6 +4612,9 @@ class $$EnrichmentsTableTableManager
                 Value<String> content = const Value.absent(),
                 Value<String?> model = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> language = const Value.absent(),
+                Value<int?> tokensUsed = const Value.absent(),
+                Value<double?> costEstimate = const Value.absent(),
               }) => EnrichmentsCompanion(
                 id: id,
                 workItemId: workItemId,
@@ -4399,6 +4622,9 @@ class $$EnrichmentsTableTableManager
                 content: content,
                 model: model,
                 createdAt: createdAt,
+                language: language,
+                tokensUsed: tokensUsed,
+                costEstimate: costEstimate,
               ),
           createCompanionCallback:
               ({
@@ -4408,6 +4634,9 @@ class $$EnrichmentsTableTableManager
                 required String content,
                 Value<String?> model = const Value.absent(),
                 required DateTime createdAt,
+                Value<String?> language = const Value.absent(),
+                Value<int?> tokensUsed = const Value.absent(),
+                Value<double?> costEstimate = const Value.absent(),
               }) => EnrichmentsCompanion.insert(
                 id: id,
                 workItemId: workItemId,
@@ -4415,6 +4644,9 @@ class $$EnrichmentsTableTableManager
                 content: content,
                 model: model,
                 createdAt: createdAt,
+                language: language,
+                tokensUsed: tokensUsed,
+                costEstimate: costEstimate,
               ),
           withReferenceMapper:
               (p0) =>

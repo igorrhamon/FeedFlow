@@ -3,18 +3,14 @@ import 'dart:convert';
 import 'package:feedflow/domain/enricher.dart';
 import 'package:feedflow/domain/enrichment.dart';
 import 'package:feedflow/domain/work_item.dart';
-import 'package:feedflow/infrastructure/llm/llm_adapter.dart';
+import 'package:feedflow/infrastructure/llm/google_ai_studio_adapter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-/// Testes do [LlmAdapter] seguindo o padrao manual-fake do projeto (sem
-/// mockito/mocktail): `http.testing.MockClient` para o HTTP client e o
-/// `MethodChannel` do `flutter_secure_storage` mockado via
-/// `TestDefaultBinaryMessengerBinding`, igual ao usado em
-/// `test/services/background_sync_test.dart`.
+/// Testes do [GoogleAiStudioAdapter], espelhando test/llm/llm_adapter_test.dart.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -23,7 +19,7 @@ void main() {
   final secureStorageValues = <String, String>{};
 
   const testWorkItemId = 'theoldreader:abc123';
-  const apiKeyStorageKey = 'llm_anthropic_api_key';
+  const apiKeyStorageKey = 'llm_google_ai_studio_api_key';
 
   final testWorkItem = WorkItem(
     id: testWorkItemId,
@@ -64,17 +60,17 @@ void main() {
         .setMockMethodCallHandler(secureStorageChannel, null);
   });
 
-  group('LlmAdapter', () {
+  group('GoogleAiStudioAdapter', () {
     test('id returns the expected identifier', () {
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
-      expect(adapter.id, 'llm-anthropic');
+      expect(adapter.id, 'llm-google-ai-studio');
     });
 
     test('capabilities returns summary, translation and classification', () {
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
@@ -90,12 +86,19 @@ void main() {
     });
 
     test(
-        'enrich with summary capability calls Anthropic API and returns Enrichment',
+        'enrich with summary calls generateContent with key as query param and returns Enrichment',
         () async {
       final mockResponse = {
-        'content': [
-          {'text': 'This article discusses test topics and their importance.'}
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'This article discusses test topics.'}
+              ],
+            },
+          }
         ],
+        'usageMetadata': {'totalTokenCount': 55},
       };
 
       http.Request? capturedRequest;
@@ -106,7 +109,7 @@ void main() {
         return http.Response(jsonEncode(mockResponse), 200);
       });
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );
@@ -115,67 +118,61 @@ void main() {
       final result = await adapter.enrich(testWorkItem, request);
 
       expect(result.type, EnrichmentType.summary);
-      expect(result.content,
-          'This article discusses test topics and their importance.');
-      expect(result.model, 'claude-3-5-sonnet-20241022');
+      expect(result.content, 'This article discusses test topics.');
+      expect(result.model, 'gemini-2.0-flash');
       expect(result.workItemId, testWorkItemId);
+      expect(result.tokensUsed, 55);
 
       expect(capturedRequest, isNotNull);
-      expect(capturedRequest!.url.toString(),
-          'https://api.anthropic.com/v1/messages');
-      expect(capturedRequest!.headers['x-api-key'], 'test-api-key-123');
-      expect(capturedRequest!.headers['anthropic-version'], '2024-06-01');
+      expect(
+        capturedRequest!.url.toString(),
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=test-api-key-123',
+      );
       expect(capturedRequest!.headers['Content-Type'], 'application/json');
+      expect(capturedRequest!.headers.containsKey('Authorization'), isFalse);
 
       final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect(decodedBody['model'], 'claude-3-5-sonnet-20241022');
-      expect(decodedBody['max_tokens'], 300);
-      expect((decodedBody['messages'] as List)[0]['content'],
-          contains(testWorkItem.content));
+      final parts = (decodedBody['contents'] as List)[0]['parts'] as List;
+      expect(parts[0]['text'], contains(testWorkItem.content));
     });
 
     test('enrich uses a custom model configured in secure storage', () async {
-      secureStorageValues['llm_anthropic_model'] = 'claude-3-opus-20240229';
+      secureStorageValues['llm_google_ai_studio_model'] = 'gemini-1.5-pro';
 
       final mockResponse = {
-        'content': [
-          {'text': 'Summary text.'}
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'Summary text.'}
+              ],
+            },
+          }
         ],
       };
 
-      String? capturedBody;
+      http.Request? capturedRequest;
       final client = MockClient((request) async {
-        capturedBody = request.body;
+        capturedRequest = request;
         return http.Response(jsonEncode(mockResponse), 200);
       });
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );
       final request = EnrichmentRequest(type: EnrichmentType.summary);
       final result = await adapter.enrich(testWorkItem, request);
 
-      expect(result.model, 'claude-3-opus-20240229');
-      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect(decodedBody['model'], 'claude-3-opus-20240229');
-    });
-
-    test('enrich with unsupported capability throws StateError', () async {
-      final adapter = LlmAdapter(
-        httpClient: MockClient((request) async => http.Response('', 404)),
-        secureStorage: const FlutterSecureStorage(),
-      );
-      final request = EnrichmentRequest(type: EnrichmentType.entities);
-
+      expect(result.model, 'gemini-1.5-pro');
       expect(
-        () => adapter.enrich(testWorkItem, request),
-        throwsA(isA<StateError>()),
+        capturedRequest!.url.toString(),
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=test-api-key-123',
       );
     });
 
     test('enrich with translation requires targetLanguage', () async {
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
@@ -187,23 +184,23 @@ void main() {
       );
     });
 
-    test(
-        'enrich with translation calls Anthropic API and returns Enrichment with language and tokensUsed',
-        () async {
+    test('enrich with translation sets language field on result', () async {
       final mockResponse = {
-        'content': [
-          {'text': 'Este artigo discute tópicos de teste.'}
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'Este artigo discute topicos de teste.'}
+              ],
+            },
+          }
         ],
-        'usage': {'input_tokens': 40, 'output_tokens': 12},
       };
 
-      String? capturedBody;
-      final client = MockClient((request) async {
-        capturedBody = request.body;
-        return http.Response(jsonEncode(mockResponse), 200);
-      });
+      final client = MockClient(
+          (request) async => http.Response(jsonEncode(mockResponse), 200));
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );
@@ -213,28 +210,26 @@ void main() {
       );
       final result = await adapter.enrich(testWorkItem, request);
 
-      expect(result.type, EnrichmentType.translation);
-      expect(result.content, 'Este artigo discute tópicos de teste.');
       expect(result.language, 'pt');
-      expect(result.tokensUsed, 52);
-
-      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect((decodedBody['messages'] as List)[0]['content'], contains('pt'));
     });
 
-    test(
-        'enrich with classification calls Anthropic API and returns Enrichment',
-        () async {
+    test('enrich with classification returns Enrichment', () async {
       final mockResponse = {
-        'content': [
-          {'text': 'tecnologia, testes'}
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'tecnologia, testes'}
+              ],
+            },
+          }
         ],
       };
 
       final client = MockClient(
           (request) async => http.Response(jsonEncode(mockResponse), 200));
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );
@@ -243,21 +238,23 @@ void main() {
 
       expect(result.type, EnrichmentType.classification);
       expect(result.content, 'tecnologia, testes');
-      expect(result.language, isNull);
     });
 
     test(
         'enrich falls back to summary when content is an empty string (not null)',
         () async {
-      // Feedbin/Miniflux/NewsBlur/TT-RSS/TheOldReader preenchem `content` com
-      // '' (não null) quando o artigo não tem esse campo — regressão da
-      // Exception "Article has no content to enrich" mesmo com summary presente.
       final workItemWithEmptyContent =
           testWorkItem.copyWith(content: '', summary: 'A real summary.');
 
       final mockResponse = {
-        'content': [
-          {'text': 'Summary from real summary field.'}
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'Summary from real summary field.'}
+              ],
+            },
+          }
         ],
       };
 
@@ -267,7 +264,7 @@ void main() {
         return http.Response(jsonEncode(mockResponse), 200);
       });
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );
@@ -275,14 +272,14 @@ void main() {
       await adapter.enrich(workItemWithEmptyContent, request);
 
       final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect((decodedBody['messages'] as List)[0]['content'],
-          contains('A real summary.'));
+      final parts = (decodedBody['contents'] as List)[0]['parts'] as List;
+      expect(parts[0]['text'], contains('A real summary.'));
     });
 
     test('enrich throws exception when API key is not configured', () async {
       secureStorageValues.remove(apiKeyStorageKey);
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
@@ -303,7 +300,7 @@ void main() {
         title: '',
       );
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
@@ -324,7 +321,7 @@ void main() {
       final client = MockClient((request) async =>
           http.Response(jsonEncode(errorResponse), 401));
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );
@@ -337,39 +334,11 @@ void main() {
       );
     });
 
-    test('enrich falls back to summary field when content is null',
-        () async {
-      final workItemWithoutContent = testWorkItem.copyWith(content: null);
-
-      final mockResponse = {
-        'content': [
-          {'text': 'Summary from fallback.'}
-        ],
-      };
-
-      String? capturedBody;
-      final client = MockClient((request) async {
-        capturedBody = request.body;
-        return http.Response(jsonEncode(mockResponse), 200);
-      });
-
-      final adapter = LlmAdapter(
-        httpClient: client,
-        secureStorage: const FlutterSecureStorage(),
-      );
-      final request = EnrichmentRequest(type: EnrichmentType.summary);
-      await adapter.enrich(workItemWithoutContent, request);
-
-      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect((decodedBody['messages'] as List)[0]['content'],
-          contains(workItemWithoutContent.summary!));
-    });
-
     test('enrich handles empty API response gracefully', () async {
-      final client = MockClient(
-          (request) async => http.Response(jsonEncode({'content': []}), 200));
+      final client = MockClient((request) async =>
+          http.Response(jsonEncode({'candidates': []}), 200));
 
-      final adapter = LlmAdapter(
+      final adapter = GoogleAiStudioAdapter(
         httpClient: client,
         secureStorage: const FlutterSecureStorage(),
       );

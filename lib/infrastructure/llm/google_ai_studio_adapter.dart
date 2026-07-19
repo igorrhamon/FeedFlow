@@ -10,17 +10,17 @@ import '../../domain/llm_provider_id.dart';
 import '../../domain/work_item.dart';
 import 'llm_prompts.dart';
 
-/// Adapter de Anthropic Claude (via Messages API) para enriquecimento de
-/// artigos. Suporta resumo automático sob demanda.
+/// Adapter de Google AI Studio (Gemini, via `generateContent`) para
+/// enriquecimento de artigos.
 ///
-/// Chave de API lida via `flutter_secure_storage` — armazenada e gerenciada
-/// como as demais credenciais de auth do FeedFlow
-/// (ver `lib/services/provider_settings.dart`).
+/// Chave de API lida via `flutter_secure_storage`
+/// (`LlmProviderId.googleAiStudio.credentialKey`) e enviada como query
+/// parameter `key` — diferente da Anthropic/OpenRouter, que usam header.
 ///
 /// Padrão de uso em testes: injetar um `http.Client` customizado
 /// (via `MockClient`) para evitar chamadas de rede reais.
-class LlmAdapter implements Enricher {
-  LlmAdapter({
+class GoogleAiStudioAdapter implements Enricher {
+  GoogleAiStudioAdapter({
     http.Client? httpClient,
     FlutterSecureStorage? secureStorage,
   })  : _httpClient = httpClient ?? http.Client(),
@@ -29,14 +29,15 @@ class LlmAdapter implements Enricher {
   final http.Client _httpClient;
   final FlutterSecureStorage _storage;
 
-  static const String _apiBaseUrl = 'https://api.anthropic.com/v1';
-  static const String _apiVersion = '2024-06-01';
-  static final String _credentialKey = LlmProviderId.anthropic.credentialKey;
-  static final String _modelKey = LlmProviderId.anthropic.modelKey;
-  static final String _defaultModel = LlmProviderId.anthropic.defaultModel;
+  static const String _apiBaseUrl =
+      'https://generativelanguage.googleapis.com/v1beta';
+  static final String _credentialKey =
+      LlmProviderId.googleAiStudio.credentialKey;
+  static final String _modelKey = LlmProviderId.googleAiStudio.modelKey;
+  static final String _defaultModel = LlmProviderId.googleAiStudio.defaultModel;
 
   @override
-  String get id => LlmProviderId.anthropic.id;
+  String get id => LlmProviderId.googleAiStudio.id;
 
   @override
   Set<EnrichmentType> get capabilities => {
@@ -53,11 +54,7 @@ class LlmAdapter implements Enricher {
 
     switch (req.type) {
       case EnrichmentType.summary:
-        return _run(
-          item,
-          type: EnrichmentType.summary,
-          prompt: summaryPrompt,
-        );
+        return _run(item, type: EnrichmentType.summary, prompt: summaryPrompt);
       case EnrichmentType.translation:
         final targetLanguage = req.targetLanguage;
         if (targetLanguage == null || targetLanguage.isEmpty) {
@@ -90,7 +87,7 @@ class LlmAdapter implements Enricher {
     final apiKey = await _storage.read(key: _credentialKey);
     if (apiKey == null || apiKey.isEmpty) {
       throw Exception(
-          'Anthropic API key not configured. Set it via secure storage.');
+          'Google AI Studio API key not configured. Set it via secure storage.');
     }
 
     final model = await _storage.read(key: _modelKey);
@@ -104,68 +101,68 @@ class LlmAdapter implements Enricher {
     if (content.isEmpty) {
       developer.log(
         'no content to enrich for workItem=${item.id}',
-        name: 'FeedFlow.LLM.Anthropic',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
       );
       throw Exception('Article has no content to enrich');
     }
 
     final requestBody = {
-      'model': effectiveModel,
-      'max_tokens': 300,
-      'messages': [
+      'contents': [
         {
-          'role': 'user',
-          'content': prompt(content),
+          'parts': [
+            {'text': prompt(content)}
+          ],
         }
       ],
     };
 
     developer.log(
       'enrich start: type=${type.name} model=$effectiveModel workItem=${item.id}',
-      name: 'FeedFlow.LLM.Anthropic',
+      name: 'FeedFlow.LLM.GoogleAiStudio',
     );
 
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_apiBaseUrl/messages'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': _apiVersion,
-        },
+        Uri.parse(
+            '$_apiBaseUrl/models/$effectiveModel:generateContent?key=$apiKey'),
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
 
       developer.log(
         'enrich response: status=${response.statusCode} workItem=${item.id}',
-        name: 'FeedFlow.LLM.Anthropic',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
       );
 
       if (response.statusCode != 200) {
         final errorBody = jsonDecode(response.body);
         developer.log(
           'enrich error body: ${response.body}',
-          name: 'FeedFlow.LLM.Anthropic',
+          name: 'FeedFlow.LLM.GoogleAiStudio',
         );
         throw Exception(
             'API error (${response.statusCode}): ${errorBody['error']?['message'] ?? response.body}');
       }
 
       final responseData = jsonDecode(response.body);
-      final contentList = responseData['content'] as List<dynamic>?;
-      final resultText = (contentList != null && contentList.isNotEmpty)
-          ? contentList.first['text'] as String?
-          : null;
-
-      if (resultText == null || resultText.isEmpty) {
-        throw Exception('Empty response from Anthropic API');
+      final candidates = responseData['candidates'] as List<dynamic>?;
+      List<dynamic>? parts;
+      if (candidates != null && candidates.isNotEmpty) {
+        final content = candidates.first['content'] as Map<String, dynamic>?;
+        parts = content?['parts'] as List<dynamic>?;
+      }
+      String? resultText;
+      if (parts != null && parts.isNotEmpty) {
+        resultText = parts.first['text'] as String?;
       }
 
-      final usage = responseData['usage'] as Map<String, dynamic>?;
-      final tokensUsed = usage == null
-          ? null
-          : ((usage['input_tokens'] as int? ?? 0) +
-              (usage['output_tokens'] as int? ?? 0));
+      if (resultText == null || resultText.isEmpty) {
+        throw Exception('Empty response from Google AI Studio API');
+      }
+
+      final usage = responseData['usageMetadata'] as Map<String, dynamic>?;
+      final tokensUsed =
+          usage == null ? null : usage['totalTokenCount'] as int?;
 
       return Enrichment(
         workItemId: item.id,
@@ -179,13 +176,13 @@ class LlmAdapter implements Enricher {
     } on http.ClientException catch (e) {
       developer.log(
         'network error: ${e.message}',
-        name: 'FeedFlow.LLM.Anthropic',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
       );
       throw Exception('Network error: ${e.message}');
     } catch (e) {
       developer.log(
         'enrich failed: $e',
-        name: 'FeedFlow.LLM.Anthropic',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
         error: e,
       );
       rethrow;

@@ -18,10 +18,9 @@ enum EnrichmentType {
 /// associado a um [WorkItem]. Criado sob demanda por um [Enricher]
 /// e persistido no banco local.
 ///
-/// Schema: `Enrichments` table em `lib/infrastructure/db/tables.dart`.
-/// Colunas futuras (custo/tokens/language) são adiadas para uma fase
-/// posterior; ver `docs/EVOLUTION-PLAN.md` seção 3.3 e WS-13 em
-/// `docs/PARALLEL-EXECUTION-PLAN.md`.
+/// Schema: `Enrichments` table em `lib/infrastructure/db/tables.dart`
+/// (schemaVersion 7 — `language`/`tokensUsed`/`costEstimate` adicionados
+/// na WS-13, ver `docs/PARALLEL-EXECUTION-PLAN.md`).
 @freezed
 class Enrichment with _$Enrichment {
   const factory Enrichment({
@@ -31,5 +30,8 @@ class Enrichment with _$Enrichment {
     required String content,
     String? model,
     required DateTime createdAt,
+    String? language,
+    int? tokensUsed,
+    double? costEstimate,
   }) = _Enrichment;
 }

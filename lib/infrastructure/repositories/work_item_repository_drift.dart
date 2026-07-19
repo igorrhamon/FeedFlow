@@ -173,6 +173,24 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
     return query.watch().map((rows) => rows.map(_toDomain).toList());
   }
 
+  @override
+  Future<void> logEvent(
+    String workItemId, {
+    required String type,
+    required String actor,
+    Map<String, dynamic> payload = const {},
+  }) async {
+    await _db.into(_db.workItemEvents).insert(
+          WorkItemEventsCompanion.insert(
+            workItemId: workItemId,
+            timestamp: DateTime.now(),
+            type: type,
+            actor: actor,
+            payloadJson: Value(jsonEncode(payload)),
+          ),
+        );
+  }
+
   WorkItem _toDomain(WorkItemRow row) {
     final tags = (jsonDecode(row.tagsJson) as List).cast<String>();
     return WorkItem(

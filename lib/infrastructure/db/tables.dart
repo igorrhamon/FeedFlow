@@ -42,7 +42,8 @@ class WorkItemEvents extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get workItemId => text()();
   DateTimeColumn get timestamp => dateTime()();
-  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched | ingested
+  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched
+  /// | ingested | workflowCompleted
   TextColumn get type => text()();
   /// user | rule | sync
   TextColumn get actor => text()();
@@ -65,6 +66,13 @@ class Enrichments extends Table {
   TextColumn get content => text()();
   TextColumn get model => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
+  /// Idioma do conteúdo gerado (ex.: 'pt', 'en'), usado sobretudo por
+  /// enriquecimentos de tradução. Adicionado na WS-13 (schemaVersion 7).
+  TextColumn get language => text().nullable()();
+  /// Tokens consumidos pela chamada ao LLM, para auditoria de custo.
+  IntColumn get tokensUsed => integer().nullable()();
+  /// Custo estimado (USD) da chamada ao LLM.
+  RealColumn get costEstimate => real().nullable()();
 }
 
 /// Fila de push de mutações read/star (Fase 2 — outbox pattern). A UI
@@ -87,8 +95,8 @@ class OutboxEntries extends Table {
 
 /// Regras de automação (Fase 3 — motor de regras). Uma regra é um tripé:
 /// gatilho (onIngested, onStatusChanged, etc.) → árvore de condições →
-/// lista de ações. Execução real de ações é stubada na Fase 3; a partir
-/// da Fase 4 integra-se com ActionRegistry/executor real.
+/// lista de ações. Execução real via ActionRegistry/ActionExecutor
+/// (WS-12, ver `docs/PARALLEL-EXECUTION-PLAN.md`).
 ///
 /// `conditionsJson` e `actionsJson` são serialização JSON que desserializa
 /// para `Condition` e `List<ActionInvocation>` via `jsonDecode` + `fromJson`.

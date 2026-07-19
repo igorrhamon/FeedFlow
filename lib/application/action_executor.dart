@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../domain/events/domain_event.dart';
 import '../domain/rule.dart';
 import '../domain/work_item.dart';
@@ -51,9 +53,17 @@ class ActionExecutor {
     WorkItem item,
     ActionInvocation invocation,
   ) async {
+    developer.log(
+      'execute start: action=${invocation.actionId} workItem=${item.id} params=${invocation.params}',
+      name: 'FeedFlow.ActionExecutor',
+    );
     try {
       final action = ActionRegistry.get(invocation.actionId);
       if (action == null) {
+        developer.log(
+          'action not found: ${invocation.actionId}',
+          name: 'FeedFlow.ActionExecutor',
+        );
         return ActionExecutionResult(
           actionId: invocation.actionId,
           success: false,
@@ -73,11 +83,21 @@ class ActionExecutor {
         ),
       );
 
+      developer.log(
+        'execute success: action=${invocation.actionId} workItem=${item.id}',
+        name: 'FeedFlow.ActionExecutor',
+      );
+
       return ActionExecutionResult(
         actionId: invocation.actionId,
         success: true,
       );
     } catch (e) {
+      developer.log(
+        'execute failed: action=${invocation.actionId} workItem=${item.id}: $e',
+        name: 'FeedFlow.ActionExecutor',
+        error: e,
+      );
       return ActionExecutionResult(
         actionId: invocation.actionId,
         success: false,

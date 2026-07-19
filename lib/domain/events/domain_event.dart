@@ -62,8 +62,8 @@ class SnoozeExpired with _$SnoozeExpired implements DomainEvent {
   }) = _SnoozeExpired;
 }
 
-/// Publicado quando uma ação é executada. Execução real de ações é stubada
-/// nesta rodada — apenas logs/auditoria.
+/// Publicado quando uma ação é executada com sucesso (via [ActionExecutor],
+/// que executa de verdade — não é mais stub, ver WS-12).
 @freezed
 class ActionExecuted with _$ActionExecuted implements DomainEvent {
   const ActionExecuted._();
@@ -77,7 +77,8 @@ class ActionExecuted with _$ActionExecuted implements DomainEvent {
 }
 
 /// Publicado pelo [RuleEngine] quando uma regra é avaliada e suas condições
-/// casam com um item. Execução real da ação é stubada — apenas auditoria.
+/// casam com um item, depois que suas ações já foram executadas de verdade
+/// via [ActionExecutor] (WS-12) — este evento é só para auditoria/undo.
 @freezed
 class RuleMatched with _$RuleMatched implements DomainEvent {
   const RuleMatched._();
@@ -119,6 +120,37 @@ class EnrichmentFailed with _$EnrichmentFailed implements DomainEvent {
     required String error,
     required DateTime timestamp,
   }) = _EnrichmentFailed;
+}
+
+/// Publicado pelo [WorkflowRunner] após cada passo (ação) de um workflow ser
+/// executado, sucesso ou falha — permite acompanhar progresso em tempo real.
+@freezed
+class WorkflowStepExecuted with _$WorkflowStepExecuted implements DomainEvent {
+  const WorkflowStepExecuted._();
+
+  const factory WorkflowStepExecuted({
+    required String workItemId,
+    required String actionId,
+    required int stepIndex,
+    required int totalSteps,
+    required bool success,
+    required DateTime timestamp,
+  }) = _WorkflowStepExecuted;
+}
+
+/// Publicado pelo [WorkflowRunner] quando todos os passos de um workflow
+/// terminam (com ou sem falhas parciais — falha em um passo não interrompe
+/// os demais, mesma política do [ActionExecutor]).
+@freezed
+class WorkflowCompleted with _$WorkflowCompleted implements DomainEvent {
+  const WorkflowCompleted._();
+
+  const factory WorkflowCompleted({
+    required String workItemId,
+    required int totalSteps,
+    required int succeededSteps,
+    required DateTime timestamp,
+  }) = _WorkflowCompleted;
 }
 
 /// Publicado ao fim de um ciclo de sincronização com sucesso.

@@ -7,6 +7,7 @@ import '../providers/feed_provider.dart';
 import '../providers/provider_registry.dart';
 import '../services/provider_settings.dart';
 import '../services/app_settings.dart';
+import 'llm_settings_page.dart';
 import 'rule_editor_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -207,6 +208,20 @@ class _SettingsPageState extends State<SettingsPage> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const RuleEditorPage()),
+          ),
+        ),
+        const Divider(),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+          child: Text('IA / Enriquecimento', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+        ),
+        ListTile(
+          leading: const Icon(Icons.auto_awesome),
+          title: const Text('Provedor de IA'),
+          subtitle: const Text('Escolher provedor (Anthropic/OpenRouter/Google AI Studio) e configurar API key'),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LlmSettingsPage()),
           ),
         ),
         const Divider(),

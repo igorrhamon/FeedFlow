@@ -66,7 +66,7 @@ A local-first layer sitting on top of the provider layer that gives every articl
   - `db/fts5_helpers.dart` — `stripHtmlTags()` / `tagsJsonToPlaintext()` helpers preparing plain text for the FTS5 full-text-search virtual table (WS-17; search over title/content/author/tags, kept in sync via SQL triggers rather than Dart code, per `docs/PARALLEL-EXECUTION-PLAN.md` §WS-17).
   - `db/database_provider.dart` — lazy singleton access point: `DatabaseProvider.repository` / `.outboxRepository` / `.searchRepository` / `.ruleRepository` / `.syncService`. **Every getter returns `null` under `kIsWeb`** — callers must handle the null/no-op case (see `background_sync.dart`'s `_ingestArticlesWithFallback` for the expected pattern).
   - `repositories/*_drift.dart` — drift-backed implementations of each `domain/repositories/` interface. `event_emitting_work_item_repository.dart` is a decorator around `WorkItemRepositoryDrift` that publishes `ArticleIngested`/`StatusChanged` on every mutation — this decorator (not the raw drift repo) is what `DatabaseProvider.repository` actually returns.
-  - `llm/llm_adapter.dart` — `Enricher` implementation calling the Anthropic Messages API (currently `claude-3-5-sonnet-20241022`) to summarize articles; API key stored via `flutter_secure_storage` under key `llm_anthropic_api_key`. Only `EnrichmentType.summary` is implemented so far.
+  - `llm/llm_adapter.dart` / `llm/openrouter_adapter.dart` / `llm/google_ai_studio_adapter.dart` — three `Enricher` implementations (Anthropic Claude, OpenRouter, Google AI Studio/Gemini), all supporting `summary`/`translation`/`classification`. Each has its own API key in `flutter_secure_storage` (`LlmProviderId.*.credentialKey`, e.g. `llm_anthropic_api_key`). `llm/llm_enricher_router.dart` (`LlmEnricherRouter`) is what `DatabaseProvider.enricher` actually returns — it re-resolves the active provider (`lib/services/llm_settings.dart`) on every `enrich()` call, so switching provider in `lib/pages/llm_settings_page.dart` (Settings → "Provedor de IA") takes effect without restarting the app. `llm/llm_prompts.dart` holds the shared prompt templates.
 
 - **UI entry points**: `lib/pages/inbox_page.dart` (4th bottom-nav tab; triage queue, status/snooze actions) and `lib/pages/rule_editor_page.dart` (linked from Settings, not its own tab; CRUD for rules plus a dry-run preview that evaluates a rule's condition against real sampled `WorkItem`s before saving — MVP only supports simple, non-composite conditions via the form).
 
@@ -160,15 +160,18 @@ lib/
 ├── application/                     # Use cases: rule_engine, condition_evaluator, event_bus, sync_service,
 │   │                                 # action_registry, action_executor, snooze_use_case
 │   ├── actions/                     # ArticleAction impls: add_tag, archive, complete, copy_link, share,
-│   │                                 # snooze, toggle_star, webhook, notion_export, obsidian_export
+│   │                                 # snooze, toggle_star, webhook, notion_export, obsidian_export,
+│   │                                 # summarize, translate, classify
 │   └── integrations/                # webhook_integration, notion_integration, obsidian_integration
 ├── infrastructure/
 │   ├── db/                          # database.dart, tables.dart (drift schema), database_provider.dart,
 │   │                                 # fts5_helpers.dart
 │   ├── repositories/                # *_drift.dart impls + event_emitting_work_item_repository.dart (decorator)
-│   └── llm/llm_adapter.dart         # Enricher impl calling Anthropic Messages API
+│   └── llm/                         # llm_adapter (Anthropic), openrouter_adapter, google_ai_studio_adapter,
+│                                     # llm_enricher_router (delegates to active provider), llm_prompts
 ├── services/
 │   ├── provider_settings.dart       # Encrypted per-provider credential/settings storage
+│   ├── llm_settings.dart            # Active LLM provider (LlmProviderId) persistence
 │   ├── old_reader_api.dart          # Legacy API (TheOldReaderProvider)
 │   ├── background_sync.dart         # Android background sync (calls SyncService.ingest/flushOutbox)
 │   └── background_sync_scheduler.dart
@@ -176,7 +179,8 @@ lib/
 └── pages/                           # login_page, splash_screen, login_screen, home_page,
                                       # inbox_page (triage queue), feed_articles_page, article_page,
                                       # favorites_page, folders_page, folder_feeds_page, add_feed_page,
-                                      # subscriptions_page, search_page, settings_page, rule_editor_page
+                                      # subscriptions_page, search_page, settings_page, rule_editor_page,
+                                      # llm_settings_page
 
 proxy/           # proxy.js, proxy-debug.js, config.json, test-quickadd.js — web CORS only
 test/            # models/, providers/{feedly,inoreader}/, domain/, application/{,actions}/, infrastructure/,

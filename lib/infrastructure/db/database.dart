@@ -19,7 +19,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -52,6 +52,13 @@ class AppDatabase extends _$AppDatabase {
         if (from < 6) {
           await m.addColumn(rules, rules.intervalMinutes);
           await m.addColumn(rules, rules.lastRunAt);
+        }
+        // v6 -> v7: enriquecimento como ação (WS-13) passou a registrar
+        // idioma/tokens/custo de cada chamada ao LLM.
+        if (from < 7) {
+          await m.addColumn(enrichments, enrichments.language);
+          await m.addColumn(enrichments, enrichments.tokensUsed);
+          await m.addColumn(enrichments, enrichments.costEstimate);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar

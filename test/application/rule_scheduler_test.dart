@@ -6,7 +6,6 @@ import 'package:feedflow/application/event_bus.dart';
 import 'package:feedflow/application/rule_scheduler.dart';
 import 'package:feedflow/domain/article_action.dart';
 import 'package:feedflow/domain/rule.dart';
-import 'package:feedflow/domain/triage_status.dart';
 import 'package:feedflow/domain/work_item.dart';
 import 'package:feedflow/infrastructure/db/database.dart';
 import 'package:feedflow/infrastructure/repositories/rule_repository_drift.dart';

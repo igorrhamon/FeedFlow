@@ -53,13 +53,15 @@ O objetivo deste documento é dividir o restante (fim da Fase 2 + Fases 3, 4 e 5
 
 | WS | Escopo | Dependência real |
 |---|---|---|
-| **WS-11** Bottom-sheet/swipe reais | `inbox_page.dart` passa a listar `ActionRegistry.getAvailableActions(item)` em vez de chamadas diretas | WS-8 |
+| **WS-11** Bottom-sheet/swipe reais | `inbox_page.dart` passa a listar ações via `ActionRegistry.getAvailable()`/`ActionExecutor.execute()` em vez de chamadas diretas a `changeStatus`/`SnoozeUseCase`. **Concluído** — implementado em commit `051de60` (branch `worktree-ws11-inbox-actions`), mergeado nesta onda em `f153a9f` | WS-8 |
 | **WS-12** RuleEngine ↔ ActionRegistry real | `rule_engine.dart` troca stub por `ActionExecutor.executeAll(...)`; `DatabaseProvider.ruleEngine` instancia o `RuleEngine` (com `ActionExecutor` real) e `main.dart` força a criação no boot, após `initializeActions`. **Concluído** — commit `10b2ee9` / PR #25. Pendente: `RuleMatched` ainda não carrega payload dedicado para undo (ver WS-16) | WS-5 + WS-8 |
-| **WS-13** Enricher como ação | `summarize_action.dart`/`translate_action.dart`/`classify_action.dart`; **aqui** faz a migração de schema adiada em WS-6 (`language`/`tokensUsed`/`costEstimate` em `Enrichments`) — dona do schema desta onda | WS-6 + WS-8 |
-| **WS-14** Integrações externas | `obsidian_export_action.dart`/`notion_export_action.dart`/`webhook_action.dart` | só WS-8 — paralelo a WS-13, arquivos distintos |
-| **WS-15** Workflows | `workflow_runner.dart` executa `ActionInvocation` em sequência; progresso via `WorkItemEvents` existente (evitar tabela nova) | WS-5 + WS-8 (não depende de WS-13) |
+| **WS-13** Enricher como ação | `summarize_action.dart`/`translate_action.dart`/`classify_action.dart`; **aqui** faz a migração de schema adiada em WS-6 (`language`/`tokensUsed`/`costEstimate` em `Enrichments`) — dona do schema desta onda. **Concluído** — schemaVersion 6 → 7, `LlmAdapter` ganhou `translation`/`classification` (antes só `summary`), `DatabaseProvider.enricher`/`.enrichmentRepository` novos | WS-6 + WS-8 |
+| **WS-14** Integrações externas | `obsidian_export_action.dart`/`notion_export_action.dart`/`webhook_action.dart` | só WS-8 — paralelo a WS-13, arquivos distintos. **Concluído** — implementado em `4fd0214`/`52a6036` (branch `worktree-ws14-external-integrations`), mergeado nesta onda em `f84d7e8` |
+| **WS-15** Workflows | `workflow_runner.dart` executa `ActionInvocation` em sequência; progresso via `WorkItemEvents` existente (evitar tabela nova). **Concluído** — `WorkflowRunner` publica `WorkflowStepExecuted`/`WorkflowCompleted` no `EventBus` e grava uma linha `workflowCompleted` em `WorkItemEvents` via novo `WorkItemRepository.logEvent` (aditivo) | WS-5 + WS-8 (não depende de WS-13) |
 
-**Ordem de merge**: WS-11 e WS-14 primeiro → WS-12 (**concluído**) → WS-13 (dona do schema) → WS-15 (rebase sobre schema final de WS-13).
+**Ordem de merge**: WS-11 e WS-14 primeiro → WS-12 (**concluído**) → WS-13 (dona do schema) → WS-15 (rebase sobre schema final de WS-13). **Onda 3 completa.**
+
+**Divergências encontradas na execução** (vs. o previsto acima): WS-12 já estava pronto no HEAD desta worktree antes mesmo de WS-11/WS-14 serem trazidos — foi implementado fora de ordem em relação ao plano original, sem prejuízo (não conflitava com nada pendente). WS-11 e WS-14 não foram trabalho novo nesta rodada: já existiam prontos e testados em branches paralelas (`worktree-ws11-inbox-actions`, `worktree-ws14-external-integrations`) e só precisaram ser trazidos via merge (sem conflitos reais — regiões de arquivo distintas em `inbox_page.dart`/`actions_init.dart`).
 
 ## Onda 4 — fecha auditoria/undo
 

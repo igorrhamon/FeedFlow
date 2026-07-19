@@ -51,9 +51,12 @@ Acompanhe seus feeds RSS favoritos com uma interface limpa, rápida e responsiva
 - 🔖 Favoritos (starred) com sincronização
 - 📂 Gerenciamento de assinaturas (adicionar/remover feeds)
 - 📁 Navegação por pastas e categorias
-- 🔍 Busca de artigos
+- 🔍 Busca de artigos (remota + full-text local via FTS5)
 - 🌐 Proxy Node.js embutido para CORS na web
 - 🔒 Credenciais criptografadas via flutter_secure_storage
+- 📥 **Inbox local** com triagem independente do provider (novo/triado/em andamento/concluído/arquivado), fila offline via SQLite (drift)
+- ⚙️ **Automação por regras**: gatilhos (ingestão, mudança de status, manual, agendado) + condições + ações (tag, arquivar, snooze, webhook, exportar para Notion/Obsidian, etc.), com dry-run antes de salvar
+- 🤖 **Enriquecimento por IA**: resumir, traduzir e classificar artigos, com provedor configurável em Configurações → *Provedor de IA* — suporta **Anthropic Claude**, **OpenRouter** e **Google AI Studio (Gemini)**, cada um com sua própria API key
 
 ---
 
@@ -197,6 +200,8 @@ tests/
 └── login.spec.ts                      # Teste E2E Playwright
 ```
 
+> A árvore acima cobre a camada de providers RSS. O app também tem uma camada local-first de triagem/automação/IA (`lib/domain`, `lib/application`, `lib/infrastructure`) — ver [CLAUDE.md](CLAUDE.md) e [ARCHITECTURE.md](ARCHITECTURE.md) para a estrutura completa e atualizada.
+
 ---
 
 ## 🛠️ Stack
@@ -214,6 +219,9 @@ tests/
 | **Persistência** | `shared_preferences` |
 | **Widget** | `home_widget` ^0.7.0 |
 | **OAuth2** | `flutter_web_auth_2` ^4.0.0 |
+| **Banco local** | `drift` (SQLite) — triagem, regras, filas, enriquecimentos, busca FTS5 |
+| **Background sync** | `workmanager` (Android) |
+| **IA / Enriquecimento** | Anthropic Messages API, OpenRouter, Google AI Studio (Gemini) |
 | **Proxy** | Node.js + Express |
 | **Testes E2E** | Playwright |
 

@@ -27,7 +27,11 @@ void main() async {
   initializeProviders();
   final repo = DatabaseProvider.repository;
   if (repo != null) {
-    initializeActions(repo);
+    initializeActions(
+      repo,
+      enricher: DatabaseProvider.enricher,
+      enrichmentRepository: DatabaseProvider.enrichmentRepository,
+    );
     DatabaseProvider.ruleEngine;
   }
   if (Platform.isAndroid) {
