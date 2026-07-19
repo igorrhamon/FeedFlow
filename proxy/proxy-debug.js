@@ -34,12 +34,16 @@ app.get('/', (req, res) => {
   res.send('Proxy de Debug está funcionando!');
 });
 
-// Rota de eco para testar requisições
+// Rota de eco para testar requisições (Authorization header redacted)
 app.all('/echo', (req, res) => {
   try {
+    const safeHeaders = { ...req.headers };
+    if (safeHeaders.authorization) {
+      safeHeaders.authorization = safeHeaders.authorization.substring(0, 20) + '...[REDACTED]';
+    }
     res.json({
       method: req.method,
-      headers: req.headers,
+      headers: safeHeaders,
       query: req.query,
       body: req.body,
       url: req.url

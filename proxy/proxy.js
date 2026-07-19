@@ -122,7 +122,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const app = express();
 let PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: /localhost|127\.0\.0\.1/ }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

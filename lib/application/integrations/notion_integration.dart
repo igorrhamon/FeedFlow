@@ -7,6 +7,7 @@ import 'external_integration.dart';
 class NotionIntegration implements ExternalIntegration {
   static const String _notionApiUrl = 'https://api.notion.com/v1/pages';
   static const String _notionVersion = '2022-06-28';
+  static const _requestTimeout = Duration(seconds: 30);
 
   final http.Client? _client;
 
@@ -28,15 +29,17 @@ class NotionIntegration implements ExternalIntegration {
 
     final client = _client ?? http.Client();
     try {
-      final response = await client.post(
-        Uri.parse(_notionApiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Notion-Version': _notionVersion,
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
+      final response = await client
+          .post(
+            Uri.parse(_notionApiUrl),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Notion-Version': _notionVersion,
+              'Content-Type': 'application/json',
+            },
+            body: body,
+          )
+          .timeout(_requestTimeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw Exception(

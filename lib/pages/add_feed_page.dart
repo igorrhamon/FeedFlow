@@ -96,8 +96,8 @@ class _AddFeedPageState extends State<AddFeedPage> {
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao conectar com a API: $error'),
+        const SnackBar(
+          content: Text('Erro ao conectar com a API. Tente novamente.'),
           backgroundColor: Colors.red,
         ),
       );
