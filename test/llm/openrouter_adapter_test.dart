@@ -115,7 +115,7 @@ void main() {
 
       expect(result.type, EnrichmentType.summary);
       expect(result.content, 'This article discusses test topics.');
-      expect(result.model, 'openai/gpt-4o-mini');
+      expect(result.model, 'tencent/hy3:free');
       expect(result.workItemId, testWorkItemId);
       expect(result.tokensUsed, 42);
 
@@ -127,7 +127,7 @@ void main() {
       expect(capturedRequest!.headers['Content-Type'], 'application/json');
 
       final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect(decodedBody['model'], 'openai/gpt-4o-mini');
+      expect(decodedBody['model'], 'tencent/hy3:free');
       expect((decodedBody['messages'] as List)[0]['content'],
           contains(testWorkItem.content));
     });

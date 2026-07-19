@@ -67,25 +67,28 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      if (_apiKeyController.text.isNotEmpty) {
+      final apiKey = _apiKeyController.text.trim();
+      final model = _modelController.text.trim();
+
+      if (apiKey.isNotEmpty) {
         await _storage.write(
           key: _selectedProvider.credentialKey,
-          value: _apiKeyController.text,
+          value: apiKey,
         );
       }
-      if (_modelController.text.isEmpty) {
+      if (model.isEmpty) {
         await _storage.delete(key: _selectedProvider.modelKey);
       } else {
         await _storage.write(
           key: _selectedProvider.modelKey,
-          value: _modelController.text,
+          value: model,
         );
       }
       await LlmSettings.setActiveProvider(_selectedProvider);
 
       if (!mounted) return;
       setState(() {
-        _hasExistingKey = _hasExistingKey || _apiKeyController.text.isNotEmpty;
+        _hasExistingKey = _hasExistingKey || apiKey.isNotEmpty;
         _apiKeyController.clear();
       });
       ScaffoldMessenger.of(context).showSnackBar(

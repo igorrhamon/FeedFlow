@@ -17,7 +17,9 @@ enum LlmProviderId {
     displayName: 'OpenRouter',
     credentialKey: 'llm_openrouter_api_key',
     modelKey: 'llm_openrouter_model',
-    defaultModel: 'openai/gpt-4o-mini',
+    // Modelo gratuito por padrão — não requer créditos na conta OpenRouter.
+    // Usuários com conta paga podem trocar via o campo "Modelo (opcional)".
+    defaultModel: 'tencent/hy3:free',
   ),
   googleAiStudio(
     id: 'llm-google-ai-studio',
