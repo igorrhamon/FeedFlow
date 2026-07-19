@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import '../application/action_executor.dart';
+import '../application/event_bus.dart';
+import '../application/rule_scheduler.dart';
 import '../infrastructure/db/database_provider.dart';
 import '../models/article.dart';
 import '../providers/feed_provider.dart';
@@ -53,6 +56,10 @@ class BackgroundSync {
       // Tenta reenviar mutações pendentes (read/star feitas offline)
       await _flushOutboxWithFallback(provider);
 
+      // Roda regras de gatilho `schedule` vencidas (ver RuleScheduler) —
+      // independe do provider, opera sobre WorkItems já persistidos localmente.
+      await _runScheduledRulesWithFallback();
+
       return BackgroundSyncOutcome.success;
     } on SocketException {
       return BackgroundSyncOutcome.networkError;
@@ -92,6 +99,25 @@ class BackgroundSync {
     } catch (e) {
       // Log ou ignore: flush falhou, mas não quebra o job de background.
       // Entradas permanecem no outbox para tentar de novo depois.
+    }
+  }
+
+  /// Roda `RuleScheduler.runDue()` com graceful degradation se DB não
+  /// estiver disponível. Erros não derrubam o job de background.
+  static Future<void> _runScheduledRulesWithFallback() async {
+    try {
+      final ruleRepository = DatabaseProvider.ruleRepository;
+      final workItemRepository = DatabaseProvider.repository;
+      if (ruleRepository == null || workItemRepository == null) return;
+
+      final scheduler = RuleScheduler(
+        ruleRepository: ruleRepository,
+        workItemRepository: workItemRepository,
+        actionExecutor: ActionExecutor(eventBus: eventBus),
+      );
+      await scheduler.runDue();
+    } catch (e) {
+      // Log ou ignore: falha ao rodar regras agendadas não quebra o job.
     }
   }
 }

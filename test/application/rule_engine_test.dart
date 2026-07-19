@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:feedflow/application/action_executor.dart';
 import 'package:feedflow/application/event_bus.dart';
 import 'package:feedflow/application/rule_engine.dart';
 import 'package:feedflow/domain/events/domain_event.dart';
@@ -18,6 +19,7 @@ void main() {
   late WorkItemRepository workItemRepo;
   late RuleRepository ruleRepo;
   late EventBus bus;
+  late ActionExecutor executor;
   late RuleEngine engine;
 
   setUp(() {
@@ -27,10 +29,12 @@ void main() {
     // RuleEngine reagir — igual à produção (DatabaseProvider.repository).
     workItemRepo = EventEmittingWorkItemRepository(WorkItemRepositoryDrift(db), bus);
     ruleRepo = RuleRepositoryDrift(db);
+    executor = ActionExecutor(eventBus: bus);
     engine = RuleEngine(
       workItemRepository: workItemRepo,
       ruleRepository: ruleRepo,
       eventBus: bus,
+      actionExecutor: executor,
     );
   });
 

@@ -2536,6 +2536,28 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _intervalMinutesMeta = const VerificationMeta(
+    'intervalMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> intervalMinutes = GeneratedColumn<int>(
+    'interval_minutes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastRunAtMeta = const VerificationMeta(
+    'lastRunAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastRunAt = GeneratedColumn<DateTime>(
+    'last_run_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2546,6 +2568,8 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
     actionsJson,
     stopOnMatch,
     order,
+    intervalMinutes,
+    lastRunAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2628,6 +2652,21 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
     } else if (isInserting) {
       context.missing(_orderMeta);
     }
+    if (data.containsKey('interval_minutes')) {
+      context.handle(
+        _intervalMinutesMeta,
+        intervalMinutes.isAcceptableOrUnknown(
+          data['interval_minutes']!,
+          _intervalMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_run_at')) {
+      context.handle(
+        _lastRunAtMeta,
+        lastRunAt.isAcceptableOrUnknown(data['last_run_at']!, _lastRunAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2677,6 +2716,14 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
             DriftSqlType.int,
             data['${effectivePrefix}order'],
           )!,
+      intervalMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}interval_minutes'],
+      ),
+      lastRunAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_run_at'],
+      ),
     );
   }
 
@@ -2702,6 +2749,12 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
   final String actionsJson;
   final bool stopOnMatch;
   final int order;
+
+  /// Só relevante quando `triggerType == 'schedule'` — ver [RuleScheduler].
+  final int? intervalMinutes;
+
+  /// Última execução de uma regra de schedule — ver [RuleScheduler].
+  final DateTime? lastRunAt;
   const RuleRow({
     required this.id,
     required this.name,
@@ -2711,6 +2764,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     required this.actionsJson,
     required this.stopOnMatch,
     required this.order,
+    this.intervalMinutes,
+    this.lastRunAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2723,6 +2778,12 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     map['actions_json'] = Variable<String>(actionsJson);
     map['stop_on_match'] = Variable<bool>(stopOnMatch);
     map['order'] = Variable<int>(order);
+    if (!nullToAbsent || intervalMinutes != null) {
+      map['interval_minutes'] = Variable<int>(intervalMinutes);
+    }
+    if (!nullToAbsent || lastRunAt != null) {
+      map['last_run_at'] = Variable<DateTime>(lastRunAt);
+    }
     return map;
   }
 
@@ -2736,6 +2797,14 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       actionsJson: Value(actionsJson),
       stopOnMatch: Value(stopOnMatch),
       order: Value(order),
+      intervalMinutes:
+          intervalMinutes == null && nullToAbsent
+              ? const Value.absent()
+              : Value(intervalMinutes),
+      lastRunAt:
+          lastRunAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastRunAt),
     );
   }
 
@@ -2753,6 +2822,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       actionsJson: serializer.fromJson<String>(json['actionsJson']),
       stopOnMatch: serializer.fromJson<bool>(json['stopOnMatch']),
       order: serializer.fromJson<int>(json['order']),
+      intervalMinutes: serializer.fromJson<int?>(json['intervalMinutes']),
+      lastRunAt: serializer.fromJson<DateTime?>(json['lastRunAt']),
     );
   }
   @override
@@ -2767,6 +2838,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       'actionsJson': serializer.toJson<String>(actionsJson),
       'stopOnMatch': serializer.toJson<bool>(stopOnMatch),
       'order': serializer.toJson<int>(order),
+      'intervalMinutes': serializer.toJson<int?>(intervalMinutes),
+      'lastRunAt': serializer.toJson<DateTime?>(lastRunAt),
     };
   }
 
@@ -2779,6 +2852,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     String? actionsJson,
     bool? stopOnMatch,
     int? order,
+    Value<int?> intervalMinutes = const Value.absent(),
+    Value<DateTime?> lastRunAt = const Value.absent(),
   }) => RuleRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2788,6 +2863,9 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     actionsJson: actionsJson ?? this.actionsJson,
     stopOnMatch: stopOnMatch ?? this.stopOnMatch,
     order: order ?? this.order,
+    intervalMinutes:
+        intervalMinutes.present ? intervalMinutes.value : this.intervalMinutes,
+    lastRunAt: lastRunAt.present ? lastRunAt.value : this.lastRunAt,
   );
   RuleRow copyWithCompanion(RulesCompanion data) {
     return RuleRow(
@@ -2805,6 +2883,11 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       stopOnMatch:
           data.stopOnMatch.present ? data.stopOnMatch.value : this.stopOnMatch,
       order: data.order.present ? data.order.value : this.order,
+      intervalMinutes:
+          data.intervalMinutes.present
+              ? data.intervalMinutes.value
+              : this.intervalMinutes,
+      lastRunAt: data.lastRunAt.present ? data.lastRunAt.value : this.lastRunAt,
     );
   }
 
@@ -2818,7 +2901,9 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
           ..write('conditionsJson: $conditionsJson, ')
           ..write('actionsJson: $actionsJson, ')
           ..write('stopOnMatch: $stopOnMatch, ')
-          ..write('order: $order')
+          ..write('order: $order, ')
+          ..write('intervalMinutes: $intervalMinutes, ')
+          ..write('lastRunAt: $lastRunAt')
           ..write(')'))
         .toString();
   }
@@ -2833,6 +2918,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     actionsJson,
     stopOnMatch,
     order,
+    intervalMinutes,
+    lastRunAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2845,7 +2932,9 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
           other.conditionsJson == this.conditionsJson &&
           other.actionsJson == this.actionsJson &&
           other.stopOnMatch == this.stopOnMatch &&
-          other.order == this.order);
+          other.order == this.order &&
+          other.intervalMinutes == this.intervalMinutes &&
+          other.lastRunAt == this.lastRunAt);
 }
 
 class RulesCompanion extends UpdateCompanion<RuleRow> {
@@ -2857,6 +2946,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
   final Value<String> actionsJson;
   final Value<bool> stopOnMatch;
   final Value<int> order;
+  final Value<int?> intervalMinutes;
+  final Value<DateTime?> lastRunAt;
   final Value<int> rowid;
   const RulesCompanion({
     this.id = const Value.absent(),
@@ -2867,6 +2958,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     this.actionsJson = const Value.absent(),
     this.stopOnMatch = const Value.absent(),
     this.order = const Value.absent(),
+    this.intervalMinutes = const Value.absent(),
+    this.lastRunAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RulesCompanion.insert({
@@ -2878,6 +2971,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     required String actionsJson,
     this.stopOnMatch = const Value.absent(),
     required int order,
+    this.intervalMinutes = const Value.absent(),
+    this.lastRunAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2894,6 +2989,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     Expression<String>? actionsJson,
     Expression<bool>? stopOnMatch,
     Expression<int>? order,
+    Expression<int>? intervalMinutes,
+    Expression<DateTime>? lastRunAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2905,6 +3002,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
       if (actionsJson != null) 'actions_json': actionsJson,
       if (stopOnMatch != null) 'stop_on_match': stopOnMatch,
       if (order != null) 'order': order,
+      if (intervalMinutes != null) 'interval_minutes': intervalMinutes,
+      if (lastRunAt != null) 'last_run_at': lastRunAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2918,6 +3017,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     Value<String>? actionsJson,
     Value<bool>? stopOnMatch,
     Value<int>? order,
+    Value<int?>? intervalMinutes,
+    Value<DateTime?>? lastRunAt,
     Value<int>? rowid,
   }) {
     return RulesCompanion(
@@ -2929,6 +3030,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
       actionsJson: actionsJson ?? this.actionsJson,
       stopOnMatch: stopOnMatch ?? this.stopOnMatch,
       order: order ?? this.order,
+      intervalMinutes: intervalMinutes ?? this.intervalMinutes,
+      lastRunAt: lastRunAt ?? this.lastRunAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2960,6 +3063,12 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     if (order.present) {
       map['order'] = Variable<int>(order.value);
     }
+    if (intervalMinutes.present) {
+      map['interval_minutes'] = Variable<int>(intervalMinutes.value);
+    }
+    if (lastRunAt.present) {
+      map['last_run_at'] = Variable<DateTime>(lastRunAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2977,6 +3086,367 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
           ..write('actionsJson: $actionsJson, ')
           ..write('stopOnMatch: $stopOnMatch, ')
           ..write('order: $order, ')
+          ..write('intervalMinutes: $intervalMinutes, ')
+          ..write('lastRunAt: $lastRunAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $QueuesTable extends Queues with TableInfo<$QueuesTable, QueueRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QueuesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _specJsonMeta = const VerificationMeta(
+    'specJson',
+  );
+  @override
+  late final GeneratedColumn<String> specJson = GeneratedColumn<String>(
+    'spec_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _orderMeta = const VerificationMeta('order');
+  @override
+  late final GeneratedColumn<int> order = GeneratedColumn<int>(
+    'order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconNameMeta = const VerificationMeta(
+    'iconName',
+  );
+  @override
+  late final GeneratedColumn<String> iconName = GeneratedColumn<String>(
+    'icon_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, specJson, order, iconName];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'queues';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<QueueRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('spec_json')) {
+      context.handle(
+        _specJsonMeta,
+        specJson.isAcceptableOrUnknown(data['spec_json']!, _specJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_specJsonMeta);
+    }
+    if (data.containsKey('order')) {
+      context.handle(
+        _orderMeta,
+        order.isAcceptableOrUnknown(data['order']!, _orderMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_orderMeta);
+    }
+    if (data.containsKey('icon_name')) {
+      context.handle(
+        _iconNameMeta,
+        iconName.isAcceptableOrUnknown(data['icon_name']!, _iconNameMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  QueueRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QueueRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      specJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}spec_json'],
+          )!,
+      order:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}order'],
+          )!,
+      iconName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_name'],
+      ),
+    );
+  }
+
+  @override
+  $QueuesTable createAlias(String alias) {
+    return $QueuesTable(attachedDatabase, alias);
+  }
+}
+
+class QueueRow extends DataClass implements Insertable<QueueRow> {
+  final String id;
+  final String name;
+
+  /// JSON serializado de QuerySpec — desserializa com `QuerySpec.fromJson`
+  final String specJson;
+  final int order;
+  final String? iconName;
+  const QueueRow({
+    required this.id,
+    required this.name,
+    required this.specJson,
+    required this.order,
+    this.iconName,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['spec_json'] = Variable<String>(specJson);
+    map['order'] = Variable<int>(order);
+    if (!nullToAbsent || iconName != null) {
+      map['icon_name'] = Variable<String>(iconName);
+    }
+    return map;
+  }
+
+  QueuesCompanion toCompanion(bool nullToAbsent) {
+    return QueuesCompanion(
+      id: Value(id),
+      name: Value(name),
+      specJson: Value(specJson),
+      order: Value(order),
+      iconName:
+          iconName == null && nullToAbsent
+              ? const Value.absent()
+              : Value(iconName),
+    );
+  }
+
+  factory QueueRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return QueueRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      specJson: serializer.fromJson<String>(json['specJson']),
+      order: serializer.fromJson<int>(json['order']),
+      iconName: serializer.fromJson<String?>(json['iconName']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'specJson': serializer.toJson<String>(specJson),
+      'order': serializer.toJson<int>(order),
+      'iconName': serializer.toJson<String?>(iconName),
+    };
+  }
+
+  QueueRow copyWith({
+    String? id,
+    String? name,
+    String? specJson,
+    int? order,
+    Value<String?> iconName = const Value.absent(),
+  }) => QueueRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    specJson: specJson ?? this.specJson,
+    order: order ?? this.order,
+    iconName: iconName.present ? iconName.value : this.iconName,
+  );
+  QueueRow copyWithCompanion(QueuesCompanion data) {
+    return QueueRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      specJson: data.specJson.present ? data.specJson.value : this.specJson,
+      order: data.order.present ? data.order.value : this.order,
+      iconName: data.iconName.present ? data.iconName.value : this.iconName,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QueueRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('specJson: $specJson, ')
+          ..write('order: $order, ')
+          ..write('iconName: $iconName')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, specJson, order, iconName);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QueueRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.specJson == this.specJson &&
+          other.order == this.order &&
+          other.iconName == this.iconName);
+}
+
+class QueuesCompanion extends UpdateCompanion<QueueRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> specJson;
+  final Value<int> order;
+  final Value<String?> iconName;
+  final Value<int> rowid;
+  const QueuesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.specJson = const Value.absent(),
+    this.order = const Value.absent(),
+    this.iconName = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  QueuesCompanion.insert({
+    required String id,
+    required String name,
+    required String specJson,
+    required int order,
+    this.iconName = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       specJson = Value(specJson),
+       order = Value(order);
+  static Insertable<QueueRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? specJson,
+    Expression<int>? order,
+    Expression<String>? iconName,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (specJson != null) 'spec_json': specJson,
+      if (order != null) 'order': order,
+      if (iconName != null) 'icon_name': iconName,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  QueuesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? specJson,
+    Value<int>? order,
+    Value<String?>? iconName,
+    Value<int>? rowid,
+  }) {
+    return QueuesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      specJson: specJson ?? this.specJson,
+      order: order ?? this.order,
+      iconName: iconName ?? this.iconName,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (specJson.present) {
+      map['spec_json'] = Variable<String>(specJson.value);
+    }
+    if (order.present) {
+      map['order'] = Variable<int>(order.value);
+    }
+    if (iconName.present) {
+      map['icon_name'] = Variable<String>(iconName.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QueuesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('specJson: $specJson, ')
+          ..write('order: $order, ')
+          ..write('iconName: $iconName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2991,6 +3461,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $EnrichmentsTable enrichments = $EnrichmentsTable(this);
   late final $OutboxEntriesTable outboxEntries = $OutboxEntriesTable(this);
   late final $RulesTable rules = $RulesTable(this);
+  late final $QueuesTable queues = $QueuesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3001,6 +3472,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     enrichments,
     outboxEntries,
     rules,
+    queues,
   ];
 }
 
@@ -4231,6 +4703,8 @@ typedef $$RulesTableCreateCompanionBuilder =
       required String actionsJson,
       Value<bool> stopOnMatch,
       required int order,
+      Value<int?> intervalMinutes,
+      Value<DateTime?> lastRunAt,
       Value<int> rowid,
     });
 typedef $$RulesTableUpdateCompanionBuilder =
@@ -4243,6 +4717,8 @@ typedef $$RulesTableUpdateCompanionBuilder =
       Value<String> actionsJson,
       Value<bool> stopOnMatch,
       Value<int> order,
+      Value<int?> intervalMinutes,
+      Value<DateTime?> lastRunAt,
       Value<int> rowid,
     });
 
@@ -4291,6 +4767,16 @@ class $$RulesTableFilterComposer extends Composer<_$AppDatabase, $RulesTable> {
 
   ColumnFilters<int> get order => $composableBuilder(
     column: $table.order,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastRunAt => $composableBuilder(
+    column: $table.lastRunAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4343,6 +4829,16 @@ class $$RulesTableOrderingComposer
     column: $table.order,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastRunAt => $composableBuilder(
+    column: $table.lastRunAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RulesTableAnnotationComposer
@@ -4385,6 +4881,14 @@ class $$RulesTableAnnotationComposer
 
   GeneratedColumn<int> get order =>
       $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastRunAt =>
+      $composableBuilder(column: $table.lastRunAt, builder: (column) => column);
 }
 
 class $$RulesTableTableManager
@@ -4423,6 +4927,8 @@ class $$RulesTableTableManager
                 Value<String> actionsJson = const Value.absent(),
                 Value<bool> stopOnMatch = const Value.absent(),
                 Value<int> order = const Value.absent(),
+                Value<int?> intervalMinutes = const Value.absent(),
+                Value<DateTime?> lastRunAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RulesCompanion(
                 id: id,
@@ -4433,6 +4939,8 @@ class $$RulesTableTableManager
                 actionsJson: actionsJson,
                 stopOnMatch: stopOnMatch,
                 order: order,
+                intervalMinutes: intervalMinutes,
+                lastRunAt: lastRunAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4445,6 +4953,8 @@ class $$RulesTableTableManager
                 required String actionsJson,
                 Value<bool> stopOnMatch = const Value.absent(),
                 required int order,
+                Value<int?> intervalMinutes = const Value.absent(),
+                Value<DateTime?> lastRunAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RulesCompanion.insert(
                 id: id,
@@ -4455,6 +4965,8 @@ class $$RulesTableTableManager
                 actionsJson: actionsJson,
                 stopOnMatch: stopOnMatch,
                 order: order,
+                intervalMinutes: intervalMinutes,
+                lastRunAt: lastRunAt,
                 rowid: rowid,
               ),
           withReferenceMapper:
@@ -4486,6 +4998,207 @@ typedef $$RulesTableProcessedTableManager =
       RuleRow,
       PrefetchHooks Function()
     >;
+typedef $$QueuesTableCreateCompanionBuilder =
+    QueuesCompanion Function({
+      required String id,
+      required String name,
+      required String specJson,
+      required int order,
+      Value<String?> iconName,
+      Value<int> rowid,
+    });
+typedef $$QueuesTableUpdateCompanionBuilder =
+    QueuesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> specJson,
+      Value<int> order,
+      Value<String?> iconName,
+      Value<int> rowid,
+    });
+
+class $$QueuesTableFilterComposer
+    extends Composer<_$AppDatabase, $QueuesTable> {
+  $$QueuesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get specJson => $composableBuilder(
+    column: $table.specJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconName => $composableBuilder(
+    column: $table.iconName,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$QueuesTableOrderingComposer
+    extends Composer<_$AppDatabase, $QueuesTable> {
+  $$QueuesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get specJson => $composableBuilder(
+    column: $table.specJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconName => $composableBuilder(
+    column: $table.iconName,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$QueuesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $QueuesTable> {
+  $$QueuesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get specJson =>
+      $composableBuilder(column: $table.specJson, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<String> get iconName =>
+      $composableBuilder(column: $table.iconName, builder: (column) => column);
+}
+
+class $$QueuesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $QueuesTable,
+          QueueRow,
+          $$QueuesTableFilterComposer,
+          $$QueuesTableOrderingComposer,
+          $$QueuesTableAnnotationComposer,
+          $$QueuesTableCreateCompanionBuilder,
+          $$QueuesTableUpdateCompanionBuilder,
+          (QueueRow, BaseReferences<_$AppDatabase, $QueuesTable, QueueRow>),
+          QueueRow,
+          PrefetchHooks Function()
+        > {
+  $$QueuesTableTableManager(_$AppDatabase db, $QueuesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$QueuesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$QueuesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$QueuesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> specJson = const Value.absent(),
+                Value<int> order = const Value.absent(),
+                Value<String?> iconName = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => QueuesCompanion(
+                id: id,
+                name: name,
+                specJson: specJson,
+                order: order,
+                iconName: iconName,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String specJson,
+                required int order,
+                Value<String?> iconName = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => QueuesCompanion.insert(
+                id: id,
+                name: name,
+                specJson: specJson,
+                order: order,
+                iconName: iconName,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$QueuesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $QueuesTable,
+      QueueRow,
+      $$QueuesTableFilterComposer,
+      $$QueuesTableOrderingComposer,
+      $$QueuesTableAnnotationComposer,
+      $$QueuesTableCreateCompanionBuilder,
+      $$QueuesTableUpdateCompanionBuilder,
+      (QueueRow, BaseReferences<_$AppDatabase, $QueuesTable, QueueRow>),
+      QueueRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4500,4 +5213,6 @@ class $AppDatabaseManager {
       $$OutboxEntriesTableTableManager(_db, _db.outboxEntries);
   $$RulesTableTableManager get rules =>
       $$RulesTableTableManager(_db, _db.rules);
+  $$QueuesTableTableManager get queues =>
+      $$QueuesTableTableManager(_db, _db.queues);
 }

@@ -8,12 +8,15 @@ import 'providers/provider_registry.dart';
 
 import 'services/background_sync_scheduler.dart';
 import 'services/provider_settings.dart';
+import 'application/actions/actions_init.dart';
+import 'infrastructure/db/database_provider.dart';
 
 import 'pages/login_page.dart';
 import 'pages/splash_screen.dart';
 import 'widget/feed_widget_service.dart';
 import 'pages/favorites_page.dart';
 import 'pages/add_feed_page.dart';
+import 'pages/inbox_page.dart';
 import 'pages/search_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/folders_page.dart';
@@ -22,6 +25,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FeedWidgetService.initialize();
   initializeProviders();
+  final repo = DatabaseProvider.repository;
+  if (repo != null) {
+    initializeActions(repo);
+    DatabaseProvider.ruleEngine;
+  }
   if (Platform.isAndroid) {
     await BackgroundSyncScheduler.initialize();
   }
@@ -282,8 +290,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                       if (mounted) setState(() {});
                     },
                   ),
-                  _drawerItem(context, Icons.bookmark_rounded, 'Favoritos', 1),
-                  _drawerItem(context, Icons.settings_rounded, 'Configurações', 2),
+                  _drawerItem(context, Icons.inbox_rounded, 'Inbox', 1),
+                  _drawerItem(context, Icons.bookmark_rounded, 'Favoritos', 2),
+                  _drawerItem(context, Icons.settings_rounded, 'Configurações', 3),
                 ],
               ),
             )
@@ -302,6 +311,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                     index: _selectedIndex,
                     children: [
                       HomePage(provider: _provider!),
+                      InboxPage(provider: _provider!),
                       FavoritesPage(provider: _provider!),
                       SettingsPage(
                         provider: _provider!,
@@ -355,6 +365,11 @@ class _MainScaffoldState extends State<MainScaffold> {
                   icon: Icon(Icons.rss_feed_outlined),
                   selectedIcon: Icon(Icons.rss_feed_rounded, color: Color(0xFFFF6B2C)),
                   label: 'Feeds',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.inbox_outlined),
+                  selectedIcon: Icon(Icons.inbox_rounded, color: Color(0xFFFF6B2C)),
+                  label: 'Inbox',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.bookmark_border_rounded),

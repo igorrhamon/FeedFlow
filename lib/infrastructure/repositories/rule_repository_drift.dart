@@ -75,6 +75,8 @@ class RuleRepositoryDrift implements RuleRepository {
           .toList(),
       stopOnMatch: row.stopOnMatch,
       order: row.order,
+      intervalMinutes: row.intervalMinutes,
+      lastRunAt: row.lastRunAt,
     );
   }
 
@@ -88,6 +90,8 @@ class RuleRepositoryDrift implements RuleRepository {
       actionsJson: Value(jsonEncode(rule.actions.map((a) => a.toJson()).toList())),
       stopOnMatch: Value(rule.stopOnMatch),
       order: Value(rule.order),
+      intervalMinutes: Value(rule.intervalMinutes),
+      lastRunAt: Value(rule.lastRunAt),
     );
   }
 }

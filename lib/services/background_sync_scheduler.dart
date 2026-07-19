@@ -1,5 +1,7 @@
 import 'package:workmanager/workmanager.dart';
 
+import '../application/actions/actions_init.dart';
+import '../infrastructure/db/database_provider.dart';
 import '../providers/provider_init.dart';
 import '../widget/feed_widget_service.dart';
 import 'background_sync.dart';
@@ -9,6 +11,13 @@ void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     await FeedWidgetService.initialize();
     initializeProviders();
+    // ActionRegistry é estático em memória — precisa ser (re)registrado
+    // neste isolate de background, separado do isolate principal do app
+    // (senão RuleScheduler, via BackgroundSync.run(), não encontra as ações).
+    final repo = DatabaseProvider.repository;
+    if (repo != null) {
+      initializeActions(repo);
+    }
     await BackgroundSync.run();
     return true;
   });
