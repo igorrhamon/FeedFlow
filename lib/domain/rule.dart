@@ -55,7 +55,8 @@ class Condition with _$Condition {
 /// Uma ação a ser executada quando uma regra casa. Referencia um actionId
 /// (ex: 'changePriority', 'addTag', 'markAsRead', 'snooze') e seus parâmetros.
 ///
-/// Execução real das ações é stubada nesta rodada — apenas estrutura de dados.
+/// Executada de verdade via `ActionExecutor.execute()`/`.executeAll()`
+/// (WS-12) e, em sequência, por `WorkflowRunner.run()` (WS-15).
 @freezed
 class ActionInvocation with _$ActionInvocation {
   const factory ActionInvocation({

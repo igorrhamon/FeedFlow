@@ -95,8 +95,8 @@ class OutboxEntries extends Table {
 
 /// Regras de automação (Fase 3 — motor de regras). Uma regra é um tripé:
 /// gatilho (onIngested, onStatusChanged, etc.) → árvore de condições →
-/// lista de ações. Execução real de ações é stubada na Fase 3; a partir
-/// da Fase 4 integra-se com ActionRegistry/executor real.
+/// lista de ações. Execução real via ActionRegistry/ActionExecutor
+/// (WS-12, ver `docs/PARALLEL-EXECUTION-PLAN.md`).
 ///
 /// `conditionsJson` e `actionsJson` são serialização JSON que desserializa
 /// para `Condition` e `List<ActionInvocation>` via `jsonDecode` + `fromJson`.

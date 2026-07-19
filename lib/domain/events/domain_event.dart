@@ -62,8 +62,8 @@ class SnoozeExpired with _$SnoozeExpired implements DomainEvent {
   }) = _SnoozeExpired;
 }
 
-/// Publicado quando uma ação é executada. Execução real de ações é stubada
-/// nesta rodada — apenas logs/auditoria.
+/// Publicado quando uma ação é executada com sucesso (via [ActionExecutor],
+/// que executa de verdade — não é mais stub, ver WS-12).
 @freezed
 class ActionExecuted with _$ActionExecuted implements DomainEvent {
   const ActionExecuted._();
@@ -77,7 +77,8 @@ class ActionExecuted with _$ActionExecuted implements DomainEvent {
 }
 
 /// Publicado pelo [RuleEngine] quando uma regra é avaliada e suas condições
-/// casam com um item. Execução real da ação é stubada — apenas auditoria.
+/// casam com um item, depois que suas ações já foram executadas de verdade
+/// via [ActionExecutor] (WS-12) — este evento é só para auditoria/undo.
 @freezed
 class RuleMatched with _$RuleMatched implements DomainEvent {
   const RuleMatched._();
