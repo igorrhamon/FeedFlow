@@ -124,7 +124,12 @@ class ConditionEvaluator {
     }
   }
 
-  /// Extrai o valor de um campo do [WorkItem] por nome.
+  /// Extrai o valor de um campo do [WorkItem] por nome. Público para
+  /// reutilização fora da avaliação de condições (ex.: ordenação de
+  /// resultados em `QuerySpecCompiler`), mantendo os mesmos nomes de campo
+  /// aceitos por [Condition].
+  dynamic getFieldValue(String field, WorkItem item) => _getFieldValue(field, item);
+
   dynamic _getFieldValue(String field, WorkItem item) {
     switch (field) {
       case 'status':

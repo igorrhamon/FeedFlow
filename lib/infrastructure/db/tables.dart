@@ -111,3 +111,21 @@ class Rules extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Uma fila customizada de itens: nome + `QuerySpec` serializado.
+///
+/// `specJson` desserializa para `QuerySpec` via `jsonDecode` + `fromJson`
+/// (mesmo padrão de `conditionsJson` em [Rules]). `@DataClassName('QueueRow')`
+/// evita colisão com a classe de domínio `Queue`.
+@DataClassName('QueueRow')
+class Queues extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  /// JSON serializado de QuerySpec — desserializa com `QuerySpec.fromJson`
+  TextColumn get specJson => text()();
+  IntColumn get order => integer()();
+  TextColumn get iconName => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

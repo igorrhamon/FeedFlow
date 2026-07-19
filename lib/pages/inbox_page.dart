@@ -7,6 +7,7 @@ import '../domain/work_item.dart';
 import '../infrastructure/db/database_provider.dart';
 import '../providers/feed_provider.dart';
 import 'article_page.dart';
+import 'queue_editor_page.dart';
 
 const _accent = Color(0xFFFF6B2C);
 
@@ -95,19 +96,33 @@ class _InboxPageState extends State<InboxPage> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Wrap(
-            spacing: 8,
-            children: _filterableStatuses.map((status) {
-              final selected = _selectedStatuses.contains(status);
-              return FilterChip(
-                label: Text(_statusLabel(status)),
-                selected: selected,
-                onSelected: (_) => _toggleStatus(status),
-                selectedColor: const Color(0x33FF6B2C),
-                checkmarkColor: _accent,
-              );
-            }).toList(),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Wrap(
+                  spacing: 8,
+                  children: _filterableStatuses.map((status) {
+                    final selected = _selectedStatuses.contains(status);
+                    return FilterChip(
+                      label: Text(_statusLabel(status)),
+                      selected: selected,
+                      onSelected: (_) => _toggleStatus(status),
+                      selectedColor: const Color(0x33FF6B2C),
+                      checkmarkColor: _accent,
+                    );
+                  }).toList(),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.filter_list_rounded),
+                tooltip: 'Filas',
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const QueueEditorPage()),
+                ),
+              ),
+            ],
           ),
         ),
         Expanded(
