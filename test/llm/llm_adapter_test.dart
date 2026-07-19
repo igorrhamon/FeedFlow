@@ -73,13 +73,20 @@ void main() {
       expect(adapter.id, 'llm-anthropic');
     });
 
-    test('capabilities returns summary capability', () {
+    test('capabilities returns summary, translation and classification', () {
       final adapter = LlmAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
-      expect(adapter.capabilities, contains(EnrichmentType.summary));
-      expect(adapter.capabilities, hasLength(1));
+      expect(
+        adapter.capabilities,
+        containsAll([
+          EnrichmentType.summary,
+          EnrichmentType.translation,
+          EnrichmentType.classification,
+        ]),
+      );
+      expect(adapter.capabilities, hasLength(3));
     });
 
     test(
@@ -132,12 +139,84 @@ void main() {
         httpClient: MockClient((request) async => http.Response('', 404)),
         secureStorage: const FlutterSecureStorage(),
       );
-      final request = EnrichmentRequest(type: EnrichmentType.translation);
+      final request = EnrichmentRequest(type: EnrichmentType.entities);
 
       expect(
         () => adapter.enrich(testWorkItem, request),
         throwsA(isA<StateError>()),
       );
+    });
+
+    test('enrich with translation requires targetLanguage', () async {
+      final adapter = LlmAdapter(
+        httpClient: MockClient((request) async => http.Response('', 404)),
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.translation);
+
+      expect(
+        () => adapter.enrich(testWorkItem, request),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test(
+        'enrich with translation calls Anthropic API and returns Enrichment with language and tokensUsed',
+        () async {
+      final mockResponse = {
+        'content': [
+          {'text': 'Este artigo discute tópicos de teste.'}
+        ],
+        'usage': {'input_tokens': 40, 'output_tokens': 12},
+      };
+
+      String? capturedBody;
+      final client = MockClient((request) async {
+        capturedBody = request.body;
+        return http.Response(jsonEncode(mockResponse), 200);
+      });
+
+      final adapter = LlmAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(
+        type: EnrichmentType.translation,
+        targetLanguage: 'pt',
+      );
+      final result = await adapter.enrich(testWorkItem, request);
+
+      expect(result.type, EnrichmentType.translation);
+      expect(result.content, 'Este artigo discute tópicos de teste.');
+      expect(result.language, 'pt');
+      expect(result.tokensUsed, 52);
+
+      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
+      expect((decodedBody['messages'] as List)[0]['content'], contains('pt'));
+    });
+
+    test(
+        'enrich with classification calls Anthropic API and returns Enrichment',
+        () async {
+      final mockResponse = {
+        'content': [
+          {'text': 'tecnologia, testes'}
+        ],
+      };
+
+      final client = MockClient(
+          (request) async => http.Response(jsonEncode(mockResponse), 200));
+
+      final adapter = LlmAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.classification);
+      final result = await adapter.enrich(testWorkItem, request);
+
+      expect(result.type, EnrichmentType.classification);
+      expect(result.content, 'tecnologia, testes');
+      expect(result.language, isNull);
     });
 
     test('enrich throws exception when API key is not configured', () async {

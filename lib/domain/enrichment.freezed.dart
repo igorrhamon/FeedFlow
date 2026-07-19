@@ -23,6 +23,9 @@ mixin _$Enrichment {
   String get content => throw _privateConstructorUsedError;
   String? get model => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
+  String? get language => throw _privateConstructorUsedError;
+  int? get tokensUsed => throw _privateConstructorUsedError;
+  double? get costEstimate => throw _privateConstructorUsedError;
 
   /// Create a copy of Enrichment
   /// with the given fields replaced by the non-null parameter values.
@@ -45,6 +48,9 @@ abstract class $EnrichmentCopyWith<$Res> {
     String content,
     String? model,
     DateTime createdAt,
+    String? language,
+    int? tokensUsed,
+    double? costEstimate,
   });
 }
 
@@ -69,6 +75,9 @@ class _$EnrichmentCopyWithImpl<$Res, $Val extends Enrichment>
     Object? content = null,
     Object? model = freezed,
     Object? createdAt = null,
+    Object? language = freezed,
+    Object? tokensUsed = freezed,
+    Object? costEstimate = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -102,6 +111,21 @@ class _$EnrichmentCopyWithImpl<$Res, $Val extends Enrichment>
                     ? _value.createdAt
                     : createdAt // ignore: cast_nullable_to_non_nullable
                         as DateTime,
+            language:
+                freezed == language
+                    ? _value.language
+                    : language // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            tokensUsed:
+                freezed == tokensUsed
+                    ? _value.tokensUsed
+                    : tokensUsed // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            costEstimate:
+                freezed == costEstimate
+                    ? _value.costEstimate
+                    : costEstimate // ignore: cast_nullable_to_non_nullable
+                        as double?,
           )
           as $Val,
     );
@@ -124,6 +148,9 @@ abstract class _$$EnrichmentImplCopyWith<$Res>
     String content,
     String? model,
     DateTime createdAt,
+    String? language,
+    int? tokensUsed,
+    double? costEstimate,
   });
 }
 
@@ -147,6 +174,9 @@ class __$$EnrichmentImplCopyWithImpl<$Res>
     Object? content = null,
     Object? model = freezed,
     Object? createdAt = null,
+    Object? language = freezed,
+    Object? tokensUsed = freezed,
+    Object? costEstimate = freezed,
   }) {
     return _then(
       _$EnrichmentImpl(
@@ -180,6 +210,21 @@ class __$$EnrichmentImplCopyWithImpl<$Res>
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
                     as DateTime,
+        language:
+            freezed == language
+                ? _value.language
+                : language // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        tokensUsed:
+            freezed == tokensUsed
+                ? _value.tokensUsed
+                : tokensUsed // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        costEstimate:
+            freezed == costEstimate
+                ? _value.costEstimate
+                : costEstimate // ignore: cast_nullable_to_non_nullable
+                    as double?,
       ),
     );
   }
@@ -195,6 +240,9 @@ class _$EnrichmentImpl implements _Enrichment {
     required this.content,
     this.model,
     required this.createdAt,
+    this.language,
+    this.tokensUsed,
+    this.costEstimate,
   });
 
   @override
@@ -209,10 +257,16 @@ class _$EnrichmentImpl implements _Enrichment {
   final String? model;
   @override
   final DateTime createdAt;
+  @override
+  final String? language;
+  @override
+  final int? tokensUsed;
+  @override
+  final double? costEstimate;
 
   @override
   String toString() {
-    return 'Enrichment(id: $id, workItemId: $workItemId, type: $type, content: $content, model: $model, createdAt: $createdAt)';
+    return 'Enrichment(id: $id, workItemId: $workItemId, type: $type, content: $content, model: $model, createdAt: $createdAt, language: $language, tokensUsed: $tokensUsed, costEstimate: $costEstimate)';
   }
 
   @override
@@ -227,12 +281,28 @@ class _$EnrichmentImpl implements _Enrichment {
             (identical(other.content, content) || other.content == content) &&
             (identical(other.model, model) || other.model == model) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.language, language) ||
+                other.language == language) &&
+            (identical(other.tokensUsed, tokensUsed) ||
+                other.tokensUsed == tokensUsed) &&
+            (identical(other.costEstimate, costEstimate) ||
+                other.costEstimate == costEstimate));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, workItemId, type, content, model, createdAt);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    workItemId,
+    type,
+    content,
+    model,
+    createdAt,
+    language,
+    tokensUsed,
+    costEstimate,
+  );
 
   /// Create a copy of Enrichment
   /// with the given fields replaced by the non-null parameter values.
@@ -251,6 +321,9 @@ abstract class _Enrichment implements Enrichment {
     required final String content,
     final String? model,
     required final DateTime createdAt,
+    final String? language,
+    final int? tokensUsed,
+    final double? costEstimate,
   }) = _$EnrichmentImpl;
 
   @override
@@ -265,6 +338,12 @@ abstract class _Enrichment implements Enrichment {
   String? get model;
   @override
   DateTime get createdAt;
+  @override
+  String? get language;
+  @override
+  int? get tokensUsed;
+  @override
+  double? get costEstimate;
 
   /// Create a copy of Enrichment
   /// with the given fields replaced by the non-null parameter values.

@@ -65,6 +65,13 @@ class Enrichments extends Table {
   TextColumn get content => text()();
   TextColumn get model => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
+  /// Idioma do conteúdo gerado (ex.: 'pt', 'en'), usado sobretudo por
+  /// enriquecimentos de tradução. Adicionado na WS-13 (schemaVersion 7).
+  TextColumn get language => text().nullable()();
+  /// Tokens consumidos pela chamada ao LLM, para auditoria de custo.
+  IntColumn get tokensUsed => integer().nullable()();
+  /// Custo estimado (USD) da chamada ao LLM.
+  RealColumn get costEstimate => real().nullable()();
 }
 
 /// Fila de push de mutações read/star (Fase 2 — outbox pattern). A UI

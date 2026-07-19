@@ -4,11 +4,15 @@ import '../../application/action_executor.dart';
 import '../../application/event_bus.dart';
 import '../../application/rule_engine.dart';
 import '../../application/sync_service.dart';
+import '../../domain/enricher.dart';
+import '../../domain/repositories/enrichment_repository.dart';
 import '../../domain/repositories/outbox_repository.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../../domain/repositories/rule_repository.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
+import '../llm/llm_adapter.dart';
+import '../repositories/enrichment_repository_drift.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
 import '../repositories/outbox_repository_drift.dart';
 import '../repositories/queue_repository_drift.dart';
@@ -33,6 +37,8 @@ class DatabaseProvider {
   static SyncService? _syncService;
   static ActionExecutor? _actionExecutor;
   static RuleEngine? _ruleEngine;
+  static EnrichmentRepository? _enrichmentRepository;
+  static Enricher? _enricher;
 
   static WorkItemRepository? get repository {
     if (kIsWeb) return null;
@@ -90,5 +96,18 @@ class DatabaseProvider {
       eventBus: eventBus,
       actionExecutor: executor,
     );
+  }
+
+  static EnrichmentRepository? get enrichmentRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _enrichmentRepository ??= EnrichmentRepositoryDrift(_database!);
+  }
+
+  /// Enricher de IA usado pelas ações de enriquecimento (WS-13). Web
+  /// segue indisponível — sem persistência local para guardar o resultado.
+  static Enricher? get enricher {
+    if (kIsWeb) return null;
+    return _enricher ??= LlmAdapter();
   }
 }

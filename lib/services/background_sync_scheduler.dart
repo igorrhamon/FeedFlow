@@ -16,7 +16,11 @@ void callbackDispatcher() {
     // (senão RuleScheduler, via BackgroundSync.run(), não encontra as ações).
     final repo = DatabaseProvider.repository;
     if (repo != null) {
-      initializeActions(repo);
+      initializeActions(
+        repo,
+        enricher: DatabaseProvider.enricher,
+        enrichmentRepository: DatabaseProvider.enrichmentRepository,
+      );
     }
     await BackgroundSync.run();
     return true;

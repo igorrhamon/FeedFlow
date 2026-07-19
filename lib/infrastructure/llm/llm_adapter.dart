@@ -29,12 +29,17 @@ class LlmAdapter implements Enricher {
   static const String _apiBaseUrl = 'https://api.anthropic.com/v1';
   static const String _apiVersion = '2024-06-01';
   static const String _credentialKey = 'llm_anthropic_api_key';
+  static const String _model = 'claude-3-5-sonnet-20241022';
 
   @override
   String get id => 'llm-anthropic';
 
   @override
-  Set<EnrichmentType> get capabilities => {EnrichmentType.summary};
+  Set<EnrichmentType> get capabilities => {
+        EnrichmentType.summary,
+        EnrichmentType.translation,
+        EnrichmentType.classification,
+      };
 
   @override
   Future<Enrichment> enrich(WorkItem item, EnrichmentRequest req) async {
@@ -44,13 +49,59 @@ class LlmAdapter implements Enricher {
 
     switch (req.type) {
       case EnrichmentType.summary:
-        return _summarize(item);
+        return _run(
+          item,
+          type: EnrichmentType.summary,
+          prompt: (content) => '''Por favor, resuma o seguinte texto em 2-3 frases concisas e bem estruturadas.
+Mantenha os pontos-chave e não adicione informações que não estejam no texto original.
+
+Texto:
+$content
+
+Resumo:''',
+        );
+      case EnrichmentType.translation:
+        final targetLanguage = req.targetLanguage;
+        if (targetLanguage == null || targetLanguage.isEmpty) {
+          throw ArgumentError(
+              'EnrichmentRequest.targetLanguage is required for translation');
+        }
+        return _run(
+          item,
+          type: EnrichmentType.translation,
+          language: targetLanguage,
+          prompt: (content) => '''Traduza o seguinte texto para o idioma "$targetLanguage".
+Preserve o sentido original e não adicione comentários fora da tradução.
+
+Texto:
+$content
+
+Tradução:''',
+        );
+      case EnrichmentType.classification:
+        return _run(
+          item,
+          type: EnrichmentType.classification,
+          prompt: (content) => '''Classifique o texto abaixo com uma ou mais categorias curtas
+(ex.: tecnologia, política, esporte, economia), separadas por vírgula.
+Responda apenas com as categorias, sem explicações.
+
+Texto:
+$content
+
+Categorias:''',
+        );
       default:
         throw StateError('Unimplemented capability: ${req.type.name}');
     }
   }
 
-  Future<Enrichment> _summarize(WorkItem item) async {
+  Future<Enrichment> _run(
+    WorkItem item, {
+    required EnrichmentType type,
+    required String Function(String content) prompt,
+    String? language,
+  }) async {
     final apiKey = await _storage.read(key: _credentialKey);
     if (apiKey == null || apiKey.isEmpty) {
       throw Exception(
@@ -59,24 +110,16 @@ class LlmAdapter implements Enricher {
 
     final content = item.content ?? item.summary ?? item.title;
     if (content.isEmpty) {
-      throw Exception('Article has no content to summarize');
+      throw Exception('Article has no content to enrich');
     }
 
-    final prompt = '''Por favor, resuma o seguinte texto em 2-3 frases concisas e bem estruturadas.
-Mantenha os pontos-chave e não adicione informações que não estejam no texto original.
-
-Texto:
-$content
-
-Resumo:''';
-
     final requestBody = {
-      'model': 'claude-3-5-sonnet-20241022',
+      'model': _model,
       'max_tokens': 300,
       'messages': [
         {
           'role': 'user',
-          'content': prompt,
+          'content': prompt(content),
         }
       ],
     };
@@ -100,20 +143,28 @@ Resumo:''';
 
       final responseData = jsonDecode(response.body);
       final contentList = responseData['content'] as List<dynamic>?;
-      final summaryText = (contentList != null && contentList.isNotEmpty)
+      final resultText = (contentList != null && contentList.isNotEmpty)
           ? contentList.first['text'] as String?
           : null;
 
-      if (summaryText == null || summaryText.isEmpty) {
+      if (resultText == null || resultText.isEmpty) {
         throw Exception('Empty response from Anthropic API');
       }
 
+      final usage = responseData['usage'] as Map<String, dynamic>?;
+      final tokensUsed = usage == null
+          ? null
+          : ((usage['input_tokens'] as int? ?? 0) +
+              (usage['output_tokens'] as int? ?? 0));
+
       return Enrichment(
         workItemId: item.id,
-        type: EnrichmentType.summary,
-        content: summaryText.trim(),
-        model: 'claude-3-5-sonnet-20241022',
+        type: type,
+        content: resultText.trim(),
+        model: _model,
         createdAt: DateTime.now(),
+        language: language,
+        tokensUsed: tokensUsed,
       );
     } on http.ClientException catch (e) {
       throw Exception('Network error: ${e.message}');

@@ -43,6 +43,9 @@ class EnrichmentRepositoryDrift implements EnrichmentRepository {
             content: enrichment.content,
             model: Value(enrichment.model),
             createdAt: enrichment.createdAt,
+            language: Value(enrichment.language),
+            tokensUsed: Value(enrichment.tokensUsed),
+            costEstimate: Value(enrichment.costEstimate),
           ),
         );
     return enrichment.copyWith(id: id);
@@ -69,5 +72,8 @@ class EnrichmentRepositoryDrift implements EnrichmentRepository {
         content: row.content,
         model: row.model,
         createdAt: row.createdAt,
+        language: row.language,
+        tokensUsed: row.tokensUsed,
+        costEstimate: row.costEstimate,
       );
 }
