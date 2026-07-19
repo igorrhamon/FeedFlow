@@ -46,6 +46,8 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
   late TextEditingController _operatorController;
   late TextEditingController _valueController;
   late TextEditingController _actionIdController;
+  late TextEditingController _tagController;
+  late TextEditingController _daysController;
   RuleTrigger _selectedTrigger = RuleTrigger.onIngested;
   bool _enabled = true;
   bool _stopOnMatch = false;
@@ -87,6 +89,19 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     'isSnoozed',
   ];
 
+  // Action IDs registrados em `initializeActions` (lib/application/actions/actions_init.dart).
+  // ActionRegistry real só é consumido de verdade em WS-12/Onda 3 — aqui é uma
+  // lista estática conhecida, não uma consulta ao registry (ver Onda 2.md).
+  static const List<String> _actionIds = [
+    'complete',
+    'archive',
+    'snooze',
+    'toggleStar',
+    'share',
+    'copyLink',
+    'addTag',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -98,6 +113,8 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _operatorController = TextEditingController(text: 'equals');
     _valueController = TextEditingController();
     _actionIdController = TextEditingController();
+    _tagController = TextEditingController();
+    _daysController = TextEditingController(text: '1');
 
     _loadRules();
   }
@@ -109,6 +126,8 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _operatorController.dispose();
     _valueController.dispose();
     _actionIdController.dispose();
+    _tagController.dispose();
+    _daysController.dispose();
     super.dispose();
   }
 
@@ -139,6 +158,8 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _operatorController.text = 'equals';
     _valueController.clear();
     _actionIdController.clear();
+    _tagController.clear();
+    _daysController.text = '1';
     _selectedTrigger = RuleTrigger.onIngested;
     _enabled = true;
     _stopOnMatch = false;
@@ -169,9 +190,14 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
 
     // Preenche a primeira ação, se houver
     if (rule.actions.isNotEmpty) {
-      _actionIdController.text = rule.actions.first.actionId;
+      final action = rule.actions.first;
+      _actionIdController.text = action.actionId;
+      _tagController.text = action.params['tag']?.toString() ?? '';
+      _daysController.text = (action.params['days'] ?? 1).toString();
     } else {
       _actionIdController.clear();
+      _tagController.clear();
+      _daysController.text = '1';
     }
 
     _showDryRun = false;
@@ -206,8 +232,14 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
         value: parsedValue,
       );
 
+      final params = switch (actionId) {
+        'addTag' => {'tag': _tagController.text.trim()},
+        'snooze' => {'days': int.tryParse(_daysController.text) ?? 1},
+        _ => <String, dynamic>{},
+      };
+
       final actions = <ActionInvocation>[
-        if (actionId.isNotEmpty) ActionInvocation(actionId: actionId, params: {}),
+        if (actionId.isNotEmpty) ActionInvocation(actionId: actionId, params: params),
       ];
 
       final rule = Rule(
@@ -428,14 +460,47 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                               },
                             ),
                             const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _actionIdController,
+                            DropdownButtonFormField<String?>(
+                              value: _actionIdController.text.isEmpty ? null : _actionIdController.text,
+                              items: [
+                                const DropdownMenuItem<String?>(value: null, child: Text('Nenhuma')),
+                                ..._actionIds.map((a) => DropdownMenuItem<String?>(value: a, child: Text(a))),
+                              ],
+                              onChanged: (value) {
+                                setState(() => _actionIdController.text = value ?? '');
+                              },
                               decoration: const InputDecoration(
                                 labelText: 'Action ID (opcional)',
                                 border: OutlineInputBorder(),
-                                hintText: 'Ex: "complete", "archive"',
                               ),
                             ),
+                            if (_actionIdController.text == 'addTag') ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _tagController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Tag',
+                                  border: OutlineInputBorder(),
+                                  hintText: 'Ex: "importante"',
+                                ),
+                                validator: (value) {
+                                  if (_actionIdController.text != 'addTag') return null;
+                                  return (value?.trim().isEmpty ?? true)
+                                      ? 'Obrigatório para addTag'
+                                      : null;
+                                },
+                              ),
+                            ] else if (_actionIdController.text == 'snooze') ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _daysController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Adiar por (dias)',
+                                  border: OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ],
                             const SizedBox(height: 12),
                             Row(
                               children: [

@@ -123,5 +123,126 @@ void main() {
       // Nenhuma regra deve ter sido criada com o formulário inválido.
       expect(await ruleRepo.list(), isEmpty);
     });
+
+    testWidgets('selecionar addTag mostra campo Tag; complete não mostra campo extra',
+        (WidgetTester tester) async {
+      await setLargeSurface(tester);
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextFormField, 'Tag'), findsNothing);
+      expect(find.widgetWithText(TextFormField, 'Adiar por (dias)'), findsNothing);
+
+      await tester.tap(find.widgetWithText(DropdownButtonFormField<String?>, 'Nenhuma'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('addTag').last);
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextFormField, 'Tag'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(DropdownButtonFormField<String?>, 'addTag'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('complete').last);
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextFormField, 'Tag'), findsNothing);
+      expect(find.widgetWithText(TextFormField, 'Adiar por (dias)'), findsNothing);
+    });
+
+    testWidgets('salvar regra com addTag grava params[tag]', (WidgetTester tester) async {
+      await setLargeSurface(tester);
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextFormField, 'Nome da Regra'), 'Marcar importante');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Valor'), 'novo');
+
+      await tester.tap(find.widgetWithText(DropdownButtonFormField<String?>, 'Nenhuma'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('addTag').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextFormField, 'Tag'), 'importante');
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Salvar Regra'));
+      await tester.pumpAndSettle();
+
+      final rules = await ruleRepo.list();
+      expect(rules, hasLength(1));
+      expect(rules.first.actions.single.actionId, 'addTag');
+      expect(rules.first.actions.single.params, {'tag': 'importante'});
+    });
+
+    testWidgets('salvar regra com addTag e tag vazia falha a validação',
+        (WidgetTester tester) async {
+      await setLargeSurface(tester);
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextFormField, 'Nome da Regra'), 'Regra sem tag');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Valor'), 'novo');
+
+      await tester.tap(find.widgetWithText(DropdownButtonFormField<String?>, 'Nenhuma'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('addTag').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Salvar Regra'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Obrigatório para addTag'), findsOneWidget);
+      expect(await ruleRepo.list(), isEmpty);
+    });
+
+    testWidgets('salvar regra com snooze grava params[days]', (WidgetTester tester) async {
+      await setLargeSurface(tester);
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextFormField, 'Nome da Regra'), 'Adiar antigos');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Valor'), 'novo');
+
+      await tester.tap(find.widgetWithText(DropdownButtonFormField<String?>, 'Nenhuma'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('snooze').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextFormField, 'Adiar por (dias)'), '3');
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Salvar Regra'));
+      await tester.pumpAndSettle();
+
+      final rules = await ruleRepo.list();
+      expect(rules, hasLength(1));
+      expect(rules.first.actions.single.actionId, 'snooze');
+      expect(rules.first.actions.single.params, {'days': 3});
+    });
+
+    testWidgets('editar regra com addTag repopula o campo Tag', (WidgetTester tester) async {
+      await setLargeSurface(tester);
+      final testRule = Rule(
+        id: 'r1',
+        name: 'Regra existente',
+        enabled: true,
+        trigger: RuleTrigger.onIngested,
+        conditions: const Condition.simple(field: 'status', operator: 'equals', value: 'novo'),
+        actions: const [
+          ActionInvocation(actionId: 'addTag', params: {'tag': 'ja-lido'}),
+        ],
+        stopOnMatch: false,
+        order: 1,
+      );
+      await ruleRepo.create(testRule);
+
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(PopupMenuButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Editar'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextFormField, 'Tag'), findsOneWidget);
+      final tagField = tester.widget<TextFormField>(find.widgetWithText(TextFormField, 'Tag'));
+      expect(tagField.controller!.text, 'ja-lido');
+    });
   });
 }
