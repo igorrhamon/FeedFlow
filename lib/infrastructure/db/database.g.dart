@@ -1350,7 +1350,8 @@ class WorkItemEvent extends DataClass implements Insertable<WorkItemEvent> {
   final String workItemId;
   final DateTime timestamp;
 
-  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched | ingested
+  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched
+  /// | ingested | workflowCompleted
   final String type;
 
   /// user | rule | sync

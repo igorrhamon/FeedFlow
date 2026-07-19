@@ -42,7 +42,8 @@ class WorkItemEvents extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get workItemId => text()();
   DateTimeColumn get timestamp => dateTime()();
-  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched | ingested
+  /// statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched
+  /// | ingested | workflowCompleted
   TextColumn get type => text()();
   /// user | rule | sync
   TextColumn get actor => text()();

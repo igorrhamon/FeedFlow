@@ -121,6 +121,37 @@ class EnrichmentFailed with _$EnrichmentFailed implements DomainEvent {
   }) = _EnrichmentFailed;
 }
 
+/// Publicado pelo [WorkflowRunner] após cada passo (ação) de um workflow ser
+/// executado, sucesso ou falha — permite acompanhar progresso em tempo real.
+@freezed
+class WorkflowStepExecuted with _$WorkflowStepExecuted implements DomainEvent {
+  const WorkflowStepExecuted._();
+
+  const factory WorkflowStepExecuted({
+    required String workItemId,
+    required String actionId,
+    required int stepIndex,
+    required int totalSteps,
+    required bool success,
+    required DateTime timestamp,
+  }) = _WorkflowStepExecuted;
+}
+
+/// Publicado pelo [WorkflowRunner] quando todos os passos de um workflow
+/// terminam (com ou sem falhas parciais — falha em um passo não interrompe
+/// os demais, mesma política do [ActionExecutor]).
+@freezed
+class WorkflowCompleted with _$WorkflowCompleted implements DomainEvent {
+  const WorkflowCompleted._();
+
+  const factory WorkflowCompleted({
+    required String workItemId,
+    required int totalSteps,
+    required int succeededSteps,
+    required DateTime timestamp,
+  }) = _WorkflowCompleted;
+}
+
 /// Publicado ao fim de um ciclo de sincronização com sucesso.
 @freezed
 class SyncCompleted with _$SyncCompleted implements DomainEvent {

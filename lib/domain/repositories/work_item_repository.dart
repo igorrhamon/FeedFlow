@@ -45,4 +45,15 @@ abstract class WorkItemRepository {
   /// Query reativa por artigos marcados como favoritos (isStarred == true).
   /// Ordenados por data de ingestão (mais recentes primeiro).
   Stream<List<WorkItem>> watchStarred();
+
+  /// Grava uma entrada de auditoria na trilha de eventos (`WorkItemEvents`).
+  /// [type] segue a convenção documentada em `tables.dart`
+  /// (`statusChanged | snoozed | snoozeExpired | actionExecuted | ruleMatched
+  /// | ingested | workflowCompleted`); [actor] é `user | rule | sync`.
+  Future<void> logEvent(
+    String workItemId, {
+    required String type,
+    required String actor,
+    Map<String, dynamic> payload = const {},
+  });
 }

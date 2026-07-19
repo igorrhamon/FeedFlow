@@ -111,4 +111,19 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
   Stream<Map<String, int>> watchUnreadCountsByFeed() {
     return _delegate.watchUnreadCountsByFeed();
   }
+
+  @override
+  Future<void> logEvent(
+    String workItemId, {
+    required String type,
+    required String actor,
+    Map<String, dynamic> payload = const {},
+  }) {
+    return _delegate.logEvent(
+      workItemId,
+      type: type,
+      actor: actor,
+      payload: payload,
+    );
+  }
 }

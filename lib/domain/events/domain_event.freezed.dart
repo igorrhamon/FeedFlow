@@ -1903,6 +1903,509 @@ abstract class _EnrichmentFailed extends EnrichmentFailed {
 }
 
 /// @nodoc
+mixin _$WorkflowStepExecuted {
+  String get workItemId => throw _privateConstructorUsedError;
+  String get actionId => throw _privateConstructorUsedError;
+  int get stepIndex => throw _privateConstructorUsedError;
+  int get totalSteps => throw _privateConstructorUsedError;
+  bool get success => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of WorkflowStepExecuted
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $WorkflowStepExecutedCopyWith<WorkflowStepExecuted> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $WorkflowStepExecutedCopyWith<$Res> {
+  factory $WorkflowStepExecutedCopyWith(
+    WorkflowStepExecuted value,
+    $Res Function(WorkflowStepExecuted) then,
+  ) = _$WorkflowStepExecutedCopyWithImpl<$Res, WorkflowStepExecuted>;
+  @useResult
+  $Res call({
+    String workItemId,
+    String actionId,
+    int stepIndex,
+    int totalSteps,
+    bool success,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$WorkflowStepExecutedCopyWithImpl<
+  $Res,
+  $Val extends WorkflowStepExecuted
+>
+    implements $WorkflowStepExecutedCopyWith<$Res> {
+  _$WorkflowStepExecutedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of WorkflowStepExecuted
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? workItemId = null,
+    Object? actionId = null,
+    Object? stepIndex = null,
+    Object? totalSteps = null,
+    Object? success = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            workItemId:
+                null == workItemId
+                    ? _value.workItemId
+                    : workItemId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            actionId:
+                null == actionId
+                    ? _value.actionId
+                    : actionId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            stepIndex:
+                null == stepIndex
+                    ? _value.stepIndex
+                    : stepIndex // ignore: cast_nullable_to_non_nullable
+                        as int,
+            totalSteps:
+                null == totalSteps
+                    ? _value.totalSteps
+                    : totalSteps // ignore: cast_nullable_to_non_nullable
+                        as int,
+            success:
+                null == success
+                    ? _value.success
+                    : success // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$WorkflowStepExecutedImplCopyWith<$Res>
+    implements $WorkflowStepExecutedCopyWith<$Res> {
+  factory _$$WorkflowStepExecutedImplCopyWith(
+    _$WorkflowStepExecutedImpl value,
+    $Res Function(_$WorkflowStepExecutedImpl) then,
+  ) = __$$WorkflowStepExecutedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String workItemId,
+    String actionId,
+    int stepIndex,
+    int totalSteps,
+    bool success,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$WorkflowStepExecutedImplCopyWithImpl<$Res>
+    extends _$WorkflowStepExecutedCopyWithImpl<$Res, _$WorkflowStepExecutedImpl>
+    implements _$$WorkflowStepExecutedImplCopyWith<$Res> {
+  __$$WorkflowStepExecutedImplCopyWithImpl(
+    _$WorkflowStepExecutedImpl _value,
+    $Res Function(_$WorkflowStepExecutedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of WorkflowStepExecuted
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? workItemId = null,
+    Object? actionId = null,
+    Object? stepIndex = null,
+    Object? totalSteps = null,
+    Object? success = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$WorkflowStepExecutedImpl(
+        workItemId:
+            null == workItemId
+                ? _value.workItemId
+                : workItemId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        actionId:
+            null == actionId
+                ? _value.actionId
+                : actionId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        stepIndex:
+            null == stepIndex
+                ? _value.stepIndex
+                : stepIndex // ignore: cast_nullable_to_non_nullable
+                    as int,
+        totalSteps:
+            null == totalSteps
+                ? _value.totalSteps
+                : totalSteps // ignore: cast_nullable_to_non_nullable
+                    as int,
+        success:
+            null == success
+                ? _value.success
+                : success // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$WorkflowStepExecutedImpl extends _WorkflowStepExecuted {
+  const _$WorkflowStepExecutedImpl({
+    required this.workItemId,
+    required this.actionId,
+    required this.stepIndex,
+    required this.totalSteps,
+    required this.success,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String workItemId;
+  @override
+  final String actionId;
+  @override
+  final int stepIndex;
+  @override
+  final int totalSteps;
+  @override
+  final bool success;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'WorkflowStepExecuted(workItemId: $workItemId, actionId: $actionId, stepIndex: $stepIndex, totalSteps: $totalSteps, success: $success, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$WorkflowStepExecutedImpl &&
+            (identical(other.workItemId, workItemId) ||
+                other.workItemId == workItemId) &&
+            (identical(other.actionId, actionId) ||
+                other.actionId == actionId) &&
+            (identical(other.stepIndex, stepIndex) ||
+                other.stepIndex == stepIndex) &&
+            (identical(other.totalSteps, totalSteps) ||
+                other.totalSteps == totalSteps) &&
+            (identical(other.success, success) || other.success == success) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    workItemId,
+    actionId,
+    stepIndex,
+    totalSteps,
+    success,
+    timestamp,
+  );
+
+  /// Create a copy of WorkflowStepExecuted
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$WorkflowStepExecutedImplCopyWith<_$WorkflowStepExecutedImpl>
+  get copyWith =>
+      __$$WorkflowStepExecutedImplCopyWithImpl<_$WorkflowStepExecutedImpl>(
+        this,
+        _$identity,
+      );
+}
+
+abstract class _WorkflowStepExecuted extends WorkflowStepExecuted {
+  const factory _WorkflowStepExecuted({
+    required final String workItemId,
+    required final String actionId,
+    required final int stepIndex,
+    required final int totalSteps,
+    required final bool success,
+    required final DateTime timestamp,
+  }) = _$WorkflowStepExecutedImpl;
+  const _WorkflowStepExecuted._() : super._();
+
+  @override
+  String get workItemId;
+  @override
+  String get actionId;
+  @override
+  int get stepIndex;
+  @override
+  int get totalSteps;
+  @override
+  bool get success;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of WorkflowStepExecuted
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$WorkflowStepExecutedImplCopyWith<_$WorkflowStepExecutedImpl>
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$WorkflowCompleted {
+  String get workItemId => throw _privateConstructorUsedError;
+  int get totalSteps => throw _privateConstructorUsedError;
+  int get succeededSteps => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of WorkflowCompleted
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $WorkflowCompletedCopyWith<WorkflowCompleted> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $WorkflowCompletedCopyWith<$Res> {
+  factory $WorkflowCompletedCopyWith(
+    WorkflowCompleted value,
+    $Res Function(WorkflowCompleted) then,
+  ) = _$WorkflowCompletedCopyWithImpl<$Res, WorkflowCompleted>;
+  @useResult
+  $Res call({
+    String workItemId,
+    int totalSteps,
+    int succeededSteps,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$WorkflowCompletedCopyWithImpl<$Res, $Val extends WorkflowCompleted>
+    implements $WorkflowCompletedCopyWith<$Res> {
+  _$WorkflowCompletedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of WorkflowCompleted
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? workItemId = null,
+    Object? totalSteps = null,
+    Object? succeededSteps = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            workItemId:
+                null == workItemId
+                    ? _value.workItemId
+                    : workItemId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            totalSteps:
+                null == totalSteps
+                    ? _value.totalSteps
+                    : totalSteps // ignore: cast_nullable_to_non_nullable
+                        as int,
+            succeededSteps:
+                null == succeededSteps
+                    ? _value.succeededSteps
+                    : succeededSteps // ignore: cast_nullable_to_non_nullable
+                        as int,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$WorkflowCompletedImplCopyWith<$Res>
+    implements $WorkflowCompletedCopyWith<$Res> {
+  factory _$$WorkflowCompletedImplCopyWith(
+    _$WorkflowCompletedImpl value,
+    $Res Function(_$WorkflowCompletedImpl) then,
+  ) = __$$WorkflowCompletedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String workItemId,
+    int totalSteps,
+    int succeededSteps,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$WorkflowCompletedImplCopyWithImpl<$Res>
+    extends _$WorkflowCompletedCopyWithImpl<$Res, _$WorkflowCompletedImpl>
+    implements _$$WorkflowCompletedImplCopyWith<$Res> {
+  __$$WorkflowCompletedImplCopyWithImpl(
+    _$WorkflowCompletedImpl _value,
+    $Res Function(_$WorkflowCompletedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of WorkflowCompleted
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? workItemId = null,
+    Object? totalSteps = null,
+    Object? succeededSteps = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$WorkflowCompletedImpl(
+        workItemId:
+            null == workItemId
+                ? _value.workItemId
+                : workItemId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        totalSteps:
+            null == totalSteps
+                ? _value.totalSteps
+                : totalSteps // ignore: cast_nullable_to_non_nullable
+                    as int,
+        succeededSteps:
+            null == succeededSteps
+                ? _value.succeededSteps
+                : succeededSteps // ignore: cast_nullable_to_non_nullable
+                    as int,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$WorkflowCompletedImpl extends _WorkflowCompleted {
+  const _$WorkflowCompletedImpl({
+    required this.workItemId,
+    required this.totalSteps,
+    required this.succeededSteps,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String workItemId;
+  @override
+  final int totalSteps;
+  @override
+  final int succeededSteps;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'WorkflowCompleted(workItemId: $workItemId, totalSteps: $totalSteps, succeededSteps: $succeededSteps, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$WorkflowCompletedImpl &&
+            (identical(other.workItemId, workItemId) ||
+                other.workItemId == workItemId) &&
+            (identical(other.totalSteps, totalSteps) ||
+                other.totalSteps == totalSteps) &&
+            (identical(other.succeededSteps, succeededSteps) ||
+                other.succeededSteps == succeededSteps) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    workItemId,
+    totalSteps,
+    succeededSteps,
+    timestamp,
+  );
+
+  /// Create a copy of WorkflowCompleted
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$WorkflowCompletedImplCopyWith<_$WorkflowCompletedImpl> get copyWith =>
+      __$$WorkflowCompletedImplCopyWithImpl<_$WorkflowCompletedImpl>(
+        this,
+        _$identity,
+      );
+}
+
+abstract class _WorkflowCompleted extends WorkflowCompleted {
+  const factory _WorkflowCompleted({
+    required final String workItemId,
+    required final int totalSteps,
+    required final int succeededSteps,
+    required final DateTime timestamp,
+  }) = _$WorkflowCompletedImpl;
+  const _WorkflowCompleted._() : super._();
+
+  @override
+  String get workItemId;
+  @override
+  int get totalSteps;
+  @override
+  int get succeededSteps;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of WorkflowCompleted
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$WorkflowCompletedImplCopyWith<_$WorkflowCompletedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$SyncCompleted {
   String get providerId => throw _privateConstructorUsedError;
   int get itemsIngested => throw _privateConstructorUsedError;
