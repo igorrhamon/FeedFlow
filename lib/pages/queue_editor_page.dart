@@ -278,7 +278,7 @@ class _QueueEditorPageState extends State<QueueEditorPage> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _fieldController.text.isEmpty ? 'status' : _fieldController.text,
+                        initialValue: _fieldController.text.isEmpty ? 'status' : _fieldController.text,
                         items: _fields.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
                         onChanged: (value) {
                           if (value != null) {
@@ -293,7 +293,7 @@ class _QueueEditorPageState extends State<QueueEditorPage> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _operatorController.text,
+                        initialValue: _operatorController.text,
                         items: _operators.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
                         onChanged: (value) {
                           if (value != null) {
@@ -325,7 +325,7 @@ class _QueueEditorPageState extends State<QueueEditorPage> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String?>(
-                        value: _sortField,
+                        initialValue: _sortField,
                         items: [
                           const DropdownMenuItem<String?>(value: null, child: Text('Sem ordenação')),
                           ..._fields.map((f) => DropdownMenuItem<String?>(value: f, child: Text(f))),

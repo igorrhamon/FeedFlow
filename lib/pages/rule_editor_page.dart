@@ -435,7 +435,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<RuleTrigger>(
-                              value: _selectedTrigger,
+                              initialValue: _selectedTrigger,
                               items: RuleTrigger.values
                                   .map((t) => DropdownMenuItem(
                                         value: t,
@@ -467,7 +467,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                             ],
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
-                              value: _fieldController.text.isEmpty
+                              initialValue: _fieldController.text.isEmpty
                                   ? 'status'
                                   : _fieldController.text,
                               items: _fields
@@ -490,7 +490,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
-                              value: _operatorController.text,
+                              initialValue: _operatorController.text,
                               items: _operators
                                   .map((o) => DropdownMenuItem(
                                         value: o,
@@ -525,7 +525,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String?>(
-                              value: _actionIdController.text.isEmpty ? null : _actionIdController.text,
+                              initialValue: _actionIdController.text.isEmpty ? null : _actionIdController.text,
                               items: [
                                 const DropdownMenuItem<String?>(value: null, child: Text('Nenhuma')),
                                 ..._actionIds.map((a) => DropdownMenuItem<String?>(value: a, child: Text(a))),

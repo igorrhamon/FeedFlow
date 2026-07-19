@@ -10,10 +10,10 @@ class AddFeedPage extends StatefulWidget {
   });
 
   @override
-  _AddFeedPageState createState() => _AddFeedPageState();
+  AddFeedPageState createState() => AddFeedPageState();
 }
 
-class _AddFeedPageState extends State<AddFeedPage> {
+class AddFeedPageState extends State<AddFeedPage> {
   List<String> _categorias = ['Categoria'];
   String? _categoriaSelecionada;
   bool _categoriasLoading = false;
@@ -73,6 +73,8 @@ class _AddFeedPageState extends State<AddFeedPage> {
     try {
       final result = await widget.provider.addFeed(feedUrl, category: selectedCategory);
 
+      if (!mounted) return;
+
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -95,6 +97,7 @@ class _AddFeedPageState extends State<AddFeedPage> {
         );
       }
     } catch (error) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Erro ao conectar com a API. Tente novamente.'),
@@ -137,7 +140,7 @@ class _AddFeedPageState extends State<AddFeedPage> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   prefixIcon: const Icon(Icons.rss_feed),
                 ),
                 keyboardType: TextInputType.url,
@@ -155,7 +158,7 @@ class _AddFeedPageState extends State<AddFeedPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: _categoriasLoading
@@ -164,7 +167,7 @@ class _AddFeedPageState extends State<AddFeedPage> {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     : DropdownButtonFormField<String>(
-                        value: _categoriaSelecionada ?? _categorias[0],
+                        initialValue: _categoriaSelecionada ?? _categorias[0],
                         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF756a81)),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
@@ -175,7 +178,7 @@ class _AddFeedPageState extends State<AddFeedPage> {
                           fontSize: 16,
                           fontWeight: FontWeight.normal,
                         ),
-                        dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.95),
+                        dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
                         items: _categorias.map((String categoria) {
                           return DropdownMenuItem<String>(
                             value: categoria,
@@ -235,9 +238,9 @@ class _AddFeedPageState extends State<AddFeedPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
