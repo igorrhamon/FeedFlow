@@ -219,6 +219,39 @@ void main() {
       expect(result.language, isNull);
     });
 
+    test(
+        'enrich falls back to summary when content is an empty string (not null)',
+        () async {
+      // Feedbin/Miniflux/NewsBlur/TT-RSS/TheOldReader preenchem `content` com
+      // '' (não null) quando o artigo não tem esse campo — regressão da
+      // Exception "Article has no content to enrich" mesmo com summary presente.
+      final workItemWithEmptyContent =
+          testWorkItem.copyWith(content: '', summary: 'A real summary.');
+
+      final mockResponse = {
+        'content': [
+          {'text': 'Summary from real summary field.'}
+        ],
+      };
+
+      String? capturedBody;
+      final client = MockClient((request) async {
+        capturedBody = request.body;
+        return http.Response(jsonEncode(mockResponse), 200);
+      });
+
+      final adapter = LlmAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.summary);
+      await adapter.enrich(workItemWithEmptyContent, request);
+
+      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
+      expect((decodedBody['messages'] as List)[0]['content'],
+          contains('A real summary.'));
+    });
+
     test('enrich throws exception when API key is not configured', () async {
       secureStorageValues.remove(apiKeyStorageKey);
 

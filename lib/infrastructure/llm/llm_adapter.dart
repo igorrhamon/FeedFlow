@@ -91,7 +91,11 @@ class LlmAdapter implements Enricher {
           'Anthropic API key not configured. Set it via secure storage.');
     }
 
-    final content = item.content ?? item.summary ?? item.title;
+    final content = resolveEnrichmentContent(
+      content: item.content,
+      summary: item.summary,
+      title: item.title,
+    );
     if (content.isEmpty) {
       throw Exception('Article has no content to enrich');
     }

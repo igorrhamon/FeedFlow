@@ -205,6 +205,42 @@ void main() {
       expect(result.content, 'tecnologia, testes');
     });
 
+    test(
+        'enrich falls back to summary when content is an empty string (not null)',
+        () async {
+      final workItemWithEmptyContent =
+          testWorkItem.copyWith(content: '', summary: 'A real summary.');
+
+      final mockResponse = {
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'Summary from real summary field.'}
+              ],
+            },
+          }
+        ],
+      };
+
+      String? capturedBody;
+      final client = MockClient((request) async {
+        capturedBody = request.body;
+        return http.Response(jsonEncode(mockResponse), 200);
+      });
+
+      final adapter = GoogleAiStudioAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.summary);
+      await adapter.enrich(workItemWithEmptyContent, request);
+
+      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
+      final parts = (decodedBody['contents'] as List)[0]['parts'] as List;
+      expect(parts[0]['text'], contains('A real summary.'));
+    });
+
     test('enrich throws exception when API key is not configured', () async {
       secureStorageValues.remove(apiKeyStorageKey);
 
