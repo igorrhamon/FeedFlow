@@ -136,6 +136,41 @@ void main() {
       expect(parts[0]['text'], contains(testWorkItem.content));
     });
 
+    test('enrich uses a custom model configured in secure storage', () async {
+      secureStorageValues['llm_google_ai_studio_model'] = 'gemini-1.5-pro';
+
+      final mockResponse = {
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {'text': 'Summary text.'}
+              ],
+            },
+          }
+        ],
+      };
+
+      http.Request? capturedRequest;
+      final client = MockClient((request) async {
+        capturedRequest = request;
+        return http.Response(jsonEncode(mockResponse), 200);
+      });
+
+      final adapter = GoogleAiStudioAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.summary);
+      final result = await adapter.enrich(testWorkItem, request);
+
+      expect(result.model, 'gemini-1.5-pro');
+      expect(
+        capturedRequest!.url.toString(),
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=test-api-key-123',
+      );
+    });
+
     test('enrich with translation requires targetLanguage', () async {
       final adapter = GoogleAiStudioAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),

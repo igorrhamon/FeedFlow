@@ -134,6 +134,33 @@ void main() {
           contains(testWorkItem.content));
     });
 
+    test('enrich uses a custom model configured in secure storage', () async {
+      secureStorageValues['llm_anthropic_model'] = 'claude-3-opus-20240229';
+
+      final mockResponse = {
+        'content': [
+          {'text': 'Summary text.'}
+        ],
+      };
+
+      String? capturedBody;
+      final client = MockClient((request) async {
+        capturedBody = request.body;
+        return http.Response(jsonEncode(mockResponse), 200);
+      });
+
+      final adapter = LlmAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.summary);
+      final result = await adapter.enrich(testWorkItem, request);
+
+      expect(result.model, 'claude-3-opus-20240229');
+      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
+      expect(decodedBody['model'], 'claude-3-opus-20240229');
+    });
+
     test('enrich with unsupported capability throws StateError', () async {
       final adapter = LlmAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),

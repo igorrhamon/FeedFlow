@@ -29,7 +29,8 @@ class OpenRouterAdapter implements Enricher {
 
   static const String _apiBaseUrl = 'https://openrouter.ai/api/v1';
   static final String _credentialKey = LlmProviderId.openRouter.credentialKey;
-  static const String _model = 'openai/gpt-4o-mini';
+  static final String _modelKey = LlmProviderId.openRouter.modelKey;
+  static final String _defaultModel = LlmProviderId.openRouter.defaultModel;
 
   @override
   String get id => LlmProviderId.openRouter.id;
@@ -85,6 +86,9 @@ class OpenRouterAdapter implements Enricher {
           'OpenRouter API key not configured. Set it via secure storage.');
     }
 
+    final model = await _storage.read(key: _modelKey);
+    final effectiveModel = (model == null || model.isEmpty) ? _defaultModel : model;
+
     final content = resolveEnrichmentContent(
       content: item.content,
       summary: item.summary,
@@ -95,7 +99,7 @@ class OpenRouterAdapter implements Enricher {
     }
 
     final requestBody = {
-      'model': _model,
+      'model': effectiveModel,
       'messages': [
         {
           'role': 'user',
@@ -139,7 +143,7 @@ class OpenRouterAdapter implements Enricher {
         workItemId: item.id,
         type: type,
         content: resultText.trim(),
-        model: _model,
+        model: effectiveModel,
         createdAt: DateTime.now(),
         language: language,
         tokensUsed: tokensUsed,

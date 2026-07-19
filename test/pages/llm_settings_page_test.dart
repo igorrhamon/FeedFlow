@@ -42,6 +42,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Finder apiKeyField() => find.byType(TextField).first;
+  Finder modelField() => find.byType(TextField).at(1);
+
   testWidgets('shows anthropic as default active provider', (tester) async {
     await pumpPage(tester);
 
@@ -50,17 +53,54 @@ void main() {
         find.text('Nenhuma chave configurada para este provedor'), findsOneWidget);
   });
 
+  testWidgets('shows the default model as a hint when no override is set',
+      (tester) async {
+    await pumpPage(tester);
+
+    expect(
+      find.text('Deixe em branco para usar o padrão: claude-3-5-sonnet-20241022'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('typing an API key and saving persists it and shows a snackbar',
       (tester) async {
     await pumpPage(tester);
 
-    await tester.enterText(find.byType(TextField), 'sk-test-123');
+    await tester.enterText(apiKeyField(), 'sk-test-123');
     await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
     await tester.pumpAndSettle();
 
     expect(find.text('Configuração de IA salva.'), findsOneWidget);
     expect(secureStorageValues['llm_anthropic_api_key'], 'sk-test-123');
     expect(secureStorageValues['active_llm_provider'], 'llm-anthropic');
+  });
+
+  testWidgets('typing a custom model and saving persists it', (tester) async {
+    await pumpPage(tester);
+
+    await tester.enterText(modelField(), 'claude-3-opus-20240229');
+    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.pumpAndSettle();
+
+    expect(secureStorageValues['llm_anthropic_model'], 'claude-3-opus-20240229');
+  });
+
+  testWidgets(
+      'clearing a previously saved custom model removes the override on save',
+      (tester) async {
+    await pumpPage(tester);
+
+    await tester.enterText(modelField(), 'claude-3-opus-20240229');
+    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.pumpAndSettle();
+    expect(secureStorageValues.containsKey('llm_anthropic_model'), isTrue);
+
+    await tester.enterText(modelField(), '');
+    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.pumpAndSettle();
+
+    expect(secureStorageValues.containsKey('llm_anthropic_model'), isFalse);
   });
 
   testWidgets('switching provider in the dropdown persists the new active provider',
@@ -72,7 +112,7 @@ void main() {
     await tester.tap(find.text('OpenRouter').last);
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'or-test-key');
+    await tester.enterText(apiKeyField(), 'or-test-key');
     await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
     await tester.pumpAndSettle();
 
@@ -85,7 +125,7 @@ void main() {
       (tester) async {
     await pumpPage(tester);
 
-    await tester.enterText(find.byType(TextField), 'sk-test-123');
+    await tester.enterText(apiKeyField(), 'sk-test-123');
     await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
     await tester.pumpAndSettle();
 
@@ -96,5 +136,9 @@ void main() {
 
     expect(
         find.text('Nenhuma chave configurada para este provedor'), findsOneWidget);
+    expect(
+      find.text('Deixe em branco para usar o padrão: gemini-2.0-flash'),
+      findsOneWidget,
+    );
   });
 }

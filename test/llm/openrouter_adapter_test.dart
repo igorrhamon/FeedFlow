@@ -132,6 +132,35 @@ void main() {
           contains(testWorkItem.content));
     });
 
+    test('enrich uses a custom model configured in secure storage', () async {
+      secureStorageValues['llm_openrouter_model'] = 'anthropic/claude-3-opus';
+
+      final mockResponse = {
+        'choices': [
+          {
+            'message': {'content': 'Summary text.'}
+          }
+        ],
+      };
+
+      String? capturedBody;
+      final client = MockClient((request) async {
+        capturedBody = request.body;
+        return http.Response(jsonEncode(mockResponse), 200);
+      });
+
+      final adapter = OpenRouterAdapter(
+        httpClient: client,
+        secureStorage: const FlutterSecureStorage(),
+      );
+      final request = EnrichmentRequest(type: EnrichmentType.summary);
+      final result = await adapter.enrich(testWorkItem, request);
+
+      expect(result.model, 'anthropic/claude-3-opus');
+      final decodedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
+      expect(decodedBody['model'], 'anthropic/claude-3-opus');
+    });
+
     test('enrich with translation requires targetLanguage', () async {
       final adapter = OpenRouterAdapter(
         httpClient: MockClient((request) async => http.Response('', 404)),

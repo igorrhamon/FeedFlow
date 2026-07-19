@@ -32,7 +32,8 @@ class GoogleAiStudioAdapter implements Enricher {
       'https://generativelanguage.googleapis.com/v1beta';
   static final String _credentialKey =
       LlmProviderId.googleAiStudio.credentialKey;
-  static const String _model = 'gemini-2.0-flash';
+  static final String _modelKey = LlmProviderId.googleAiStudio.modelKey;
+  static final String _defaultModel = LlmProviderId.googleAiStudio.defaultModel;
 
   @override
   String get id => LlmProviderId.googleAiStudio.id;
@@ -88,6 +89,9 @@ class GoogleAiStudioAdapter implements Enricher {
           'Google AI Studio API key not configured. Set it via secure storage.');
     }
 
+    final model = await _storage.read(key: _modelKey);
+    final effectiveModel = (model == null || model.isEmpty) ? _defaultModel : model;
+
     final content = resolveEnrichmentContent(
       content: item.content,
       summary: item.summary,
@@ -109,7 +113,8 @@ class GoogleAiStudioAdapter implements Enricher {
 
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_apiBaseUrl/models/$_model:generateContent?key=$apiKey'),
+        Uri.parse(
+            '$_apiBaseUrl/models/$effectiveModel:generateContent?key=$apiKey'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
@@ -144,7 +149,7 @@ class GoogleAiStudioAdapter implements Enricher {
         workItemId: item.id,
         type: type,
         content: resultText.trim(),
-        model: _model,
+        model: effectiveModel,
         createdAt: DateTime.now(),
         language: language,
         tokensUsed: tokensUsed,

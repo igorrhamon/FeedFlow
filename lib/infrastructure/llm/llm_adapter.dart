@@ -31,7 +31,8 @@ class LlmAdapter implements Enricher {
   static const String _apiBaseUrl = 'https://api.anthropic.com/v1';
   static const String _apiVersion = '2024-06-01';
   static final String _credentialKey = LlmProviderId.anthropic.credentialKey;
-  static const String _model = 'claude-3-5-sonnet-20241022';
+  static final String _modelKey = LlmProviderId.anthropic.modelKey;
+  static final String _defaultModel = LlmProviderId.anthropic.defaultModel;
 
   @override
   String get id => LlmProviderId.anthropic.id;
@@ -91,6 +92,9 @@ class LlmAdapter implements Enricher {
           'Anthropic API key not configured. Set it via secure storage.');
     }
 
+    final model = await _storage.read(key: _modelKey);
+    final effectiveModel = (model == null || model.isEmpty) ? _defaultModel : model;
+
     final content = resolveEnrichmentContent(
       content: item.content,
       summary: item.summary,
@@ -101,7 +105,7 @@ class LlmAdapter implements Enricher {
     }
 
     final requestBody = {
-      'model': _model,
+      'model': effectiveModel,
       'max_tokens': 300,
       'messages': [
         {
@@ -148,7 +152,7 @@ class LlmAdapter implements Enricher {
         workItemId: item.id,
         type: type,
         content: resultText.trim(),
-        model: _model,
+        model: effectiveModel,
         createdAt: DateTime.now(),
         language: language,
         tokensUsed: tokensUsed,

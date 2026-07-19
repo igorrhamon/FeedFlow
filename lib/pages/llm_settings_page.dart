@@ -21,6 +21,7 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
   static const _storage = FlutterSecureStorage();
 
   final _apiKeyController = TextEditingController();
+  final _modelController = TextEditingController();
 
   LlmProviderId _selectedProvider = LlmProviderId.anthropic;
   bool _hasExistingKey = false;
@@ -36,12 +37,14 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
   @override
   void dispose() {
     _apiKeyController.dispose();
+    _modelController.dispose();
     super.dispose();
   }
 
   Future<void> _load() async {
     final active = await LlmSettings.getActiveProvider();
     await _loadHasExistingKey(active);
+    await _loadModel(active);
     if (!mounted) return;
     setState(() {
       _selectedProvider = active;
@@ -55,6 +58,12 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
     setState(() => _hasExistingKey = existing != null && existing.isNotEmpty);
   }
 
+  Future<void> _loadModel(LlmProviderId provider) async {
+    final existing = await _storage.read(key: provider.modelKey);
+    if (!mounted) return;
+    setState(() => _modelController.text = existing ?? '');
+  }
+
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
@@ -62,6 +71,14 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
         await _storage.write(
           key: _selectedProvider.credentialKey,
           value: _apiKeyController.text,
+        );
+      }
+      if (_modelController.text.isEmpty) {
+        await _storage.delete(key: _selectedProvider.modelKey);
+      } else {
+        await _storage.write(
+          key: _selectedProvider.modelKey,
+          value: _modelController.text,
         );
       }
       await LlmSettings.setActiveProvider(_selectedProvider);
@@ -103,6 +120,7 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
                       setState(() => _selectedProvider = value);
                       _apiKeyController.clear();
                       await _loadHasExistingKey(value);
+                      await _loadModel(value);
                     },
                     decoration: const InputDecoration(
                       labelText: 'Provedor',
@@ -119,6 +137,17 @@ class _LlmSettingsPageState extends State<LlmSettingsPage> {
                       helperText: _hasExistingKey
                           ? 'Chave já configurada — deixe em branco para manter'
                           : 'Nenhuma chave configurada para este provedor',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _modelController,
+                    decoration: InputDecoration(
+                      labelText: 'Modelo (opcional)',
+                      border: const OutlineInputBorder(),
+                      hintText: _selectedProvider.defaultModel,
+                      helperText:
+                          'Deixe em branco para usar o padrão: ${_selectedProvider.defaultModel}',
                     ),
                   ),
                   const SizedBox(height: 16),
