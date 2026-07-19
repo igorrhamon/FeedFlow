@@ -5,24 +5,24 @@ import '../domain/repositories/rule_repository.dart';
 import '../domain/repositories/work_item_repository.dart';
 import '../domain/rule.dart';
 import '../domain/work_item.dart';
+import 'action_executor.dart';
 import 'condition_evaluator.dart';
 import 'event_bus.dart';
 
 /// Motor de avaliação de regras. Assina eventos de domínio (ArticleIngested,
 /// StatusChanged) e, quando uma regra tem um gatilho que bate, avalia a árvore
 /// de condições. Se todas casarem, publica um evento [RuleMatched] para
-/// auditoria.
-///
-/// **Execução de ações é stubada nesta rodada** — apenas logs. Integração com
-/// [ActionRegistry] vem em fase posterior (ver plano de evolução § Onda 3).
+/// auditoria e executa as ações da regra via [ActionExecutor].
 class RuleEngine {
   RuleEngine({
     required WorkItemRepository workItemRepository,
     required RuleRepository ruleRepository,
     required EventBus eventBus,
+    required ActionExecutor actionExecutor,
   })  : _workItemRepository = workItemRepository,
         _ruleRepository = ruleRepository,
         _eventBus = eventBus,
+        _actionExecutor = actionExecutor,
         _conditionEvaluator = ConditionEvaluator() {
     _initialize();
   }
@@ -30,6 +30,7 @@ class RuleEngine {
   final WorkItemRepository _workItemRepository;
   final RuleRepository _ruleRepository;
   final EventBus _eventBus;
+  final ActionExecutor _actionExecutor;
   final ConditionEvaluator _conditionEvaluator;
 
   void _initialize() {
@@ -89,14 +90,8 @@ class RuleEngine {
           name: 'feedflow.rule_engine',
         );
 
-        // **Execução real de ações é stub** — apenas logs por enquanto
-        for (final action in rule.actions) {
-          developer.log(
-            'RuleEngine: Ação STUB — ${action.actionId} '
-            'com parâmetros ${action.params}',
-            name: 'feedflow.rule_engine',
-          );
-        }
+        // Executa as ações da regra
+        await _actionExecutor.executeAll(workItem, rule.actions);
 
         if (rule.stopOnMatch) {
           break; // Para de avaliar outras regras

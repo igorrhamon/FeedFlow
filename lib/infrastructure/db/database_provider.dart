@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../../application/action_executor.dart';
 import '../../application/event_bus.dart';
+import '../../application/rule_engine.dart';
 import '../../application/sync_service.dart';
 import '../../domain/repositories/outbox_repository.dart';
 import '../../domain/repositories/queue_repository.dart';
@@ -29,6 +31,8 @@ class DatabaseProvider {
   static RuleRepository? _ruleRepository;
   static QueueRepository? _queueRepository;
   static SyncService? _syncService;
+  static ActionExecutor? _actionExecutor;
+  static RuleEngine? _ruleEngine;
 
   static WorkItemRepository? get repository {
     if (kIsWeb) return null;
@@ -68,5 +72,23 @@ class DatabaseProvider {
     final outbox = outboxRepository;
     if (workItems == null || outbox == null) return null;
     return _syncService ??= SyncService(workItemRepository: workItems, outboxRepository: outbox);
+  }
+
+  static ActionExecutor? get actionExecutor {
+    if (kIsWeb) return null;
+    return _actionExecutor ??= ActionExecutor(eventBus: eventBus);
+  }
+
+  static RuleEngine? get ruleEngine {
+    final workItems = repository;
+    final rules = ruleRepository;
+    final executor = actionExecutor;
+    if (workItems == null || rules == null || executor == null) return null;
+    return _ruleEngine ??= RuleEngine(
+      workItemRepository: workItems,
+      ruleRepository: rules,
+      eventBus: eventBus,
+      actionExecutor: executor,
+    );
   }
 }

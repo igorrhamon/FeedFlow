@@ -28,6 +28,7 @@ void main() async {
   final repo = DatabaseProvider.repository;
   if (repo != null) {
     initializeActions(repo);
+    DatabaseProvider.ruleEngine;
   }
   if (Platform.isAndroid) {
     await BackgroundSyncScheduler.initialize();
