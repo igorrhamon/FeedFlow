@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 
 import '../application/action_executor.dart';
@@ -31,6 +33,8 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
+  static const _enrichmentActionIds = {'summarize', 'translate', 'classify'};
+
   static const _filterableStatuses = [
     TriageStatus.novo,
     TriageStatus.triado,
@@ -68,6 +72,10 @@ class _InboxPageState extends State<InboxPage> {
     String actionId,
     Map<String, dynamic> params,
   ) async {
+    developer.log(
+      'action tap: action=$actionId workItem=${item.id} params=$params',
+      name: 'FeedFlow.InboxPage',
+    );
     try {
       final invocation = ActionInvocation(actionId: actionId, params: params);
       final result = await _actionExecutor.execute(item, invocation);
@@ -75,15 +83,74 @@ class _InboxPageState extends State<InboxPage> {
       if (!mounted) return;
 
       if (!result.success) {
+        developer.log(
+          'action failed: action=$actionId workItem=${item.id} error=${result.error}',
+          name: 'FeedFlow.InboxPage',
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao executar ação: ${result.error}')),
         );
+        return;
+      }
+
+      developer.log(
+        'action success: action=$actionId workItem=${item.id}',
+        name: 'FeedFlow.InboxPage',
+      );
+
+      if (_enrichmentActionIds.contains(actionId)) {
+        await _showLatestEnrichment(item, actionId);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ação executada.')),
+        );
       }
     } catch (e) {
+      developer.log(
+        'action unexpected error: action=$actionId workItem=${item.id}: $e',
+        name: 'FeedFlow.InboxPage',
+        error: e,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro inesperado: $e')),
       );
+    }
+  }
+
+  Future<void> _showLatestEnrichment(WorkItem item, String actionId) async {
+    final repository = DatabaseProvider.enrichmentRepository;
+    if (repository == null) return;
+
+    final enrichments = await repository.listByWorkItemId(item.id);
+    if (enrichments.isEmpty || !mounted) return;
+
+    final latest = enrichments.first;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_enrichmentResultTitle(actionId)),
+        content: SingleChildScrollView(child: Text(latest.content)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _enrichmentResultTitle(String actionId) {
+    switch (actionId) {
+      case 'summarize':
+        return 'Resumo';
+      case 'translate':
+        return 'Tradução';
+      case 'classify':
+        return 'Classificação';
+      default:
+        return 'Resultado';
     }
   }
 

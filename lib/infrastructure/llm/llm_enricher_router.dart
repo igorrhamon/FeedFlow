@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../../domain/enricher.dart';
 import '../../domain/enrichment.dart';
 import '../../domain/llm_provider_id.dart';
@@ -42,7 +44,25 @@ class LlmEnricherRouter implements Enricher {
   @override
   Future<Enrichment> enrich(WorkItem item, EnrichmentRequest req) async {
     final active = await LlmSettings.getActiveProvider();
-    return _resolve(active).enrich(item, req);
+    developer.log(
+      'routing enrich(type=${req.type.name}) to provider=${active.id} workItem=${item.id}',
+      name: 'FeedFlow.LLM.Router',
+    );
+    try {
+      final result = await _resolve(active).enrich(item, req);
+      developer.log(
+        'enrich succeeded via provider=${active.id} workItem=${item.id}',
+        name: 'FeedFlow.LLM.Router',
+      );
+      return result;
+    } catch (e) {
+      developer.log(
+        'enrich failed via provider=${active.id} workItem=${item.id}: $e',
+        name: 'FeedFlow.LLM.Router',
+        error: e,
+      );
+      rethrow;
+    }
   }
 
   Enricher _resolve(LlmProviderId provider) {

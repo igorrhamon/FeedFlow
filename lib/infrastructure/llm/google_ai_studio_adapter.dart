@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -98,6 +99,10 @@ class GoogleAiStudioAdapter implements Enricher {
       title: item.title,
     );
     if (content.isEmpty) {
+      developer.log(
+        'no content to enrich for workItem=${item.id}',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
+      );
       throw Exception('Article has no content to enrich');
     }
 
@@ -111,6 +116,11 @@ class GoogleAiStudioAdapter implements Enricher {
       ],
     };
 
+    developer.log(
+      'enrich start: type=${type.name} model=$effectiveModel workItem=${item.id}',
+      name: 'FeedFlow.LLM.GoogleAiStudio',
+    );
+
     try {
       final response = await _httpClient.post(
         Uri.parse(
@@ -119,8 +129,17 @@ class GoogleAiStudioAdapter implements Enricher {
         body: jsonEncode(requestBody),
       );
 
+      developer.log(
+        'enrich response: status=${response.statusCode} workItem=${item.id}',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
+      );
+
       if (response.statusCode != 200) {
         final errorBody = jsonDecode(response.body);
+        developer.log(
+          'enrich error body: ${response.body}',
+          name: 'FeedFlow.LLM.GoogleAiStudio',
+        );
         throw Exception(
             'API error (${response.statusCode}): ${errorBody['error']?['message'] ?? response.body}');
       }
@@ -155,8 +174,17 @@ class GoogleAiStudioAdapter implements Enricher {
         tokensUsed: tokensUsed,
       );
     } on http.ClientException catch (e) {
+      developer.log(
+        'network error: ${e.message}',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
+      );
       throw Exception('Network error: ${e.message}');
     } catch (e) {
+      developer.log(
+        'enrich failed: $e',
+        name: 'FeedFlow.LLM.GoogleAiStudio',
+        error: e,
+      );
       rethrow;
     }
   }

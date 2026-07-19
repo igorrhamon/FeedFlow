@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../../domain/article_action.dart';
 import '../../domain/enricher.dart';
 import '../../domain/enrichment.dart';
@@ -38,6 +40,10 @@ class TranslateAction implements ArticleAction {
         targetLanguage: targetLanguage,
       ),
     );
-    await _enrichmentRepository.insert(enrichment);
+    final saved = await _enrichmentRepository.insert(enrichment);
+    developer.log(
+      'translate saved: id=${saved.id} workItem=${item.id} targetLanguage=$targetLanguage',
+      name: 'FeedFlow.Actions.Translate',
+    );
   }
 }

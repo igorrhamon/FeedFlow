@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../../domain/article_action.dart';
 import '../../domain/enricher.dart';
 import '../../domain/enrichment.dart';
@@ -28,6 +30,10 @@ class ClassifyAction implements ArticleAction {
       item,
       EnrichmentRequest(type: EnrichmentType.classification),
     );
-    await _enrichmentRepository.insert(enrichment);
+    final saved = await _enrichmentRepository.insert(enrichment);
+    developer.log(
+      'classify saved: id=${saved.id} workItem=${item.id}',
+      name: 'FeedFlow.Actions.Classify',
+    );
   }
 }
