@@ -695,6 +695,18 @@ mixin _$Rule {
   bool get stopOnMatch => throw _privateConstructorUsedError;
   int get order => throw _privateConstructorUsedError;
 
+  /// Intervalo em minutos entre execuções, usado apenas quando
+  /// [trigger] é [RuleTrigger.schedule]. `null` para os demais triggers.
+  /// O agendamento real roda dentro do ciclo de background sync já
+  /// existente (~15min via WorkManager no Android), então intervalos
+  /// menores que isso não são garantidos — ver [RuleScheduler].
+  int? get intervalMinutes => throw _privateConstructorUsedError;
+
+  /// Última vez que uma regra de schedule foi executada (por
+  /// [RuleScheduler]). `null` se nunca rodou. Não é tocado por outros
+  /// triggers.
+  DateTime? get lastRunAt => throw _privateConstructorUsedError;
+
   /// Serializes this Rule to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
@@ -718,6 +730,8 @@ abstract class $RuleCopyWith<$Res> {
     List<ActionInvocation> actions,
     bool stopOnMatch,
     int order,
+    int? intervalMinutes,
+    DateTime? lastRunAt,
   });
 
   $ConditionCopyWith<$Res> get conditions;
@@ -746,6 +760,8 @@ class _$RuleCopyWithImpl<$Res, $Val extends Rule>
     Object? actions = null,
     Object? stopOnMatch = null,
     Object? order = null,
+    Object? intervalMinutes = freezed,
+    Object? lastRunAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -789,6 +805,16 @@ class _$RuleCopyWithImpl<$Res, $Val extends Rule>
                     ? _value.order
                     : order // ignore: cast_nullable_to_non_nullable
                         as int,
+            intervalMinutes:
+                freezed == intervalMinutes
+                    ? _value.intervalMinutes
+                    : intervalMinutes // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            lastRunAt:
+                freezed == lastRunAt
+                    ? _value.lastRunAt
+                    : lastRunAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
           )
           as $Val,
     );
@@ -822,6 +848,8 @@ abstract class _$$RuleImplCopyWith<$Res> implements $RuleCopyWith<$Res> {
     List<ActionInvocation> actions,
     bool stopOnMatch,
     int order,
+    int? intervalMinutes,
+    DateTime? lastRunAt,
   });
 
   @override
@@ -848,6 +876,8 @@ class __$$RuleImplCopyWithImpl<$Res>
     Object? actions = null,
     Object? stopOnMatch = null,
     Object? order = null,
+    Object? intervalMinutes = freezed,
+    Object? lastRunAt = freezed,
   }) {
     return _then(
       _$RuleImpl(
@@ -891,6 +921,16 @@ class __$$RuleImplCopyWithImpl<$Res>
                 ? _value.order
                 : order // ignore: cast_nullable_to_non_nullable
                     as int,
+        intervalMinutes:
+            freezed == intervalMinutes
+                ? _value.intervalMinutes
+                : intervalMinutes // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        lastRunAt:
+            freezed == lastRunAt
+                ? _value.lastRunAt
+                : lastRunAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
       ),
     );
   }
@@ -908,6 +948,8 @@ class _$RuleImpl implements _Rule {
     required final List<ActionInvocation> actions,
     this.stopOnMatch = false,
     required this.order,
+    this.intervalMinutes,
+    this.lastRunAt,
   }) : _actions = actions;
 
   factory _$RuleImpl.fromJson(Map<String, dynamic> json) =>
@@ -938,9 +980,23 @@ class _$RuleImpl implements _Rule {
   @override
   final int order;
 
+  /// Intervalo em minutos entre execuções, usado apenas quando
+  /// [trigger] é [RuleTrigger.schedule]. `null` para os demais triggers.
+  /// O agendamento real roda dentro do ciclo de background sync já
+  /// existente (~15min via WorkManager no Android), então intervalos
+  /// menores que isso não são garantidos — ver [RuleScheduler].
+  @override
+  final int? intervalMinutes;
+
+  /// Última vez que uma regra de schedule foi executada (por
+  /// [RuleScheduler]). `null` se nunca rodou. Não é tocado por outros
+  /// triggers.
+  @override
+  final DateTime? lastRunAt;
+
   @override
   String toString() {
-    return 'Rule(id: $id, name: $name, enabled: $enabled, trigger: $trigger, conditions: $conditions, actions: $actions, stopOnMatch: $stopOnMatch, order: $order)';
+    return 'Rule(id: $id, name: $name, enabled: $enabled, trigger: $trigger, conditions: $conditions, actions: $actions, stopOnMatch: $stopOnMatch, order: $order, intervalMinutes: $intervalMinutes, lastRunAt: $lastRunAt)';
   }
 
   @override
@@ -957,7 +1013,11 @@ class _$RuleImpl implements _Rule {
             const DeepCollectionEquality().equals(other._actions, _actions) &&
             (identical(other.stopOnMatch, stopOnMatch) ||
                 other.stopOnMatch == stopOnMatch) &&
-            (identical(other.order, order) || other.order == order));
+            (identical(other.order, order) || other.order == order) &&
+            (identical(other.intervalMinutes, intervalMinutes) ||
+                other.intervalMinutes == intervalMinutes) &&
+            (identical(other.lastRunAt, lastRunAt) ||
+                other.lastRunAt == lastRunAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -972,6 +1032,8 @@ class _$RuleImpl implements _Rule {
     const DeepCollectionEquality().hash(_actions),
     stopOnMatch,
     order,
+    intervalMinutes,
+    lastRunAt,
   );
 
   /// Create a copy of Rule
@@ -998,6 +1060,8 @@ abstract class _Rule implements Rule {
     required final List<ActionInvocation> actions,
     final bool stopOnMatch,
     required final int order,
+    final int? intervalMinutes,
+    final DateTime? lastRunAt,
   }) = _$RuleImpl;
 
   factory _Rule.fromJson(Map<String, dynamic> json) = _$RuleImpl.fromJson;
@@ -1018,6 +1082,20 @@ abstract class _Rule implements Rule {
   bool get stopOnMatch;
   @override
   int get order;
+
+  /// Intervalo em minutos entre execuções, usado apenas quando
+  /// [trigger] é [RuleTrigger.schedule]. `null` para os demais triggers.
+  /// O agendamento real roda dentro do ciclo de background sync já
+  /// existente (~15min via WorkManager no Android), então intervalos
+  /// menores que isso não são garantidos — ver [RuleScheduler].
+  @override
+  int? get intervalMinutes;
+
+  /// Última vez que uma regra de schedule foi executada (por
+  /// [RuleScheduler]). `null` se nunca rodou. Não é tocado por outros
+  /// triggers.
+  @override
+  DateTime? get lastRunAt;
 
   /// Create a copy of Rule
   /// with the given fields replaced by the non-null parameter values.

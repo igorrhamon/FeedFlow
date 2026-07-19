@@ -19,7 +19,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -46,6 +46,12 @@ class AppDatabase extends _$AppDatabase {
         // v4 -> v5: filas customizadas (Onda 2/WS-9) introduziu a tabela Queues.
         if (from < 5) {
           await m.createTable(queues);
+        }
+        // v5 -> v6: gatilho de schedule (RuleScheduler) introduziu
+        // intervalMinutes/lastRunAt em Rules.
+        if (from < 6) {
+          await m.addColumn(rules, rules.intervalMinutes);
+          await m.addColumn(rules, rules.lastRunAt);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar

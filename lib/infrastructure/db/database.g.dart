@@ -2536,6 +2536,28 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _intervalMinutesMeta = const VerificationMeta(
+    'intervalMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> intervalMinutes = GeneratedColumn<int>(
+    'interval_minutes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastRunAtMeta = const VerificationMeta(
+    'lastRunAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastRunAt = GeneratedColumn<DateTime>(
+    'last_run_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2546,6 +2568,8 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
     actionsJson,
     stopOnMatch,
     order,
+    intervalMinutes,
+    lastRunAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2628,6 +2652,21 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
     } else if (isInserting) {
       context.missing(_orderMeta);
     }
+    if (data.containsKey('interval_minutes')) {
+      context.handle(
+        _intervalMinutesMeta,
+        intervalMinutes.isAcceptableOrUnknown(
+          data['interval_minutes']!,
+          _intervalMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_run_at')) {
+      context.handle(
+        _lastRunAtMeta,
+        lastRunAt.isAcceptableOrUnknown(data['last_run_at']!, _lastRunAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2677,6 +2716,14 @@ class $RulesTable extends Rules with TableInfo<$RulesTable, RuleRow> {
             DriftSqlType.int,
             data['${effectivePrefix}order'],
           )!,
+      intervalMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}interval_minutes'],
+      ),
+      lastRunAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_run_at'],
+      ),
     );
   }
 
@@ -2702,6 +2749,12 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
   final String actionsJson;
   final bool stopOnMatch;
   final int order;
+
+  /// Só relevante quando `triggerType == 'schedule'` — ver [RuleScheduler].
+  final int? intervalMinutes;
+
+  /// Última execução de uma regra de schedule — ver [RuleScheduler].
+  final DateTime? lastRunAt;
   const RuleRow({
     required this.id,
     required this.name,
@@ -2711,6 +2764,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     required this.actionsJson,
     required this.stopOnMatch,
     required this.order,
+    this.intervalMinutes,
+    this.lastRunAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2723,6 +2778,12 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     map['actions_json'] = Variable<String>(actionsJson);
     map['stop_on_match'] = Variable<bool>(stopOnMatch);
     map['order'] = Variable<int>(order);
+    if (!nullToAbsent || intervalMinutes != null) {
+      map['interval_minutes'] = Variable<int>(intervalMinutes);
+    }
+    if (!nullToAbsent || lastRunAt != null) {
+      map['last_run_at'] = Variable<DateTime>(lastRunAt);
+    }
     return map;
   }
 
@@ -2736,6 +2797,14 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       actionsJson: Value(actionsJson),
       stopOnMatch: Value(stopOnMatch),
       order: Value(order),
+      intervalMinutes:
+          intervalMinutes == null && nullToAbsent
+              ? const Value.absent()
+              : Value(intervalMinutes),
+      lastRunAt:
+          lastRunAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastRunAt),
     );
   }
 
@@ -2753,6 +2822,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       actionsJson: serializer.fromJson<String>(json['actionsJson']),
       stopOnMatch: serializer.fromJson<bool>(json['stopOnMatch']),
       order: serializer.fromJson<int>(json['order']),
+      intervalMinutes: serializer.fromJson<int?>(json['intervalMinutes']),
+      lastRunAt: serializer.fromJson<DateTime?>(json['lastRunAt']),
     );
   }
   @override
@@ -2767,6 +2838,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       'actionsJson': serializer.toJson<String>(actionsJson),
       'stopOnMatch': serializer.toJson<bool>(stopOnMatch),
       'order': serializer.toJson<int>(order),
+      'intervalMinutes': serializer.toJson<int?>(intervalMinutes),
+      'lastRunAt': serializer.toJson<DateTime?>(lastRunAt),
     };
   }
 
@@ -2779,6 +2852,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     String? actionsJson,
     bool? stopOnMatch,
     int? order,
+    Value<int?> intervalMinutes = const Value.absent(),
+    Value<DateTime?> lastRunAt = const Value.absent(),
   }) => RuleRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2788,6 +2863,9 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     actionsJson: actionsJson ?? this.actionsJson,
     stopOnMatch: stopOnMatch ?? this.stopOnMatch,
     order: order ?? this.order,
+    intervalMinutes:
+        intervalMinutes.present ? intervalMinutes.value : this.intervalMinutes,
+    lastRunAt: lastRunAt.present ? lastRunAt.value : this.lastRunAt,
   );
   RuleRow copyWithCompanion(RulesCompanion data) {
     return RuleRow(
@@ -2805,6 +2883,11 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
       stopOnMatch:
           data.stopOnMatch.present ? data.stopOnMatch.value : this.stopOnMatch,
       order: data.order.present ? data.order.value : this.order,
+      intervalMinutes:
+          data.intervalMinutes.present
+              ? data.intervalMinutes.value
+              : this.intervalMinutes,
+      lastRunAt: data.lastRunAt.present ? data.lastRunAt.value : this.lastRunAt,
     );
   }
 
@@ -2818,7 +2901,9 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
           ..write('conditionsJson: $conditionsJson, ')
           ..write('actionsJson: $actionsJson, ')
           ..write('stopOnMatch: $stopOnMatch, ')
-          ..write('order: $order')
+          ..write('order: $order, ')
+          ..write('intervalMinutes: $intervalMinutes, ')
+          ..write('lastRunAt: $lastRunAt')
           ..write(')'))
         .toString();
   }
@@ -2833,6 +2918,8 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
     actionsJson,
     stopOnMatch,
     order,
+    intervalMinutes,
+    lastRunAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2845,7 +2932,9 @@ class RuleRow extends DataClass implements Insertable<RuleRow> {
           other.conditionsJson == this.conditionsJson &&
           other.actionsJson == this.actionsJson &&
           other.stopOnMatch == this.stopOnMatch &&
-          other.order == this.order);
+          other.order == this.order &&
+          other.intervalMinutes == this.intervalMinutes &&
+          other.lastRunAt == this.lastRunAt);
 }
 
 class RulesCompanion extends UpdateCompanion<RuleRow> {
@@ -2857,6 +2946,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
   final Value<String> actionsJson;
   final Value<bool> stopOnMatch;
   final Value<int> order;
+  final Value<int?> intervalMinutes;
+  final Value<DateTime?> lastRunAt;
   final Value<int> rowid;
   const RulesCompanion({
     this.id = const Value.absent(),
@@ -2867,6 +2958,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     this.actionsJson = const Value.absent(),
     this.stopOnMatch = const Value.absent(),
     this.order = const Value.absent(),
+    this.intervalMinutes = const Value.absent(),
+    this.lastRunAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RulesCompanion.insert({
@@ -2878,6 +2971,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     required String actionsJson,
     this.stopOnMatch = const Value.absent(),
     required int order,
+    this.intervalMinutes = const Value.absent(),
+    this.lastRunAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2894,6 +2989,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     Expression<String>? actionsJson,
     Expression<bool>? stopOnMatch,
     Expression<int>? order,
+    Expression<int>? intervalMinutes,
+    Expression<DateTime>? lastRunAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2905,6 +3002,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
       if (actionsJson != null) 'actions_json': actionsJson,
       if (stopOnMatch != null) 'stop_on_match': stopOnMatch,
       if (order != null) 'order': order,
+      if (intervalMinutes != null) 'interval_minutes': intervalMinutes,
+      if (lastRunAt != null) 'last_run_at': lastRunAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2918,6 +3017,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     Value<String>? actionsJson,
     Value<bool>? stopOnMatch,
     Value<int>? order,
+    Value<int?>? intervalMinutes,
+    Value<DateTime?>? lastRunAt,
     Value<int>? rowid,
   }) {
     return RulesCompanion(
@@ -2929,6 +3030,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
       actionsJson: actionsJson ?? this.actionsJson,
       stopOnMatch: stopOnMatch ?? this.stopOnMatch,
       order: order ?? this.order,
+      intervalMinutes: intervalMinutes ?? this.intervalMinutes,
+      lastRunAt: lastRunAt ?? this.lastRunAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2960,6 +3063,12 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
     if (order.present) {
       map['order'] = Variable<int>(order.value);
     }
+    if (intervalMinutes.present) {
+      map['interval_minutes'] = Variable<int>(intervalMinutes.value);
+    }
+    if (lastRunAt.present) {
+      map['last_run_at'] = Variable<DateTime>(lastRunAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2977,6 +3086,8 @@ class RulesCompanion extends UpdateCompanion<RuleRow> {
           ..write('actionsJson: $actionsJson, ')
           ..write('stopOnMatch: $stopOnMatch, ')
           ..write('order: $order, ')
+          ..write('intervalMinutes: $intervalMinutes, ')
+          ..write('lastRunAt: $lastRunAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4592,6 +4703,8 @@ typedef $$RulesTableCreateCompanionBuilder =
       required String actionsJson,
       Value<bool> stopOnMatch,
       required int order,
+      Value<int?> intervalMinutes,
+      Value<DateTime?> lastRunAt,
       Value<int> rowid,
     });
 typedef $$RulesTableUpdateCompanionBuilder =
@@ -4604,6 +4717,8 @@ typedef $$RulesTableUpdateCompanionBuilder =
       Value<String> actionsJson,
       Value<bool> stopOnMatch,
       Value<int> order,
+      Value<int?> intervalMinutes,
+      Value<DateTime?> lastRunAt,
       Value<int> rowid,
     });
 
@@ -4652,6 +4767,16 @@ class $$RulesTableFilterComposer extends Composer<_$AppDatabase, $RulesTable> {
 
   ColumnFilters<int> get order => $composableBuilder(
     column: $table.order,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastRunAt => $composableBuilder(
+    column: $table.lastRunAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4704,6 +4829,16 @@ class $$RulesTableOrderingComposer
     column: $table.order,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastRunAt => $composableBuilder(
+    column: $table.lastRunAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RulesTableAnnotationComposer
@@ -4746,6 +4881,14 @@ class $$RulesTableAnnotationComposer
 
   GeneratedColumn<int> get order =>
       $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<int> get intervalMinutes => $composableBuilder(
+    column: $table.intervalMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastRunAt =>
+      $composableBuilder(column: $table.lastRunAt, builder: (column) => column);
 }
 
 class $$RulesTableTableManager
@@ -4784,6 +4927,8 @@ class $$RulesTableTableManager
                 Value<String> actionsJson = const Value.absent(),
                 Value<bool> stopOnMatch = const Value.absent(),
                 Value<int> order = const Value.absent(),
+                Value<int?> intervalMinutes = const Value.absent(),
+                Value<DateTime?> lastRunAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RulesCompanion(
                 id: id,
@@ -4794,6 +4939,8 @@ class $$RulesTableTableManager
                 actionsJson: actionsJson,
                 stopOnMatch: stopOnMatch,
                 order: order,
+                intervalMinutes: intervalMinutes,
+                lastRunAt: lastRunAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4806,6 +4953,8 @@ class $$RulesTableTableManager
                 required String actionsJson,
                 Value<bool> stopOnMatch = const Value.absent(),
                 required int order,
+                Value<int?> intervalMinutes = const Value.absent(),
+                Value<DateTime?> lastRunAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RulesCompanion.insert(
                 id: id,
@@ -4816,6 +4965,8 @@ class $$RulesTableTableManager
                 actionsJson: actionsJson,
                 stopOnMatch: stopOnMatch,
                 order: order,
+                intervalMinutes: intervalMinutes,
+                lastRunAt: lastRunAt,
                 rowid: rowid,
               ),
           withReferenceMapper:

@@ -85,6 +85,16 @@ class Rule with _$Rule {
     required List<ActionInvocation> actions,
     @Default(false) bool stopOnMatch,
     required int order,
+    /// Intervalo em minutos entre execuções, usado apenas quando
+    /// [trigger] é [RuleTrigger.schedule]. `null` para os demais triggers.
+    /// O agendamento real roda dentro do ciclo de background sync já
+    /// existente (~15min via WorkManager no Android), então intervalos
+    /// menores que isso não são garantidos — ver [RuleScheduler].
+    int? intervalMinutes,
+    /// Última vez que uma regra de schedule foi executada (por
+    /// [RuleScheduler]). `null` se nunca rodou. Não é tocado por outros
+    /// triggers.
+    DateTime? lastRunAt,
   }) = _Rule;
 
   factory Rule.fromJson(Map<String, dynamic> json) => _$RuleFromJson(json);

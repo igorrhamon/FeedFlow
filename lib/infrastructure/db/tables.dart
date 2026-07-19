@@ -107,6 +107,10 @@ class Rules extends Table {
   TextColumn get actionsJson => text()();
   BoolColumn get stopOnMatch => boolean().withDefault(const Constant(false))();
   IntColumn get order => integer()();
+  /// Só relevante quando `triggerType == 'schedule'` — ver [RuleScheduler].
+  IntColumn get intervalMinutes => integer().nullable()();
+  /// Última execução de uma regra de schedule — ver [RuleScheduler].
+  DateTimeColumn get lastRunAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -1,13 +1,32 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:feedflow/application/action_registry.dart';
+import 'package:feedflow/domain/article_action.dart';
 import 'package:feedflow/domain/rule.dart';
 import 'package:feedflow/domain/repositories/rule_repository.dart';
 import 'package:feedflow/domain/repositories/work_item_repository.dart';
+import 'package:feedflow/domain/work_item.dart';
 import 'package:feedflow/infrastructure/db/database.dart';
 import 'package:feedflow/infrastructure/repositories/rule_repository_drift.dart';
 import 'package:feedflow/infrastructure/repositories/work_item_repository_drift.dart';
+import 'package:feedflow/models/article.dart';
 import 'package:feedflow/pages/rule_editor_page.dart';
+
+class _TrackingAction implements ArticleAction {
+  @override
+  String get id => 'track';
+
+  @override
+  String get label => 'Track';
+
+  final List<String> executedItemIds = [];
+
+  @override
+  Future<void> execute(WorkItem item, Map<String, dynamic> params) async {
+    executedItemIds.add(item.id);
+  }
+}
 
 void main() {
   late AppDatabase db;
@@ -21,6 +40,7 @@ void main() {
   });
 
   tearDown(() async {
+    ActionRegistry.clear();
     await db.close();
   });
 
@@ -243,6 +263,64 @@ void main() {
       expect(find.widgetWithText(TextFormField, 'Tag'), findsOneWidget);
       final tagField = tester.widget<TextFormField>(find.widgetWithText(TextFormField, 'Tag'));
       expect(tagField.controller!.text, 'ja-lido');
+    });
+
+    testWidgets('botão Executar agora só aparece para trigger manual e executa de verdade',
+        (WidgetTester tester) async {
+      await setLargeSurface(tester);
+
+      final trackingAction = _TrackingAction();
+      ActionRegistry.register('track', () => trackingAction);
+
+      await workItemRepo.upsertFromArticles(
+        [const Article(id: 'a1', feedId: 'f1', title: 'Artigo')],
+        'feedbin',
+      );
+
+      final manualRule = Rule(
+        id: 'r-manual',
+        name: 'Regra manual',
+        enabled: true,
+        trigger: RuleTrigger.manual,
+        conditions: const Condition.simple(field: 'status', operator: 'equals', value: 'novo'),
+        actions: const [ActionInvocation(actionId: 'track', params: {})],
+        order: 1,
+      );
+      final autoRule = Rule(
+        id: 'r-auto',
+        name: 'Regra onIngested',
+        enabled: true,
+        trigger: RuleTrigger.onIngested,
+        conditions: const Condition.simple(field: 'status', operator: 'equals', value: 'novo'),
+        actions: const [],
+        order: 2,
+      );
+      await ruleRepo.create(manualRule);
+      await ruleRepo.create(autoRule);
+
+      await tester.pumpWidget(buildPage());
+      await tester.pumpAndSettle();
+
+      // Regra onIngested não tem a opção "Executar agora".
+      final autoRuleMenu = find.byType(PopupMenuButton).at(1);
+      await tester.tap(autoRuleMenu);
+      await tester.pumpAndSettle();
+      expect(find.text('Executar agora'), findsNothing);
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      // Regra manual tem a opção e executa de verdade contra o WorkItem seedado.
+      final manualRuleMenu = find.byType(PopupMenuButton).first;
+      await tester.tap(manualRuleMenu);
+      await tester.pumpAndSettle();
+      expect(find.text('Executar agora'), findsOneWidget);
+
+      await tester.tap(find.text('Executar agora'));
+      await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 100)));
+      await tester.pumpAndSettle();
+
+      expect(trackingAction.executedItemIds, ['feedbin:a1']);
+      expect(find.textContaining('1/1 itens processados com sucesso'), findsOneWidget);
     });
   });
 }

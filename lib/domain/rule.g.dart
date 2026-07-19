@@ -69,6 +69,11 @@ _$RuleImpl _$$RuleImplFromJson(Map<String, dynamic> json) => _$RuleImpl(
           .toList(),
   stopOnMatch: json['stopOnMatch'] as bool? ?? false,
   order: (json['order'] as num).toInt(),
+  intervalMinutes: (json['intervalMinutes'] as num?)?.toInt(),
+  lastRunAt:
+      json['lastRunAt'] == null
+          ? null
+          : DateTime.parse(json['lastRunAt'] as String),
 );
 
 Map<String, dynamic> _$$RuleImplToJson(_$RuleImpl instance) =>
@@ -81,6 +86,8 @@ Map<String, dynamic> _$$RuleImplToJson(_$RuleImpl instance) =>
       'actions': instance.actions.map((e) => e.toJson()).toList(),
       'stopOnMatch': instance.stopOnMatch,
       'order': instance.order,
+      'intervalMinutes': instance.intervalMinutes,
+      'lastRunAt': instance.lastRunAt?.toIso8601String(),
     };
 
 const _$RuleTriggerEnumMap = {

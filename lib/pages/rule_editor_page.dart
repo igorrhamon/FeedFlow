@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../application/action_executor.dart';
 import '../application/condition_evaluator.dart';
+import '../application/event_bus.dart';
 import '../domain/repositories/rule_repository.dart';
 import '../domain/repositories/work_item_repository.dart';
 import '../domain/rule.dart';
@@ -48,6 +50,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
   late TextEditingController _actionIdController;
   late TextEditingController _tagController;
   late TextEditingController _daysController;
+  late TextEditingController _intervalController;
   RuleTrigger _selectedTrigger = RuleTrigger.onIngested;
   bool _enabled = true;
   bool _stopOnMatch = false;
@@ -55,6 +58,8 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
   bool _showDryRun = false;
   List<WorkItem>? _dryRunResults;
   bool _dryRunLoading = false;
+  final _actionExecutor = ActionExecutor(eventBus: eventBus);
+  String? _runningRuleId;
 
   // Operadores suportados
   static const List<String> _operators = [
@@ -115,6 +120,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _actionIdController = TextEditingController();
     _tagController = TextEditingController();
     _daysController = TextEditingController(text: '1');
+    _intervalController = TextEditingController(text: '60');
 
     _loadRules();
   }
@@ -128,6 +134,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _actionIdController.dispose();
     _tagController.dispose();
     _daysController.dispose();
+    _intervalController.dispose();
     super.dispose();
   }
 
@@ -160,6 +167,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _actionIdController.clear();
     _tagController.clear();
     _daysController.text = '1';
+    _intervalController.text = '60';
     _selectedTrigger = RuleTrigger.onIngested;
     _enabled = true;
     _stopOnMatch = false;
@@ -175,6 +183,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     _enabled = rule.enabled;
     _stopOnMatch = rule.stopOnMatch;
     _order = rule.order;
+    _intervalController.text = (rule.intervalMinutes ?? 60).toString();
 
     // Preenche a condição simples, se houver
     if (rule.conditions is SimpleCondition) {
@@ -251,6 +260,10 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
         actions: actions,
         stopOnMatch: _stopOnMatch,
         order: _order,
+        intervalMinutes: _selectedTrigger == RuleTrigger.schedule
+            ? (int.tryParse(_intervalController.text) ?? 60)
+            : null,
+        lastRunAt: _editingRule?.lastRunAt,
       );
 
       if (_editingRule != null) {
@@ -279,6 +292,44 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
       }
     } finally {
       if (mounted) setState(() => _savingRule = false);
+    }
+  }
+
+  /// Executa de verdade as ações de uma regra de gatilho `manual` — avalia a
+  /// condição contra todos os WorkItems ativos e chama [ActionExecutor] para
+  /// cada item que casar (diferente do dry-run, que só faz preview e nunca
+  /// executa nada). Regras com outros triggers rodam via evento
+  /// (`onIngested`/`onStatusChanged`) ou via [RuleScheduler] (`schedule`).
+  Future<void> _executeRuleNow(Rule rule) async {
+    setState(() => _runningRuleId = rule.id);
+    try {
+      final evaluator = ConditionEvaluator();
+      final allItems = await _workItemRepository.watchByStatus(TriageStatus.values).first;
+      final matched = allItems.where((item) => evaluator.evaluate(rule.conditions, item)).toList();
+
+      var successCount = 0;
+      for (final item in matched) {
+        final results = await _actionExecutor.executeAll(item, rule.actions);
+        if (results.every((r) => r.success)) successCount++;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${rule.name}: $successCount/${matched.length} itens processados com sucesso',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao executar regra: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _runningRuleId = null);
     }
   }
 
@@ -401,6 +452,19 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                                 border: OutlineInputBorder(),
                               ),
                             ),
+                            if (_selectedTrigger == RuleTrigger.schedule) ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _intervalController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Intervalo (minutos)',
+                                  border: OutlineInputBorder(),
+                                  helperText:
+                                      'Roda dentro do ciclo de sync em background (~15min no Android)',
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ],
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
                               value: _fieldController.text.isEmpty
@@ -639,21 +703,32 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                           'Gatilho: ${rule.trigger.name} | Ordem: ${rule.order} | '
                           '${rule.enabled ? 'Habilitada' : 'Desabilitada'}',
                         ),
-                        trailing: PopupMenuButton(
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              child: const Text('Editar'),
-                              onTap: () {
-                                _editRule(rule);
-                                setState(() {});
-                              },
-                            ),
-                            PopupMenuItem(
-                              child: const Text('Deletar', style: TextStyle(color: Colors.red)),
-                              onTap: () => _deleteRule(rule.id),
-                            ),
-                          ],
-                        ),
+                        trailing: _runningRuleId == rule.id
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : PopupMenuButton(
+                                itemBuilder: (context) => [
+                                  if (rule.trigger == RuleTrigger.manual)
+                                    PopupMenuItem(
+                                      child: const Text('Executar agora'),
+                                      onTap: () => _executeRuleNow(rule),
+                                    ),
+                                  PopupMenuItem(
+                                    child: const Text('Editar'),
+                                    onTap: () {
+                                      _editRule(rule);
+                                      setState(() {});
+                                    },
+                                  ),
+                                  PopupMenuItem(
+                                    child: const Text('Deletar', style: TextStyle(color: Colors.red)),
+                                    onTap: () => _deleteRule(rule.id),
+                                  ),
+                                ],
+                              ),
                       );
                     },
                   ),
