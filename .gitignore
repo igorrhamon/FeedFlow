@@ -71,3 +71,5 @@ proxy.js.new
 proxy.js.bak
 pubspec.lock
 lib/pages/add_feed_page.dart
+proxy/logs/
+proxy/config.json

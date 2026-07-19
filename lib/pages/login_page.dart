@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
         _loading = false;
       });
     } catch (e) {
-      setState(() { _error = 'Erro: $e'; _loading = false; });
+      setState(() { _error = 'Erro ao conectar. Tente novamente.'; _loading = false; });
     }
   }
 
@@ -169,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Erro: $e';
+        _error = 'Erro ao conectar. Tente novamente.';
         _loading = false;
       });
     }

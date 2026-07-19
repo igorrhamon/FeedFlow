@@ -105,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          const SnackBar(content: Text('Erro ao exportar. Tente novamente.')),
         );
       }
     } finally {
@@ -129,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao remover categoria: $e')),
+          const SnackBar(content: Text('Erro ao remover categoria. Tente novamente.')),
         );
       }
     }

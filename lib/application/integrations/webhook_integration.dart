@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import '../../domain/work_item.dart';
 import 'external_integration.dart';
@@ -5,6 +7,8 @@ import 'external_integration.dart';
 /// Integração Webhook: envia um POST com dados do WorkItem para uma URL configurada.
 class WebhookIntegration implements ExternalIntegration {
   final http.Client? _client;
+
+  static const _requestTimeout = Duration(seconds: 30);
 
   WebhookIntegration({http.Client? client}) : _client = client;
 
@@ -29,11 +33,13 @@ class WebhookIntegration implements ExternalIntegration {
 
     final client = _client ?? http.Client();
     try {
-      final response = await client.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: _toJsonString(body),
-      );
+      final response = await client
+          .post(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(_requestTimeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw Exception('Webhook failed with status code ${response.statusCode}');
@@ -45,31 +51,4 @@ class WebhookIntegration implements ExternalIntegration {
     }
   }
 
-  String _toJsonString(Map<String, dynamic> map) {
-    // Simple JSON encoding without external dependency
-    final entries = <String>[];
-    map.forEach((key, value) {
-      final jsonValue = _encodeJsonValue(value);
-      entries.add('"$key":$jsonValue');
-    });
-    return '{${entries.join(',')}}';
-  }
-
-  dynamic _encodeJsonValue(dynamic value) {
-    if (value == null) return 'null';
-    if (value is String) return '"$value"';
-    if (value is bool || value is num) return value.toString();
-    if (value is List) {
-      final items = value.map(_encodeJsonValue).join(',');
-      return '[$items]';
-    }
-    if (value is Map) {
-      final entries = <String>[];
-      value.forEach((k, v) {
-        entries.add('"$k":${_encodeJsonValue(v)}');
-      });
-      return '{${entries.join(',')}}';
-    }
-    return '"$value"';
-  }
 }

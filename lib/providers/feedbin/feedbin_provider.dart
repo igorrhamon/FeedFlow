@@ -12,7 +12,10 @@ class FeedbinProvider implements FeedProvider {
   BasicAuthConfig? _config;
   final http.Client _client;
 
-  FeedbinProvider({http.Client? client}) : _client = client ?? http.Client();
+  static const _requestTimeout = Duration(seconds: 30);
+
+  FeedbinProvider({http.Client? client})
+      : _client = client ?? _withTimeout(http.Client());
 
   static const _defaultBaseUrl = 'https://api.feedbin.com/v2';
 
@@ -475,5 +478,21 @@ class FeedbinProvider implements FeedProvider {
       isRead: m['unread'] == false,
       isStarred: false,
     );
+  }
+
+  static http.Client _withTimeout(http.Client client) {
+    return _TimeoutClient(client, _requestTimeout);
+  }
+}
+
+class _TimeoutClient extends http.BaseClient {
+  final http.Client _inner;
+  final Duration _timeout;
+
+  _TimeoutClient(this._inner, this._timeout);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _inner.send(request).timeout(_timeout);
   }
 }

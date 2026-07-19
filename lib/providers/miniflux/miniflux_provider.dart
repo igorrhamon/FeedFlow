@@ -12,7 +12,10 @@ class MinifluxProvider implements FeedProvider {
   ApiKeyAuthConfig? _config;
   final http.Client _client;
 
-  MinifluxProvider({http.Client? client}) : _client = client ?? http.Client();
+  static const _requestTimeout = Duration(seconds: 30);
+
+  MinifluxProvider({http.Client? client})
+      : _client = client ?? _withTimeout(http.Client());
 
   String get _baseUrlResolved => _baseUrl ?? 'https://miniflux.example.com';
 
@@ -507,5 +510,21 @@ class MinifluxProvider implements FeedProvider {
       isRead: m['status'] == 'read',
       isStarred: m['starred'] == true,
     );
+  }
+
+  static http.Client _withTimeout(http.Client client) {
+    return _TimeoutClient(client, _requestTimeout);
+  }
+}
+
+class _TimeoutClient extends http.BaseClient {
+  final http.Client _inner;
+  final Duration _timeout;
+
+  _TimeoutClient(this._inner, this._timeout);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _inner.send(request).timeout(_timeout);
   }
 }

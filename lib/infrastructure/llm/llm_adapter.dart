@@ -23,11 +23,13 @@ class LlmAdapter implements Enricher {
   LlmAdapter({
     http.Client? httpClient,
     FlutterSecureStorage? secureStorage,
-  })  : _httpClient = httpClient ?? http.Client(),
+  })  : _httpClient = httpClient ?? _withTimeout(http.Client()),
         _storage = secureStorage ?? const FlutterSecureStorage();
 
   final http.Client _httpClient;
   final FlutterSecureStorage _storage;
+
+  static const _requestTimeout = Duration(seconds: 60);
 
   static const String _apiBaseUrl = 'https://api.anthropic.com/v1';
   static const String _apiVersion = '2024-06-01';
@@ -190,5 +192,21 @@ class LlmAdapter implements Enricher {
       );
       rethrow;
     }
+  }
+
+  static http.Client _withTimeout(http.Client client) {
+    return _TimeoutClient(client, _requestTimeout);
+  }
+}
+
+class _TimeoutClient extends http.BaseClient {
+  final http.Client _inner;
+  final Duration _timeout;
+
+  _TimeoutClient(this._inner, this._timeout);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _inner.send(request).timeout(_timeout);
   }
 }
