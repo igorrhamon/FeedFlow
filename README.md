@@ -72,8 +72,8 @@ Acompanhe seus feeds RSS favoritos com uma interface limpa, rápida e responsiva
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/feedflow.git
-cd feedflow
+git clone https://github.com/igorrhamon/FeedFlow.git
+cd FeedFlow
 
 # Instale as dependências Flutter
 flutter pub get
@@ -127,8 +127,8 @@ flutter test --reporter expanded
 flutter analyze
 
 # Testes E2E com Playwright (requer proxy e variáveis de ambiente)
-export feedflow_email="seu@email.com"
-export feedflow_password="sua_senha"
+export the_old_reader_email="seu@email.com"
+export the_old_reader_password="sua_senha"
 npx playwright test
 ```
 
@@ -168,39 +168,64 @@ lib/
 │   │   └── feedly_auth.dart
 │   └── local_opml/
 │       └── local_opml_provider.dart
+├── domain/                             # Modelos puros + interfaces de repositório (sem Flutter/DB)
+│   ├── work_item.dart                  # WorkItem — raiz da triagem local
+│   ├── triage_status.dart              # FSM de status (novo → triado → ... → concluído/arquivado)
+│   ├── rule.dart                       # Regras: gatilho + condições + ações
+│   ├── enrichment.dart / enricher.dart # Resultado de IA + interface do Enricher
+│   ├── outbox_entry.dart               # Mutação pendente para sincronizar com o provider
+│   ├── queue.dart / query_spec.dart    # Filas customizadas (WS-9)
+│   └── repositories/                   # WorkItemRepository, RuleRepository, OutboxRepository, ...
+├── application/                        # Casos de uso (importa só domain)
+│   ├── rule_engine.dart                # Motor de regras (event bus → condições → ações)
+│   ├── condition_evaluator.dart
+│   ├── action_registry.dart / action_executor.dart
+│   ├── actions/                        # add_tag, archive, snooze, webhook, notion_export, ...
+│   ├── integrations/                   # webhook, Notion, Obsidian
+│   └── sync_service.dart               # Article (remoto) → WorkItem (local)
+├── infrastructure/
+│   ├── db/                             # database.dart, tables.dart (drift/SQLite), database_provider.dart
+│   ├── repositories/                   # Implementações *_drift.dart dos repositórios do domain
+│   └── llm/                            # Adapters Anthropic / OpenRouter / Google AI Studio
 ├── services/
-│   ├── provider_settings.dart         # Credential/settings storage
-│   └── old_reader_api.dart            # Legacy API (TheOldReaderProvider)
-├── managers/
-│   └── favorites_manager.dart         # Estado de favoritos (SharedPreferences)
+│   ├── provider_settings.dart          # Credential/settings storage (por provider)
+│   ├── llm_settings.dart               # Provedor de IA ativo
+│   ├── old_reader_api.dart             # Legacy API (TheOldReaderProvider)
+│   └── background_sync.dart            # Sync em segundo plano (Android, workmanager)
+├── widget/
+│   └── feed_widget_service.dart        # Widget de tela inicial (Android)
 └── pages/
-    ├── login_screen.dart              # Login multi-provider
-    ├── home_page.dart                 # Lista de feeds
-    ├── feed_articles_page.dart        # Artigos de um feed
-    ├── feed_articles_page_xml.dart    # Artigos (fallback XML)
-    ├── article_page.dart              # Leitura de artigo
-    ├── favorites_page.dart            # Itens favoritados
-    ├── folders_page.dart              # Pastas/categorias
-    ├── folder_feeds_page.dart         # Feeds de uma pasta
-    ├── add_feed_page.dart             # Adicionar assinatura
-    ├── subscriptions_page.dart        # Gerenciar assinaturas
-    ├── search_page.dart               # Busca de artigos
-    └── settings_page.dart             # Configurações
+    ├── login_screen.dart               # Login multi-provider
+    ├── home_page.dart                  # Lista de feeds
+    ├── feed_articles_page.dart         # Artigos de um feed
+    ├── feed_articles_page_xml.dart     # Artigos (fallback XML)
+    ├── article_page.dart               # Leitura de artigo
+    ├── favorites_page.dart             # Itens favoritados
+    ├── folders_page.dart               # Pastas/categorias
+    ├── folder_feeds_page.dart          # Feeds de uma pasta
+    ├── add_feed_page.dart              # Adicionar assinatura
+    ├── subscriptions_page.dart         # Gerenciar assinaturas
+    ├── search_page.dart                # Busca de artigos
+    ├── settings_page.dart              # Configurações
+    ├── inbox_page.dart                 # Fila de triagem local (4ª aba)
+    ├── rule_editor_page.dart           # Editor de regras (com dry-run)
+    ├── queue_editor_page.dart          # Editor de filas customizadas
+    └── llm_settings_page.dart          # Provedor de IA (Anthropic/OpenRouter/Google AI Studio)
 
 proxy/
-├── proxy.js                           # Servidor Express principal
-├── proxy-debug.js                     # Versão com logs detalhados
-├── proxy-test.js                      # Testes do proxy
-├── health-check.js                    # Health-check da API
-├── check-port.js                      # Verificação de porta
-├── config.json                        # Configurações
-└── test-quickadd.js                   # Teste de adição de feeds
+├── proxy.js                            # Servidor Express principal
+├── proxy-debug.js                      # Versão com logs detalhados
+├── proxy-test.js                       # Testes do proxy
+├── health-check.js                     # Health-check da API
+├── check-port.js                       # Verificação de porta
+├── config.json                         # Configurações
+└── test-quickadd.js                    # Teste de adição de feeds
 
 tests/
-└── login.spec.ts                      # Teste E2E Playwright
+└── login.spec.ts                       # Teste E2E Playwright (variáveis the_old_reader_email/_password)
 ```
 
-> A árvore acima cobre a camada de providers RSS. O app também tem uma camada local-first de triagem/automação/IA (`lib/domain`, `lib/application`, `lib/infrastructure`) — ver [CLAUDE.md](CLAUDE.md) e [ARCHITECTURE.md](ARCHITECTURE.md) para a estrutura completa e atualizada.
+> A árvore acima cobre a camada de providers RSS e a camada local-first de triagem/automação/IA. Para o detalhamento completo (dependências entre camadas, convenções de teste, status de cada workstream), ver [CLAUDE.md](CLAUDE.md) e [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
