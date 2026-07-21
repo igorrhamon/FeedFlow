@@ -59,13 +59,80 @@ jobs:
       - name: Check proxy-debug syntax
         run: node -c proxy-debug.js
 
+  # Roda só em push direto na main (nunca em push de tag nem em PR). Calcula a
+  # próxima versão patch a partir da última tag v*.*.* existente, recusa
+  # seguir adiante se essa tag já existir (guarda contra corrida/duplicidade),
+  # atualiza pubspec.yaml e cria+publica a tag nova. main não é protegida,
+  # então o GITHUB_TOKEN padrão consegue dar push do commit e da tag aqui.
+  version:
+    name: Auto-bump version
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [analyze, test-flutter, test-proxy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.commit.outputs.tag }}
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute next patch version and tag+commit
+        id: commit
+        run: |
+          set -e
+
+          if git log -1 --pretty=%B | grep -qF '[skip version]'; then
+            echo "Commit já é um bump de versão, nada a fazer."
+            exit 0
+          fi
+
+          git fetch --tags --force
+
+          last_tag=$(git tag -l 'v*.*.*' --sort=-v:refname | head -n1)
+          last_tag="${last_tag:-v0.0.0}"
+          version="${last_tag#v}"
+          IFS='.' read -r major minor patch <<< "$version"
+          new_version="${major}.${minor}.$((patch + 1))"
+          new_tag="v${new_version}"
+
+          if git rev-parse "$new_tag" >/dev/null 2>&1 || git ls-remote --tags origin "refs/tags/$new_tag" | grep -q "$new_tag"; then
+            echo "::error::Tag $new_tag já existe, abortando versionamento automático."
+            exit 1
+          fi
+
+          sed -i -E "s/^version: .*/version: ${new_version}+${{ github.run_number }}/" pubspec.yaml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump version to ${new_version} [skip version]"
+          git tag -a "$new_tag" -m "$new_tag"
+          git push origin HEAD:main
+          git push origin "$new_tag"
+
+          echo "tag=$new_tag" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   build-web:
     name: Build Web
-    if: github.event_name == 'push'
-    needs: [analyze, test-flutter, test-proxy]
+    needs: [analyze, test-flutter, test-proxy, version]
+    if: |
+      always() &&
+      needs.analyze.result == 'success' &&
+      needs.test-flutter.result == 'success' &&
+      needs.test-proxy.result == 'success' &&
+      (
+        (github.ref == 'refs/heads/main' && needs.version.result == 'success') ||
+        startsWith(github.ref, 'refs/tags/v')
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.sha || github.sha }}
 
       - uses: subosito/flutter-action@v2
         with:
@@ -83,11 +150,21 @@ jobs:
 
   build-android:
     name: Build Android
-    if: github.event_name == 'push'
-    needs: [analyze, test-flutter, test-proxy]
+    needs: [analyze, test-flutter, test-proxy, version]
+    if: |
+      always() &&
+      needs.analyze.result == 'success' &&
+      needs.test-flutter.result == 'success' &&
+      needs.test-proxy.result == 'success' &&
+      (
+        (github.ref == 'refs/heads/main' && needs.version.result == 'success') ||
+        startsWith(github.ref, 'refs/tags/v')
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.sha || github.sha }}
 
       - uses: actions/setup-java@v4
         with:
@@ -111,8 +188,10 @@ jobs:
 
   deploy-pages:
     name: Deploy to GitHub Pages
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: build-web
+    needs: [build-web, version]
+    if: |
+      always() &&
+      needs.build-web.result == 'success'
     permissions:
       pages: write
       id-token: write
@@ -126,8 +205,10 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: build-android
+    needs: [build-android, version]
+    if: |
+      always() &&
+      needs.build-android.result == 'success'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -139,5 +220,6 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.version.outputs.tag || github.ref_name }}
           files: android-apks/*.apk
           generate_release_notes: true
