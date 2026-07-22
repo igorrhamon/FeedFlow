@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/application/action_executor.dart';
@@ -384,6 +387,40 @@ void main() {
       expect(matched, isNotNull);
       expect(matched!.payload['status'], 'novo');
       expect(matched!.payload['triggerType'], 'onIngested');
+    });
+  });
+
+  group('Persistência de auditoria (WorkItemEvents) — base do undo, WS-16', () {
+    test('grava uma linha ruleMatched em WorkItemEvents após a regra casar', () async {
+      final rule = ruleOnIngested(
+        conditions: const Condition.simple(field: 'status', operator: 'equals', value: 'novo'),
+        actions: const [ActionInvocation(actionId: 'stub', params: {})],
+      );
+      await ruleRepo.create(rule);
+
+      await workItemRepo.upsertFromArticles([article(id: 'a1')], 'feedbin');
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final rows = await (db.select(db.workItemEvents)
+            ..where((t) => t.workItemId.equals('feedbin:a1') & t.type.equals('ruleMatched')))
+          .get();
+
+      expect(rows, hasLength(1));
+      final row = rows.single;
+      expect(row.actor, 'rule');
+
+      final payload = jsonDecode(row.payloadJson) as Map<String, dynamic>;
+      expect(payload['ruleId'], 'r1');
+      expect(payload['actionIds'], ['stub']);
+      final before = payload['before'] as Map<String, dynamic>;
+      expect(before['status'], 'novo');
+      expect(before['isStarred'], isFalse);
+      final actionResults = payload['actionResults'] as List;
+      expect(actionResults.single['actionId'], 'stub');
+      // 'stub' não está registrada no ActionRegistry neste teste — a
+      // execução falha (ação não encontrada), o que é esperado e
+      // exatamente o que o undo precisa saber para não tentar revertê-la.
+      expect(actionResults.single['success'], isFalse);
     });
   });
 }
