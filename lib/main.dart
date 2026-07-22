@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'providers/feed_provider.dart';
@@ -23,7 +24,9 @@ import 'pages/folders_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FeedWidgetService.initialize();
+  if (!kIsWeb) {
+    await FeedWidgetService.initialize();
+  }
   initializeProviders();
   final repo = DatabaseProvider.repository;
   if (repo != null) {
@@ -34,7 +37,7 @@ void main() async {
     );
     DatabaseProvider.ruleEngine;
   }
-  if (Platform.isAndroid) {
+  if (!kIsWeb && Platform.isAndroid) {
     await BackgroundSyncScheduler.initialize();
   }
   runApp(const MyApp());
