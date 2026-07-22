@@ -66,7 +66,7 @@ class RuleEngine {
     // Avalia regras em ordem
     for (final rule in enabledRules) {
       if (_conditionEvaluator.evaluate(rule.conditions, workItem)) {
-        // Regra casa — publica evento de auditoria
+        // Regra casa — publica evento de auditoria (bus, em memória)
         _eventBus.publish(
           RuleMatched(
             ruleId: rule.id,
@@ -91,7 +91,33 @@ class RuleEngine {
         );
 
         // Executa as ações da regra
-        await _actionExecutor.executeAll(workItem, rule.actions);
+        final results = await _actionExecutor.executeAll(workItem, rule.actions);
+
+        // Persiste a auditoria em WorkItemEvents (base do undo, WS-16) — só
+        // depois de executar, para saber quais ações de fato tiveram
+        // sucesso. Diferente do RuleMatched do bus (publicado antes, em
+        // memória), esta é a trilha que sobrevive e que `RuleUndoUseCase`
+        // consulta.
+        await _workItemRepository.logEvent(
+          workItemId,
+          type: 'ruleMatched',
+          actor: 'rule',
+          payload: {
+            'ruleId': rule.id,
+            'ruleName': rule.name,
+            'triggerType': trigger.name,
+            'before': {
+              'status': workItem.status.name,
+              'priority': workItem.priority.name,
+              'tags': workItem.tags,
+              'isStarred': workItem.isStarred,
+            },
+            'actionIds': rule.actions.map((a) => a.actionId).toList(),
+            'actionResults': results
+                .map((r) => {'actionId': r.actionId, 'success': r.success})
+                .toList(),
+          },
+        );
 
         if (rule.stopOnMatch) {
           break; // Para de avaliar outras regras

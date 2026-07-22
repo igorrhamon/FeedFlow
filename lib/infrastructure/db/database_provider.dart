@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../application/action_executor.dart';
 import '../../application/event_bus.dart';
 import '../../application/rule_engine.dart';
+import '../../application/rule_undo_use_case.dart';
 import '../../application/sync_service.dart';
 import '../../domain/enricher.dart';
 import '../../domain/repositories/enrichment_repository.dart';
@@ -10,6 +11,7 @@ import '../../domain/repositories/outbox_repository.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../../domain/repositories/rule_repository.dart';
 import '../../domain/repositories/search_repository.dart';
+import '../../domain/repositories/work_item_event_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import '../llm/llm_enricher_router.dart';
 import '../repositories/enrichment_repository_drift.dart';
@@ -18,6 +20,7 @@ import '../repositories/outbox_repository_drift.dart';
 import '../repositories/queue_repository_drift.dart';
 import '../repositories/rule_repository_drift.dart';
 import '../repositories/search_repository_drift.dart';
+import '../repositories/work_item_event_repository_drift.dart';
 import '../repositories/work_item_repository_drift.dart';
 import 'database.dart';
 
@@ -39,6 +42,8 @@ class DatabaseProvider {
   static RuleEngine? _ruleEngine;
   static EnrichmentRepository? _enrichmentRepository;
   static Enricher? _enricher;
+  static WorkItemEventRepository? _workItemEventRepository;
+  static RuleUndoUseCase? _ruleUndoUseCase;
 
   static WorkItemRepository? get repository {
     if (kIsWeb) return null;
@@ -112,5 +117,27 @@ class DatabaseProvider {
   static Enricher? get enricher {
     if (kIsWeb) return null;
     return _enricher ??= LlmEnricherRouter();
+  }
+
+  /// Leitura da trilha de auditoria (`WorkItemEvents`) — base do undo de
+  /// regras (WS-16). Ver [ruleUndoUseCase].
+  static WorkItemEventRepository? get workItemEventRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _workItemEventRepository ??= WorkItemEventRepositoryDrift(_database!);
+  }
+
+  /// Desfaz o efeito de uma regra dentro de uma janela de tempo (padrão
+  /// 24h), lendo os eventos `ruleMatched` persistidos por [RuleEngine].
+  static RuleUndoUseCase? get ruleUndoUseCase {
+    final workItems = repository;
+    final events = workItemEventRepository;
+    final rules = ruleRepository;
+    if (workItems == null || events == null || rules == null) return null;
+    return _ruleUndoUseCase ??= RuleUndoUseCase(
+      workItemRepository: workItems,
+      eventRepository: events,
+      ruleRepository: rules,
+    );
   }
 }
