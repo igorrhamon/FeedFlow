@@ -1,105 +1,89 @@
 # Changelog
 
-All notable changes to The Old Reader Flutter app will be documented in this file.
+All notable changes to FeedFlow will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Onda 4 (WS-16, undo de regras de automação) implementada e testada no branch
+  `worktree-ws16-rule-undo`, pendente de merge em `novaVersao`.
+- Planejamento da evolução para plataforma de inteligência pessoal em
+  `docs/PLATFORM-ROADMAP.md` (Ondas 5-34).
+
+## [1.1.3]
+
+- CI: versionamento automático (bump de patch) a cada push em `main`.
+
+## [1.1.2]
+
+- Fix: base-href do build web ajustado para `/FeedFlow/` (GitHub Pages de projeto).
+
+## [1.1.1]
+
+- CI: criação automática de GitHub Release em push de tag `v*`.
+
+## [1.1.0]
+
 ### Added
 
-- **Multi-provider RSS architecture foundation** (Phase 1 complete)
-  - Abstract `FeedProvider` interface for plugin-based provider support
-  - `ProviderRegistry` for dynamic provider discovery and instantiation
-  - Domain models with Freezed: `Feed`, `Article`, `Category`, `UnreadCount`, `ArticleListResult`
-  - Authentication abstraction with support for GoogleLogin, OAuth2, API keys, BasicAuth
-  - `TheOldReaderProvider` reference implementation wrapping existing `OldReaderApi`
-  - `ProviderSettings` service for encrypted credential storage
+- **Local-first triage/automation subsystem** (`lib/domain/`, `lib/application/`,
+  `lib/infrastructure/`), construído incrementalmente via workstreams WS-1 a WS-17:
+  - Persistência local com **drift/SQLite** (`WorkItem`, FSM de triagem
+    `novo → triado → emAndamento → concluído/arquivado`).
+  - **Inbox** (`inbox_page.dart`) com fila de triagem, ações via bottom-sheet/swipe.
+  - **Rule Engine** (`rule_engine.dart`) e **Action Registry/Executor** com 13 ações
+    registradas (concluir, arquivar, adiar, favoritar, compartilhar, copiar link, tag,
+    webhook, export Notion/Obsidian, resumir/traduzir/classificar).
+  - **Editor de regras** (`rule_editor_page.dart`) com dry-run.
+  - **Queue/QuerySpec** (`queue_editor_page.dart`) — filas customizadas de itens.
+  - **Busca full-text local (FTS5)** sobre título/conteúdo/autor/tags, sincronizada por
+    triggers SQL (`lib/infrastructure/db/fts5_helpers.dart`).
+  - **Enriquecimento por IA**: adapters Anthropic, OpenRouter e Google AI Studio via
+    `LlmEnricherRouter`, configurável em Ajustes → "Provedor de IA".
+  - **Workflows**: `WorkflowRunner` executa sequências de ações com trilha de eventos.
+  - **Integrações externas**: Notion, Obsidian e webhooks genéricos.
+  - **Outbox pattern**: mutações de read/star aplicadas otimisticamente e
+    reenviadas ao provider remoto via fila (`SyncService.flushOutbox`).
+  - **Background sync** via `workmanager` (Android), integrado ao `SyncService`.
+- Security hardening: CORS, prevenção de vazamento de token de auth, sanitização de
+  erro, timeouts, prevenção de injeção JSON.
+- Isolamento de drift/sqlite3 (`dart:ffi`) do build web via import condicional —
+  `DatabaseProvider` retorna `null` sob `kIsWeb` (sem sqlite3/WASM ainda).
 
-- **Developer documentation improvements**
-  - Comprehensive CLAUDE.md with build commands for all platforms
-  - Code generation guide (Freezed, JSON serialization)
-  - Platform-specific build instructions (Android JDK setup, iOS, web, desktop)
-  - Complete API quirks reference (feed IDs, category labels, pagination patterns)
-  - Testing guide with single test and Playwright debugging
-  - Architecture evolution roadmap with phase tracking
+### Fixed
 
-- **Folder management in feed subscriptions**
-  - New `FolderFeedsPage` component for folder-specific article browsing
-  - Improved `FoldersPage` with better folder listing and navigation
-  - Folder integration in home page navigation
+- 28 issues de `flutter analyze` resolvidas.
+- Página em branco no build web (`Platform.isAndroid` não suportado em web).
+- Ícones customizados do Android (mipmap `ic_launcher_round`) versionados.
+
+## [1.0.0] — Fase 1: fundação multi-provider
+
+### Added
+
+- **Multi-provider RSS architecture**: interface abstrata `FeedProvider`,
+  `ProviderRegistry` (factory), 9 providers implementados (The Old Reader, Inoreader,
+  FreshRSS, Miniflux, Tiny Tiny RSS, Feedbin, NewsBlur, Feedly, Local OPML).
+- Modelos de domínio com Freezed: `Feed`, `Article`, `Category`, `UnreadCount`,
+  `ArticleListResult`.
+- Autenticação por tipo (`GoogleLogin`, `OAuth2`, `ApiKey`, `BasicAuth`, `LocalFile`)
+  com persistência criptografada via `ProviderSettings`/`flutter_secure_storage`.
+- Gerenciamento de pastas nas assinaturas (`FolderFeedsPage`, `FoldersPage`).
 
 ### Changed
 
-- **Documentation structure**
-  - CLAUDE.md now primary developer reference with links to ARCHITECTURE.md and AGENTS.md
-  - ARCHITECTURE.md documents multi-provider design and implementation phases
-  - AGENTS.md consolidates technical implementation details
-
-- **Project layout**
-  - New `lib/models/` directory with Freezed domain models (Feed, Article, Category, etc.)
-  - New `lib/providers/` directory with provider infrastructure and implementations
-  - New test fixtures in `test/models/` and `test/providers/`
-
-### Deprecated
-
-- Raw `OldReaderApi` direct usage (will be replaced by `FeedProvider` in Phase 2)
-- Simple `setState` architecture (Plan to migrate to Provider-based state management)
-
-### Not Yet Implemented
-
-- OAuth2 integration (planned for multi-provider support)
-- Provider selection UI in Settings
-- Additional provider implementations: Feedly, Inoreader, FreshRSS, Miniflux, Feedbin, Tiny Tiny RSS, NewsBlur, Local OPML
-- Offline article viewing
-- Push notifications
-- Dark mode integration
-- Keyboard shortcuts for web version
+- Estrutura reorganizada: `lib/models/`, `lib/providers/`.
 
 ## Development Notes
 
-### Building & Running
+Ver `CLAUDE.md` para comandos de build/teste completos por plataforma e a
+arquitetura atual de camadas (`lib/providers` → `lib/domain`/`application`/
+`infrastructure` → `lib/pages`).
 
-**Setup & Dependencies:**
-``````bash
-flutter pub get                           # Install Dart dependencies
-npm install                               # Install proxy dependencies
-flutter pub run build_runner build        # Generate Freezed/JSON code
-``````
+## Cross-references
 
-**Running:**
-``````bash
-flutter run                               # Android/iOS/Desktop
-flutter run -d web-server --web-port 8000 --web-hostname 127.0.0.1  # Web
-pwsh .\start-web-app.ps1                 # Windows: web + proxy
-./direct-launcher.sh                      # macOS/Linux: web + proxy
-``````
-
-**Building:**
-``````bash
-# Android (Windows: set JAVA_HOME first)
-$env:JAVA_HOME = "$env:USERPROFILE\Android\jdk17-extracted\jdk17"
-flutter build apk --release --split-per-abi
-
-flutter build ios --release               # iOS
-flutter build web --release               # Web
-flutter build windows --release           # Windows
-flutter build linux --release             # Linux
-flutter build macos --release             # macOS
-``````
-
-### Testing
-
-``````bash
-flutter test                              # Widget tests
-flutter test test/path/to/test_file.dart  # Single test file
-npx playwright test                       # E2E tests (requires env vars)
-npx playwright test --debug                # E2E debug mode
-``````
-
-## Historical Context
-
-- **Initial implementation**: The Old Reader API client with native platform support
-- **Web CORS handling**: Node.js Express proxy for development/web builds
-- **Current focus**: Multi-provider architecture foundation to support Feedly, Inoreader, and self-hosted RSS services
+- `docs/EVOLUTION-PLAN.md` — arquitetura alvo do subsistema local-first.
+- `docs/PARALLEL-EXECUTION-PLAN.md` — histórico de workstreams (WS-N) e status real.
+- `docs/PLATFORM-ROADMAP.md` — roadmap de evolução para plataforma de inteligência
+  pessoal (Ondas 5-34).

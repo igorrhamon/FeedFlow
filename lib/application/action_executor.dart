@@ -74,7 +74,7 @@ class ActionExecutor {
       await action.execute(item, invocation.params);
 
       // Sucesso: publica evento de auditoria
-      _eventBus.publish(
+      await _eventBus.publish(
         ActionExecuted(
           workItemId: item.id,
           actionId: invocation.actionId,

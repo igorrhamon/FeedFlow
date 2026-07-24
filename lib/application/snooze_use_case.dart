@@ -21,7 +21,7 @@ class SnoozeUseCase {
   /// UI decide o intervalo permitido.
   Future<void> snooze(WorkItem item, DateTime until, {String actor = 'user'}) async {
     await _workItemRepository.save(item.copyWith(snoozedUntil: until));
-    _eventBus.publish(
+    await _eventBus.publish(
       ItemSnoozed(
         workItemId: item.id,
         snoozedUntil: until,
@@ -34,7 +34,7 @@ class SnoozeUseCase {
   /// Acorda [item] antes do prazo (ou após expirar), limpando `snoozedUntil`.
   Future<void> wake(WorkItem item) async {
     await _workItemRepository.save(item.copyWith(snoozedUntil: null));
-    _eventBus.publish(
+    await _eventBus.publish(
       SnoozeExpired(
         workItemId: item.id,
         timestamp: DateTime.now(),

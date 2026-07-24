@@ -42,7 +42,7 @@ class WorkflowRunner {
       final result = await _actionExecutor.execute(item, steps[i]);
       results.add(result);
 
-      _eventBus.publish(
+      await _eventBus.publish(
         WorkflowStepExecuted(
           workItemId: item.id,
           actionId: steps[i].actionId,
@@ -56,7 +56,7 @@ class WorkflowRunner {
 
     final succeeded = results.where((r) => r.success).length;
 
-    _eventBus.publish(
+    await _eventBus.publish(
       WorkflowCompleted(
         workItemId: item.id,
         totalSteps: total,

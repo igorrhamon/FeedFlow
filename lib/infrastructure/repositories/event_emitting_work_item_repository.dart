@@ -46,7 +46,7 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
     // Publica evento de ingestão para cada artigo
     final now = DateTime.now();
     for (final article in articles) {
-      _eventBus.publish(
+      await _eventBus.publish(
         ArticleIngested(
           workItemId: '$providerId:${article.id}',
           providerId: providerId,
@@ -76,7 +76,7 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
     await _delegate.changeStatus(id, newStatus);
 
     // Publica evento de mudança de status
-    _eventBus.publish(
+    await _eventBus.publish(
       StatusChanged(
         workItemId: id,
         fromStatus: oldStatus.name,
