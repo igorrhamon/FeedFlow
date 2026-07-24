@@ -67,6 +67,18 @@ O objetivo deste documento é dividir o restante (fim da Fase 2 + Fases 3, 4 e 5
 
 **WS-16**: `rule_undo_use_case.dart` + `WorkItemEventRepository` (leitura da tabela `WorkItemEvents`, que só é escrita hoje, nunca lida) para "desfazer últimas 24h de uma regra". Depende de WS-12 (payload de `RuleMatched`). Sem conflito de schema.
 
+**Status real (2026-07-24)**: implementado e testado, mas **pendente de merge** — existe apenas no branch `worktree-ws16-rule-undo` (commit `fdd1361`, sobre `78e972f`), não em `novaVersao`. `lib/application/rule_undo_use_case.dart` e `work_item_event_repository*.dart` não existem no HEAD atual. Ver `Onda 5.md` (raiz), que faz o merge desta workstream como primeiro passo.
+
+## Continuação: Ondas 5-34 (plataforma de planejamento inteligente)
+
+A partir daqui o plano de execução migrou para `docs/PLATFORM-ROADMAP.md`, que cobre a
+evolução do FeedFlow de leitor RSS local-first para plataforma de inteligência pessoal
+(ingestão universal, knowledge base, knowledge graph, planejamento, execução com
+aprovação, agentes, memória e plataforma/SDK). Numeração de workstreams retomada em
+**WS-18** (WS-17 = FTS5, última usada em sequência). A onda em execução no momento tem
+seu plano de implementação detalhado em `Onda 5.md` na raiz do repo, seguindo o mesmo
+formato de `Onda 2.md`/`Onda 4.md`.
+
 ## Conflitos de arquivo — resumo
 
 | Arquivo | Risco | Mitigação |

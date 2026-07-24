@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../application/action_executor.dart';
 import '../../application/event_bus.dart';
+import '../../application/journal_listener.dart';
 import '../../application/rule_engine.dart';
 import '../../application/rule_undo_use_case.dart';
 import '../../application/sync_service.dart';
@@ -44,14 +45,22 @@ class DatabaseProvider {
   static Enricher? _enricher;
   static WorkItemEventRepository? _workItemEventRepository;
   static RuleUndoUseCase? _ruleUndoUseCase;
+  static JournalListener? _journalListener;
 
   static WorkItemRepository? get repository {
     if (kIsWeb) return null;
     _database ??= AppDatabase();
-    return _workItemRepository ??= EventEmittingWorkItemRepository(
+    final repo = _workItemRepository ??= EventEmittingWorkItemRepository(
       WorkItemRepositoryDrift(_database!),
       eventBus,
     );
+    // Persiste todo DomainEvent em WorkItemEvents (Onda 5 / WS-18) — inscrito
+    // uma única vez, na primeira vez que o repositório é acessado.
+    _journalListener ??= initializeJournalListener(
+      bus: eventBus,
+      workItemRepository: repo,
+    );
+    return repo;
   }
 
   static OutboxRepository? get outboxRepository {

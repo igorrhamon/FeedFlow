@@ -38,7 +38,7 @@ class RuleEngine {
     _eventBus.subscribe(_onEvent);
   }
 
-  void _onEvent(DomainEvent event) async {
+  Future<void> _onEvent(DomainEvent event) async {
     // Filtra apenas eventos que trigram avaliação de regras
     final workItemId = _extractWorkItemId(event);
     final trigger = _extractTrigger(event);
@@ -67,7 +67,7 @@ class RuleEngine {
     for (final rule in enabledRules) {
       if (_conditionEvaluator.evaluate(rule.conditions, workItem)) {
         // Regra casa — publica evento de auditoria (bus, em memória)
-        _eventBus.publish(
+        await _eventBus.publish(
           RuleMatched(
             ruleId: rule.id,
             workItemId: workItemId,
