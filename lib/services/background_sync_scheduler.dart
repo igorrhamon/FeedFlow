@@ -21,6 +21,7 @@ void callbackDispatcher() {
         enricher: DatabaseProvider.enricher,
         enrichmentRepository: DatabaseProvider.enrichmentRepository,
       );
+      DatabaseProvider.jobRunner?.start();
     }
     await BackgroundSync.run();
     return true;

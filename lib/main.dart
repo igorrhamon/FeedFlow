@@ -35,6 +35,7 @@ void main() async {
       enricher: DatabaseProvider.enricher,
       enrichmentRepository: DatabaseProvider.enrichmentRepository,
     );
+    DatabaseProvider.jobRunner?.start();
     DatabaseProvider.ruleEngine;
   }
   if (!kIsWeb && Platform.isAndroid) {

@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../../application/action_executor.dart';
 import '../../application/event_bus.dart';
 import '../../application/journal_listener.dart';
+import '../../application/job_runner.dart';
+import '../../application/jobs/jobs_init.dart';
 import '../../application/rule_engine.dart';
 import '../../application/rule_undo_use_case.dart';
 import '../../application/sync_service.dart';
@@ -41,6 +43,7 @@ class DatabaseProvider {
   static RuleRepository? _ruleRepository;
   static QueueRepository? _queueRepository;
   static JobRepository? _jobRepository;
+  static JobRunner? _jobRunner;
   static SyncService? _syncService;
   static ActionExecutor? _actionExecutor;
   static RuleEngine? _ruleEngine;
@@ -157,5 +160,18 @@ class DatabaseProvider {
     if (kIsWeb) return null;
     _database ??= AppDatabase();
     return _jobRepository ??= JobRepositoryDrift(_database!);
+  }
+
+  static JobRunner? get jobRunner {
+    if (kIsWeb) return null;
+    final repo = jobRepository;
+    if (repo == null) return null;
+    if (_jobRunner != null) return _jobRunner;
+    _jobRunner = JobRunner(jobRepository: repo, eventBus: eventBus);
+    initializeJobHandlers(
+      workItemRepository: repository!,
+      actionExecutor: actionExecutor!,
+    );
+    return _jobRunner;
   }
 }
