@@ -83,6 +83,25 @@ void main() {
       expect(secondClaim, isEmpty);
     });
 
+    test(
+        'claimNextBatch NÃO retorna job cujo dependsOn referencia um job inexistente',
+        () async {
+      final now = DateTime.now();
+      final dependentJob = Job(
+        id: 'dependent-job',
+        type: 'test',
+        dependsOn: ['job-que-nao-existe'],
+        nextRunAt: now,
+        createdAt: now,
+      );
+
+      await repository.enqueue(dependentJob);
+
+      final claimed = await repository.claimNextBatch(10);
+
+      expect(claimed, isEmpty);
+    });
+
     test('claimNextBatch RETORNA job com dependsOn: [] imediatamente', () async {
       final now = DateTime.now();
       final job = Job(

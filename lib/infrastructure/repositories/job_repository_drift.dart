@@ -59,7 +59,8 @@ class JobRepositoryDrift implements JobRepository {
                 ..where((t) => t.id.isIn(dependsOnIds)))
               .get();
 
-          final allDone = dependencyStatuses.every((j) => j.status == 'done');
+          final allDone = dependencyStatuses.length == dependsOnIds.length &&
+              dependencyStatuses.every((j) => j.status == 'done');
           if (allDone) {
             eligibleJobs.add(row);
           }
