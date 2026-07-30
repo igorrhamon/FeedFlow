@@ -88,6 +88,19 @@ class FakeJobRepository implements JobRepository {
   }
 }
 
+/// Fake repository que pode falhar em métodos específicos para testes de resiliência.
+class FailingFakeJobRepository extends FakeJobRepository {
+  final Set<String> jobIdsToFailMarkSucceeded = {};
+
+  @override
+  Future<void> markSucceeded(String id) async {
+    if (jobIdsToFailMarkSucceeded.contains(id)) {
+      throw Exception('Simulated markSucceeded failure for job $id');
+    }
+    return super.markSucceeded(id);
+  }
+}
+
 /// Fake handler para testes.
 class FakeJobHandler extends JobHandler {
   FakeJobHandler({required this.jobType, this.shouldThrow = false});
@@ -268,6 +281,50 @@ void main() {
 
       // Se chegou aqui sem erro, o teste passou
       expect(true, true);
+    });
+
+    test(
+        'Um job falhando em markSucceeded nao impede outros jobs do lote de serem processados',
+        () async {
+      // Arrange: usar FailingFakeJobRepository que falha em markSucceeded
+      final failingRepo = FailingFakeJobRepository();
+      final testRunner =
+          JobRunner(jobRepository: failingRepo, eventBus: eventBus);
+
+      final handler1 = FakeJobHandler(jobType: 'job1');
+      final handler2 = FakeJobHandler(jobType: 'job2');
+      JobRegistry.register('job1', () => handler1);
+      JobRegistry.register('job2', () => handler2);
+
+      final events = <DomainEvent>[];
+      eventBus.subscribe((event) {
+        events.add(event);
+      });
+
+      // Enfileirar dois jobs
+      final jobId1 = await testRunner.enqueue('job1', {});
+      final jobId2 = await testRunner.enqueue('job2', {});
+
+      // Falhar markSucceeded apenas para jobId1
+      failingRepo.jobIdsToFailMarkSucceeded.add(jobId1);
+
+      // Act: aguardar processamento
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      // Assert: ambos os handlers foram chamados, mesmo que jobId1 tenha falhado
+      expect(handler1.callCount, 1);
+      expect(handler2.callCount, 1);
+
+      // jobId2 deve estar em estado 'done' (processamento completou)
+      final job2 = await failingRepo.byId(jobId2);
+      expect(job2?.status, JobStatus.done);
+
+      // jobId1 ficou em 'running' porque markSucceeded falhou, mas não impediu jobId2
+      // (comportamento esperado: falha de repositório deixa job em estado inconsistente)
+      final job1 = await failingRepo.byId(jobId1);
+      expect(job1?.status, JobStatus.running);
+
+      testRunner.stop();
     });
   });
 }

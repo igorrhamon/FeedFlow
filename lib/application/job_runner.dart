@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:uuid/uuid.dart';
 
@@ -71,7 +72,16 @@ class JobRunner {
   Future<void> _processBatch() async {
     final jobs = await _jobRepository.claimNextBatch(_batchSize);
     for (final job in jobs) {
-      await _runOne(job);
+      try {
+        await _runOne(job);
+      } catch (e, stackTrace) {
+        developer.log(
+          'JobRunner: _runOne falhou para job ${job.id}',
+          name: 'feedflow.job_runner',
+          error: e,
+          stackTrace: stackTrace,
+        );
+      }
     }
   }
 
