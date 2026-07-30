@@ -2812,3 +2812,1030 @@ abstract class _SyncFailed extends SyncFailed {
   _$$SyncFailedImplCopyWith<_$SyncFailedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+/// @nodoc
+mixin _$JobEnqueued {
+  String get jobId => throw _privateConstructorUsedError;
+  String get type => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of JobEnqueued
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $JobEnqueuedCopyWith<JobEnqueued> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $JobEnqueuedCopyWith<$Res> {
+  factory $JobEnqueuedCopyWith(
+    JobEnqueued value,
+    $Res Function(JobEnqueued) then,
+  ) = _$JobEnqueuedCopyWithImpl<$Res, JobEnqueued>;
+  @useResult
+  $Res call({String jobId, String type, DateTime timestamp});
+}
+
+/// @nodoc
+class _$JobEnqueuedCopyWithImpl<$Res, $Val extends JobEnqueued>
+    implements $JobEnqueuedCopyWith<$Res> {
+  _$JobEnqueuedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of JobEnqueued
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            jobId:
+                null == jobId
+                    ? _value.jobId
+                    : jobId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$JobEnqueuedImplCopyWith<$Res>
+    implements $JobEnqueuedCopyWith<$Res> {
+  factory _$$JobEnqueuedImplCopyWith(
+    _$JobEnqueuedImpl value,
+    $Res Function(_$JobEnqueuedImpl) then,
+  ) = __$$JobEnqueuedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String jobId, String type, DateTime timestamp});
+}
+
+/// @nodoc
+class __$$JobEnqueuedImplCopyWithImpl<$Res>
+    extends _$JobEnqueuedCopyWithImpl<$Res, _$JobEnqueuedImpl>
+    implements _$$JobEnqueuedImplCopyWith<$Res> {
+  __$$JobEnqueuedImplCopyWithImpl(
+    _$JobEnqueuedImpl _value,
+    $Res Function(_$JobEnqueuedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JobEnqueued
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$JobEnqueuedImpl(
+        jobId:
+            null == jobId
+                ? _value.jobId
+                : jobId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$JobEnqueuedImpl extends _JobEnqueued {
+  const _$JobEnqueuedImpl({
+    required this.jobId,
+    required this.type,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String jobId;
+  @override
+  final String type;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'JobEnqueued(jobId: $jobId, type: $type, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JobEnqueuedImpl &&
+            (identical(other.jobId, jobId) || other.jobId == jobId) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, jobId, type, timestamp);
+
+  /// Create a copy of JobEnqueued
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$JobEnqueuedImplCopyWith<_$JobEnqueuedImpl> get copyWith =>
+      __$$JobEnqueuedImplCopyWithImpl<_$JobEnqueuedImpl>(this, _$identity);
+}
+
+abstract class _JobEnqueued extends JobEnqueued {
+  const factory _JobEnqueued({
+    required final String jobId,
+    required final String type,
+    required final DateTime timestamp,
+  }) = _$JobEnqueuedImpl;
+  const _JobEnqueued._() : super._();
+
+  @override
+  String get jobId;
+  @override
+  String get type;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of JobEnqueued
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$JobEnqueuedImplCopyWith<_$JobEnqueuedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$JobStarted {
+  String get jobId => throw _privateConstructorUsedError;
+  String get type => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of JobStarted
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $JobStartedCopyWith<JobStarted> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $JobStartedCopyWith<$Res> {
+  factory $JobStartedCopyWith(
+    JobStarted value,
+    $Res Function(JobStarted) then,
+  ) = _$JobStartedCopyWithImpl<$Res, JobStarted>;
+  @useResult
+  $Res call({String jobId, String type, DateTime timestamp});
+}
+
+/// @nodoc
+class _$JobStartedCopyWithImpl<$Res, $Val extends JobStarted>
+    implements $JobStartedCopyWith<$Res> {
+  _$JobStartedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of JobStarted
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            jobId:
+                null == jobId
+                    ? _value.jobId
+                    : jobId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$JobStartedImplCopyWith<$Res>
+    implements $JobStartedCopyWith<$Res> {
+  factory _$$JobStartedImplCopyWith(
+    _$JobStartedImpl value,
+    $Res Function(_$JobStartedImpl) then,
+  ) = __$$JobStartedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String jobId, String type, DateTime timestamp});
+}
+
+/// @nodoc
+class __$$JobStartedImplCopyWithImpl<$Res>
+    extends _$JobStartedCopyWithImpl<$Res, _$JobStartedImpl>
+    implements _$$JobStartedImplCopyWith<$Res> {
+  __$$JobStartedImplCopyWithImpl(
+    _$JobStartedImpl _value,
+    $Res Function(_$JobStartedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JobStarted
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$JobStartedImpl(
+        jobId:
+            null == jobId
+                ? _value.jobId
+                : jobId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$JobStartedImpl extends _JobStarted {
+  const _$JobStartedImpl({
+    required this.jobId,
+    required this.type,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String jobId;
+  @override
+  final String type;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'JobStarted(jobId: $jobId, type: $type, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JobStartedImpl &&
+            (identical(other.jobId, jobId) || other.jobId == jobId) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, jobId, type, timestamp);
+
+  /// Create a copy of JobStarted
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$JobStartedImplCopyWith<_$JobStartedImpl> get copyWith =>
+      __$$JobStartedImplCopyWithImpl<_$JobStartedImpl>(this, _$identity);
+}
+
+abstract class _JobStarted extends JobStarted {
+  const factory _JobStarted({
+    required final String jobId,
+    required final String type,
+    required final DateTime timestamp,
+  }) = _$JobStartedImpl;
+  const _JobStarted._() : super._();
+
+  @override
+  String get jobId;
+  @override
+  String get type;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of JobStarted
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$JobStartedImplCopyWith<_$JobStartedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$JobSucceeded {
+  String get jobId => throw _privateConstructorUsedError;
+  String get type => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of JobSucceeded
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $JobSucceededCopyWith<JobSucceeded> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $JobSucceededCopyWith<$Res> {
+  factory $JobSucceededCopyWith(
+    JobSucceeded value,
+    $Res Function(JobSucceeded) then,
+  ) = _$JobSucceededCopyWithImpl<$Res, JobSucceeded>;
+  @useResult
+  $Res call({String jobId, String type, DateTime timestamp});
+}
+
+/// @nodoc
+class _$JobSucceededCopyWithImpl<$Res, $Val extends JobSucceeded>
+    implements $JobSucceededCopyWith<$Res> {
+  _$JobSucceededCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of JobSucceeded
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            jobId:
+                null == jobId
+                    ? _value.jobId
+                    : jobId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$JobSucceededImplCopyWith<$Res>
+    implements $JobSucceededCopyWith<$Res> {
+  factory _$$JobSucceededImplCopyWith(
+    _$JobSucceededImpl value,
+    $Res Function(_$JobSucceededImpl) then,
+  ) = __$$JobSucceededImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String jobId, String type, DateTime timestamp});
+}
+
+/// @nodoc
+class __$$JobSucceededImplCopyWithImpl<$Res>
+    extends _$JobSucceededCopyWithImpl<$Res, _$JobSucceededImpl>
+    implements _$$JobSucceededImplCopyWith<$Res> {
+  __$$JobSucceededImplCopyWithImpl(
+    _$JobSucceededImpl _value,
+    $Res Function(_$JobSucceededImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JobSucceeded
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$JobSucceededImpl(
+        jobId:
+            null == jobId
+                ? _value.jobId
+                : jobId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$JobSucceededImpl extends _JobSucceeded {
+  const _$JobSucceededImpl({
+    required this.jobId,
+    required this.type,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String jobId;
+  @override
+  final String type;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'JobSucceeded(jobId: $jobId, type: $type, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JobSucceededImpl &&
+            (identical(other.jobId, jobId) || other.jobId == jobId) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, jobId, type, timestamp);
+
+  /// Create a copy of JobSucceeded
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$JobSucceededImplCopyWith<_$JobSucceededImpl> get copyWith =>
+      __$$JobSucceededImplCopyWithImpl<_$JobSucceededImpl>(this, _$identity);
+}
+
+abstract class _JobSucceeded extends JobSucceeded {
+  const factory _JobSucceeded({
+    required final String jobId,
+    required final String type,
+    required final DateTime timestamp,
+  }) = _$JobSucceededImpl;
+  const _JobSucceeded._() : super._();
+
+  @override
+  String get jobId;
+  @override
+  String get type;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of JobSucceeded
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$JobSucceededImplCopyWith<_$JobSucceededImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$JobFailed {
+  String get jobId => throw _privateConstructorUsedError;
+  String get type => throw _privateConstructorUsedError;
+  String get error => throw _privateConstructorUsedError;
+  int get attempts => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of JobFailed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $JobFailedCopyWith<JobFailed> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $JobFailedCopyWith<$Res> {
+  factory $JobFailedCopyWith(JobFailed value, $Res Function(JobFailed) then) =
+      _$JobFailedCopyWithImpl<$Res, JobFailed>;
+  @useResult
+  $Res call({
+    String jobId,
+    String type,
+    String error,
+    int attempts,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$JobFailedCopyWithImpl<$Res, $Val extends JobFailed>
+    implements $JobFailedCopyWith<$Res> {
+  _$JobFailedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of JobFailed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? error = null,
+    Object? attempts = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            jobId:
+                null == jobId
+                    ? _value.jobId
+                    : jobId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String,
+            error:
+                null == error
+                    ? _value.error
+                    : error // ignore: cast_nullable_to_non_nullable
+                        as String,
+            attempts:
+                null == attempts
+                    ? _value.attempts
+                    : attempts // ignore: cast_nullable_to_non_nullable
+                        as int,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$JobFailedImplCopyWith<$Res>
+    implements $JobFailedCopyWith<$Res> {
+  factory _$$JobFailedImplCopyWith(
+    _$JobFailedImpl value,
+    $Res Function(_$JobFailedImpl) then,
+  ) = __$$JobFailedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String jobId,
+    String type,
+    String error,
+    int attempts,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$JobFailedImplCopyWithImpl<$Res>
+    extends _$JobFailedCopyWithImpl<$Res, _$JobFailedImpl>
+    implements _$$JobFailedImplCopyWith<$Res> {
+  __$$JobFailedImplCopyWithImpl(
+    _$JobFailedImpl _value,
+    $Res Function(_$JobFailedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JobFailed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? error = null,
+    Object? attempts = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$JobFailedImpl(
+        jobId:
+            null == jobId
+                ? _value.jobId
+                : jobId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String,
+        error:
+            null == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                    as String,
+        attempts:
+            null == attempts
+                ? _value.attempts
+                : attempts // ignore: cast_nullable_to_non_nullable
+                    as int,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$JobFailedImpl extends _JobFailed {
+  const _$JobFailedImpl({
+    required this.jobId,
+    required this.type,
+    required this.error,
+    required this.attempts,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String jobId;
+  @override
+  final String type;
+  @override
+  final String error;
+  @override
+  final int attempts;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'JobFailed(jobId: $jobId, type: $type, error: $error, attempts: $attempts, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JobFailedImpl &&
+            (identical(other.jobId, jobId) || other.jobId == jobId) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.error, error) || other.error == error) &&
+            (identical(other.attempts, attempts) ||
+                other.attempts == attempts) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, jobId, type, error, attempts, timestamp);
+
+  /// Create a copy of JobFailed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$JobFailedImplCopyWith<_$JobFailedImpl> get copyWith =>
+      __$$JobFailedImplCopyWithImpl<_$JobFailedImpl>(this, _$identity);
+}
+
+abstract class _JobFailed extends JobFailed {
+  const factory _JobFailed({
+    required final String jobId,
+    required final String type,
+    required final String error,
+    required final int attempts,
+    required final DateTime timestamp,
+  }) = _$JobFailedImpl;
+  const _JobFailed._() : super._();
+
+  @override
+  String get jobId;
+  @override
+  String get type;
+  @override
+  String get error;
+  @override
+  int get attempts;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of JobFailed
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$JobFailedImplCopyWith<_$JobFailedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$JobRetried {
+  String get jobId => throw _privateConstructorUsedError;
+  String get type => throw _privateConstructorUsedError;
+  int get attempts => throw _privateConstructorUsedError;
+  DateTime get nextRunAt => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of JobRetried
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $JobRetriedCopyWith<JobRetried> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $JobRetriedCopyWith<$Res> {
+  factory $JobRetriedCopyWith(
+    JobRetried value,
+    $Res Function(JobRetried) then,
+  ) = _$JobRetriedCopyWithImpl<$Res, JobRetried>;
+  @useResult
+  $Res call({
+    String jobId,
+    String type,
+    int attempts,
+    DateTime nextRunAt,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$JobRetriedCopyWithImpl<$Res, $Val extends JobRetried>
+    implements $JobRetriedCopyWith<$Res> {
+  _$JobRetriedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of JobRetried
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? attempts = null,
+    Object? nextRunAt = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            jobId:
+                null == jobId
+                    ? _value.jobId
+                    : jobId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            type:
+                null == type
+                    ? _value.type
+                    : type // ignore: cast_nullable_to_non_nullable
+                        as String,
+            attempts:
+                null == attempts
+                    ? _value.attempts
+                    : attempts // ignore: cast_nullable_to_non_nullable
+                        as int,
+            nextRunAt:
+                null == nextRunAt
+                    ? _value.nextRunAt
+                    : nextRunAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$JobRetriedImplCopyWith<$Res>
+    implements $JobRetriedCopyWith<$Res> {
+  factory _$$JobRetriedImplCopyWith(
+    _$JobRetriedImpl value,
+    $Res Function(_$JobRetriedImpl) then,
+  ) = __$$JobRetriedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String jobId,
+    String type,
+    int attempts,
+    DateTime nextRunAt,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$JobRetriedImplCopyWithImpl<$Res>
+    extends _$JobRetriedCopyWithImpl<$Res, _$JobRetriedImpl>
+    implements _$$JobRetriedImplCopyWith<$Res> {
+  __$$JobRetriedImplCopyWithImpl(
+    _$JobRetriedImpl _value,
+    $Res Function(_$JobRetriedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of JobRetried
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? jobId = null,
+    Object? type = null,
+    Object? attempts = null,
+    Object? nextRunAt = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$JobRetriedImpl(
+        jobId:
+            null == jobId
+                ? _value.jobId
+                : jobId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        type:
+            null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                    as String,
+        attempts:
+            null == attempts
+                ? _value.attempts
+                : attempts // ignore: cast_nullable_to_non_nullable
+                    as int,
+        nextRunAt:
+            null == nextRunAt
+                ? _value.nextRunAt
+                : nextRunAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$JobRetriedImpl extends _JobRetried {
+  const _$JobRetriedImpl({
+    required this.jobId,
+    required this.type,
+    required this.attempts,
+    required this.nextRunAt,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String jobId;
+  @override
+  final String type;
+  @override
+  final int attempts;
+  @override
+  final DateTime nextRunAt;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'JobRetried(jobId: $jobId, type: $type, attempts: $attempts, nextRunAt: $nextRunAt, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JobRetriedImpl &&
+            (identical(other.jobId, jobId) || other.jobId == jobId) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.attempts, attempts) ||
+                other.attempts == attempts) &&
+            (identical(other.nextRunAt, nextRunAt) ||
+                other.nextRunAt == nextRunAt) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, jobId, type, attempts, nextRunAt, timestamp);
+
+  /// Create a copy of JobRetried
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$JobRetriedImplCopyWith<_$JobRetriedImpl> get copyWith =>
+      __$$JobRetriedImplCopyWithImpl<_$JobRetriedImpl>(this, _$identity);
+}
+
+abstract class _JobRetried extends JobRetried {
+  const factory _JobRetried({
+    required final String jobId,
+    required final String type,
+    required final int attempts,
+    required final DateTime nextRunAt,
+    required final DateTime timestamp,
+  }) = _$JobRetriedImpl;
+  const _JobRetried._() : super._();
+
+  @override
+  String get jobId;
+  @override
+  String get type;
+  @override
+  int get attempts;
+  @override
+  DateTime get nextRunAt;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of JobRetried
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$JobRetriedImplCopyWith<_$JobRetriedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
