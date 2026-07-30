@@ -47,6 +47,11 @@ class JournalListener {
     if (event is WorkflowCompleted) return 'workflowCompleted';
     if (event is SyncCompleted) return 'syncCompleted';
     if (event is SyncFailed) return 'syncFailed';
+    if (event is JobEnqueued) return 'jobEnqueued';
+    if (event is JobStarted) return 'jobStarted';
+    if (event is JobSucceeded) return 'jobSucceeded';
+    if (event is JobFailed) return 'jobFailed';
+    if (event is JobRetried) return 'jobRetried';
     return null;
   }
 
@@ -62,6 +67,7 @@ class JournalListener {
     if (event is WorkflowStepExecuted) return event.workItemId;
     if (event is WorkflowCompleted) return event.workItemId;
     // SyncCompleted/SyncFailed são globais por provider, não por item.
+    // Jobs também não têm workItemId — são globais por tipo de job.
     return '';
   }
 
@@ -120,6 +126,31 @@ class JournalListener {
     }
     if (event is SyncFailed) {
       return {'providerId': event.providerId, 'error': event.error};
+    }
+    if (event is JobEnqueued) {
+      return {'jobId': event.jobId, 'type': event.type};
+    }
+    if (event is JobStarted) {
+      return {'jobId': event.jobId, 'type': event.type};
+    }
+    if (event is JobSucceeded) {
+      return {'jobId': event.jobId, 'type': event.type};
+    }
+    if (event is JobFailed) {
+      return {
+        'jobId': event.jobId,
+        'type': event.type,
+        'error': event.error,
+        'attempts': event.attempts,
+      };
+    }
+    if (event is JobRetried) {
+      return {
+        'jobId': event.jobId,
+        'type': event.type,
+        'attempts': event.attempts,
+        'nextRunAt': event.nextRunAt.toIso8601String(),
+      };
     }
     return {};
   }

@@ -289,6 +289,105 @@ void main() {
 
       expect(repo.loggedEvents, isEmpty);
     });
+
+    test('JobEnqueued grava logEvent com type jobEnqueued e workItemId vazio',
+        () async {
+      final event = JobEnqueued(
+        jobId: 'job-123',
+        type: 'sync',
+        timestamp: DateTime.now(),
+      );
+
+      await listener.call(event);
+
+      expect(repo.loggedEvents, hasLength(1));
+      final logged = repo.loggedEvents.single;
+      expect(logged.workItemId, '');
+      expect(logged.type, 'jobEnqueued');
+      expect(logged.payload['jobId'], 'job-123');
+      expect(logged.payload['type'], 'sync');
+    });
+
+    test('JobStarted grava logEvent com type jobStarted e workItemId vazio',
+        () async {
+      final event = JobStarted(
+        jobId: 'job-123',
+        type: 'sync',
+        timestamp: DateTime.now(),
+      );
+
+      await listener.call(event);
+
+      expect(repo.loggedEvents, hasLength(1));
+      final logged = repo.loggedEvents.single;
+      expect(logged.workItemId, '');
+      expect(logged.type, 'jobStarted');
+      expect(logged.payload['jobId'], 'job-123');
+      expect(logged.payload['type'], 'sync');
+    });
+
+    test('JobSucceeded grava logEvent com type jobSucceeded e workItemId vazio',
+        () async {
+      final event = JobSucceeded(
+        jobId: 'job-123',
+        type: 'sync',
+        timestamp: DateTime.now(),
+      );
+
+      await listener.call(event);
+
+      expect(repo.loggedEvents, hasLength(1));
+      final logged = repo.loggedEvents.single;
+      expect(logged.workItemId, '');
+      expect(logged.type, 'jobSucceeded');
+      expect(logged.payload['jobId'], 'job-123');
+      expect(logged.payload['type'], 'sync');
+    });
+
+    test('JobFailed grava logEvent com type jobFailed e workItemId vazio',
+        () async {
+      final event = JobFailed(
+        jobId: 'job-123',
+        type: 'sync',
+        error: 'network timeout',
+        attempts: 2,
+        timestamp: DateTime.now(),
+      );
+
+      await listener.call(event);
+
+      expect(repo.loggedEvents, hasLength(1));
+      final logged = repo.loggedEvents.single;
+      expect(logged.workItemId, '');
+      expect(logged.type, 'jobFailed');
+      expect(logged.payload['jobId'], 'job-123');
+      expect(logged.payload['type'], 'sync');
+      expect(logged.payload['error'], 'network timeout');
+      expect(logged.payload['attempts'], 2);
+    });
+
+    test('JobRetried grava logEvent com type jobRetried e workItemId vazio',
+        () async {
+      final nextRun = DateTime.now().add(Duration(minutes: 5));
+      final event = JobRetried(
+        jobId: 'job-123',
+        type: 'sync',
+        attempts: 1,
+        nextRunAt: nextRun,
+        timestamp: DateTime.now(),
+      );
+
+      await listener.call(event);
+
+      expect(repo.loggedEvents, hasLength(1));
+      final logged = repo.loggedEvents.single;
+      expect(logged.workItemId, '');
+      expect(logged.type, 'jobRetried');
+      expect(logged.payload['jobId'], 'job-123');
+      expect(logged.payload['type'], 'sync');
+      expect(logged.payload['attempts'], 1);
+      expect(logged.payload['nextRunAt'], nextRun.toIso8601String());
+    });
   });
 
   group('initializeJournalListener + EventBus real', () {
