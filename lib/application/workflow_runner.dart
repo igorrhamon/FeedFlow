@@ -1,81 +1,54 @@
-import '../domain/events/domain_event.dart';
-import '../domain/repositories/work_item_repository.dart';
 import '../domain/rule.dart';
 import '../domain/work_item.dart';
-import 'action_executor.dart';
-import 'event_bus.dart';
+import 'job_runner.dart';
 
-/// Orquestra a execução de uma sequência de [ActionInvocation]s (um
-/// "workflow") sobre um [WorkItem], reaproveitando o [ActionExecutor] já
-/// usado por [RuleEngine]/UI para resolver e executar cada ação.
+/// Orquestra a enfileiramento de uma sequência de [ActionInvocation]s (um
+/// "workflow") sobre um [WorkItem] através da fila de jobs persistida (Onda 6).
 ///
-/// Semantics (mesma política tolerante a erro do [ActionExecutor]):
-/// - Passos executam em sequência, na ordem fornecida.
-/// - Falha em um passo **não** interrompe os seguintes.
-/// - Progresso é publicado por passo ([WorkflowStepExecuted]) e ao final
-///   ([WorkflowCompleted]) no [EventBus]; a conclusão também é gravada como
-///   auditoria em `WorkItemEvents` via [WorkItemRepository.logEvent]
-///   (nenhuma tabela nova — reaproveita o schema existente).
+/// **Mudança de responsabilidade (WS-14 → Task 8):**
+/// Este runner não mais executa passos diretamente nem publica eventos de
+/// progresso ([WorkflowStepExecuted] / [WorkflowCompleted]). Em vez disso:
+/// - Enfileira cada passo como um job 'actionInvocation' via [JobRunner.enqueue()]
+/// - Encadeia dependências lineares (segundo job depende do primeiro, etc.)
+/// - Retorna os job IDs enfileirados
+///
+/// Eventos de progresso agora vêm do pipeline de jobs (via [JobSucceeded] /
+/// [JobFailed] do [ActionInvocationJobHandler]) em vez de serem publicados
+/// por este runner. Auditoria de conclusão também deixa de ser responsabilidade
+/// deste runner.
 class WorkflowRunner {
   WorkflowRunner({
-    required WorkItemRepository workItemRepository,
-    required ActionExecutor actionExecutor,
-    required EventBus eventBus,
-  })  : _workItemRepository = workItemRepository,
-        _actionExecutor = actionExecutor,
-        _eventBus = eventBus;
+    required JobRunner jobRunner,
+  }) : _jobRunner = jobRunner;
 
-  final WorkItemRepository _workItemRepository;
-  final ActionExecutor _actionExecutor;
-  final EventBus _eventBus;
+  final JobRunner _jobRunner;
 
-  /// Executa [steps] em sequência sobre [item]. Retorna os resultados de
-  /// cada passo, na mesma ordem de [steps].
-  Future<List<ActionExecutionResult>> run(
+  /// Enfileira [steps] em sequência linear sobre [item], com cada passo
+  /// dependendo do anterior. Retorna os IDs dos jobs enfileirados, na mesma
+  /// ordem de [steps].
+  Future<List<String>> run(
     WorkItem item,
     List<ActionInvocation> steps,
   ) async {
-    final results = <ActionExecutionResult>[];
-    final total = steps.length;
+    final jobIds = <String>[];
 
-    for (var i = 0; i < total; i++) {
-      final result = await _actionExecutor.execute(item, steps[i]);
-      results.add(result);
+    for (var i = 0; i < steps.length; i++) {
+      final step = steps[i];
+      final dependsOn = i == 0 ? <String>[] : [jobIds[i - 1]];
 
-      await _eventBus.publish(
-        WorkflowStepExecuted(
-          workItemId: item.id,
-          actionId: steps[i].actionId,
-          stepIndex: i,
-          totalSteps: total,
-          success: result.success,
-          timestamp: DateTime.now(),
-        ),
+      final jobId = await _jobRunner.enqueue(
+        'actionInvocation',
+        {
+          'workItemId': item.id,
+          'actionId': step.actionId,
+          'params': step.params,
+        },
+        dependsOn: dependsOn,
       );
+
+      jobIds.add(jobId);
     }
 
-    final succeeded = results.where((r) => r.success).length;
-
-    await _eventBus.publish(
-      WorkflowCompleted(
-        workItemId: item.id,
-        totalSteps: total,
-        succeededSteps: succeeded,
-        timestamp: DateTime.now(),
-      ),
-    );
-
-    await _workItemRepository.logEvent(
-      item.id,
-      type: 'workflowCompleted',
-      actor: 'rule',
-      payload: {
-        'totalSteps': total,
-        'succeededSteps': succeeded,
-        'actionIds': steps.map((s) => s.actionId).toList(),
-      },
-    );
-
-    return results;
+    return jobIds;
   }
 }

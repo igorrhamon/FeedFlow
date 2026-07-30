@@ -1,54 +1,116 @@
-import 'dart:convert';
-
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:feedflow/application/action_executor.dart';
-import 'package:feedflow/application/action_registry.dart';
 import 'package:feedflow/application/event_bus.dart';
+import 'package:feedflow/application/job_registry.dart';
+import 'package:feedflow/application/job_runner.dart';
 import 'package:feedflow/application/workflow_runner.dart';
-import 'package:feedflow/domain/article_action.dart';
-import 'package:feedflow/domain/events/domain_event.dart';
+import 'package:feedflow/domain/job.dart';
+import 'package:feedflow/domain/job_handler.dart';
+import 'package:feedflow/domain/repositories/job_repository.dart';
 import 'package:feedflow/domain/rule.dart';
 import 'package:feedflow/domain/work_item.dart';
-import 'package:feedflow/infrastructure/db/database.dart';
-import 'package:feedflow/infrastructure/repositories/event_emitting_work_item_repository.dart';
-import 'package:feedflow/infrastructure/repositories/work_item_repository_drift.dart';
 
-class _NoopAction implements ArticleAction {
-  _NoopAction(this.id);
-
-  @override
-  final String id;
+/// Fake in-memory implementação de [JobRepository] para testes.
+class FakeJobRepository implements JobRepository {
+  final jobs = <String, Job>{};
+  final runs = <JobRun>[];
 
   @override
-  String get label => id;
+  Future<void> enqueue(Job job) async {
+    jobs[job.id] = job;
+  }
 
   @override
-  Future<void> execute(WorkItem item, Map<String, dynamic> params) async {}
+  Future<Job?> byId(String id) async {
+    return jobs[id];
+  }
+
+  @override
+  Stream<List<Job>> watchByStatus(List<JobStatus> statuses) {
+    throw UnimplementedError('watchByStatus not used in tests');
+  }
+
+  @override
+  Future<List<Job>> claimNextBatch(int limit) async {
+    final now = DateTime.now();
+    final eligible = jobs.values
+        .where((j) =>
+            j.status == JobStatus.pending &&
+            (j.nextRunAt.isBefore(now) || j.nextRunAt.isAtSameMomentAs(now)))
+        .take(limit)
+        .toList();
+
+    final claimed = <Job>[];
+    for (final job in eligible) {
+      final updated = job.copyWith(status: JobStatus.running);
+      jobs[job.id] = updated;
+      claimed.add(updated);
+    }
+    return claimed;
+  }
+
+  @override
+  Future<void> markSucceeded(String id) async {
+    final job = jobs[id];
+    if (job != null) {
+      jobs[id] = job.copyWith(status: JobStatus.done);
+    }
+  }
+
+  @override
+  Future<void> markFailed(
+    String id,
+    String error, {
+    required DateTime nextRunAt,
+  }) async {
+    final job = jobs[id];
+    if (job == null) return;
+
+    final newAttempts = job.attempts + 1;
+    final willRetry = newAttempts < job.maxAttempts;
+
+    jobs[id] = job.copyWith(
+      status: willRetry ? JobStatus.pending : JobStatus.failed,
+      attempts: newAttempts,
+      nextRunAt: nextRunAt,
+    );
+  }
+
+  @override
+  Future<void> recordRun(JobRun run) async {
+    runs.add(run);
+  }
+
+  @override
+  Future<void> resetOrphanedRunning() async {
+    for (final entry in jobs.entries.toList()) {
+      if (entry.value.status == JobStatus.running) {
+        jobs[entry.key] = entry.value.copyWith(status: JobStatus.pending);
+      }
+    }
+  }
 }
 
-class _FailingAction implements ArticleAction {
-  @override
-  String get id => 'failing';
+/// Fake job handler para 'actionInvocation' jobs em testes.
+class FakeActionInvocationHandler extends JobHandler {
+  FakeActionInvocationHandler();
 
   @override
-  String get label => 'Failing';
+  String get jobType => 'actionInvocation';
+
+  var callCount = 0;
 
   @override
-  Future<void> execute(WorkItem item, Map<String, dynamic> params) async {
-    throw Exception('boom');
+  Future<void> run(Job job) async {
+    callCount++;
+    // Simples: apenas registra que foi chamado.
   }
 }
 
 void main() {
-  late AppDatabase db;
-  late WorkItemRepositoryDrift baseRepo;
-  late EventEmittingWorkItemRepository repo;
+  late FakeJobRepository fakeRepo;
   late EventBus eventBus;
-  late ActionExecutor actionExecutor;
+  late JobRunner jobRunner;
   late WorkflowRunner runner;
-  late List<DomainEvent> publishedEvents;
 
   final item = WorkItem(
     id: 'test-item-1',
@@ -60,104 +122,82 @@ void main() {
     updatedAt: DateTime.now(),
   );
 
-  setUp(() async {
-    db = AppDatabase(NativeDatabase.memory());
-    baseRepo = WorkItemRepositoryDrift(db);
+  setUp(() {
+    fakeRepo = FakeJobRepository();
     eventBus = EventBus();
-    repo = EventEmittingWorkItemRepository(baseRepo, eventBus);
-    actionExecutor = ActionExecutor(eventBus: eventBus);
-    runner = WorkflowRunner(
-      workItemRepository: repo,
-      actionExecutor: actionExecutor,
-      eventBus: eventBus,
-    );
+    jobRunner = JobRunner(jobRepository: fakeRepo, eventBus: eventBus);
+    runner = WorkflowRunner(jobRunner: jobRunner);
 
-    publishedEvents = [];
-    eventBus.subscribe(publishedEvents.add);
-
-    ActionRegistry.clear();
-    ActionRegistry.register('stepA', () => _NoopAction('stepA'));
-    ActionRegistry.register('stepB', () => _NoopAction('stepB'));
-    ActionRegistry.register('failing', () => _FailingAction());
-
-    await repo.save(item);
+    JobRegistry.clear();
+    JobRegistry.register('actionInvocation', () => FakeActionInvocationHandler());
   });
 
-  tearDown(() async {
-    ActionRegistry.clear();
-    await db.close();
+  tearDown(() {
+    JobRegistry.clear();
   });
 
   group('WorkflowRunner', () {
-    test('executes steps in order and returns one result per step', () async {
-      final results = await runner.run(item, [
+    test('run() with 3 steps returns 3 job IDs', () async {
+      final jobIds = await runner.run(item, [
+        const ActionInvocation(actionId: 'stepA', params: {}),
+        const ActionInvocation(actionId: 'stepB', params: {}),
+        const ActionInvocation(actionId: 'stepC', params: {}),
+      ]);
+
+      expect(jobIds, hasLength(3));
+      expect(jobIds[0], isNotEmpty);
+      expect(jobIds[1], isNotEmpty);
+      expect(jobIds[2], isNotEmpty);
+      expect(jobIds[0], isNot(jobIds[1]));
+      expect(jobIds[1], isNot(jobIds[2]));
+    });
+
+    test('first job has dependsOn: []', () async {
+      final jobIds = await runner.run(item, [
         const ActionInvocation(actionId: 'stepA', params: {}),
         const ActionInvocation(actionId: 'stepB', params: {}),
       ]);
 
-      expect(results, hasLength(2));
-      expect(results[0].actionId, 'stepA');
-      expect(results[0].success, isTrue);
-      expect(results[1].actionId, 'stepB');
-      expect(results[1].success, isTrue);
+      final firstJob = fakeRepo.jobs[jobIds[0]]!;
+      expect(firstJob.dependsOn, isEmpty);
     });
 
-    test('a failing step does not interrupt the following steps', () async {
-      final results = await runner.run(item, [
-        const ActionInvocation(actionId: 'failing', params: {}),
-        const ActionInvocation(actionId: 'stepB', params: {}),
-      ]);
-
-      expect(results, hasLength(2));
-      expect(results[0].success, isFalse);
-      expect(results[1].success, isTrue);
-    });
-
-    test('publishes WorkflowStepExecuted for each step and WorkflowCompleted at the end',
+    test('second job has dependsOn: [first jobId], third has dependsOn: [second jobId]',
         () async {
-      await runner.run(item, [
+      final jobIds = await runner.run(item, [
         const ActionInvocation(actionId: 'stepA', params: {}),
-        const ActionInvocation(actionId: 'failing', params: {}),
+        const ActionInvocation(actionId: 'stepB', params: {}),
+        const ActionInvocation(actionId: 'stepC', params: {}),
       ]);
 
-      final stepEvents = publishedEvents.whereType<WorkflowStepExecuted>().toList();
-      expect(stepEvents, hasLength(2));
-      expect(stepEvents[0].actionId, 'stepA');
-      expect(stepEvents[0].success, isTrue);
-      expect(stepEvents[0].stepIndex, 0);
-      expect(stepEvents[1].actionId, 'failing');
-      expect(stepEvents[1].success, isFalse);
-      expect(stepEvents[1].stepIndex, 1);
+      final secondJob = fakeRepo.jobs[jobIds[1]]!;
+      expect(secondJob.dependsOn, equals([jobIds[0]]));
 
-      final completedEvents = publishedEvents.whereType<WorkflowCompleted>().toList();
-      expect(completedEvents, hasLength(1));
-      expect(completedEvents.single.totalSteps, 2);
-      expect(completedEvents.single.succeededSteps, 1);
+      final thirdJob = fakeRepo.jobs[jobIds[2]]!;
+      expect(thirdJob.dependsOn, equals([jobIds[1]]));
     });
 
-    test('persists a workflowCompleted row in WorkItemEvents', () async {
-      await runner.run(item, [
+    test('returns an empty list for an empty workflow', () async {
+      final jobIds = await runner.run(item, []);
+      expect(jobIds, isEmpty);
+    });
+
+    test('payload contains correct workItemId, actionId, and params', () async {
+      final params = {'timeout': 5000};
+      final jobIds = await runner.run(item, [
         const ActionInvocation(actionId: 'stepA', params: {}),
+        ActionInvocation(actionId: 'stepB', params: params),
       ]);
 
-      final rows = await (db.select(db.workItemEvents)
-            ..where((t) => t.workItemId.equals(item.id) & t.type.equals('workflowCompleted')))
-          .get();
+      final firstJob = fakeRepo.jobs[jobIds[0]]!;
+      expect(firstJob.payload['workItemId'], item.id);
+      expect(firstJob.payload['actionId'], 'stepA');
+      expect(firstJob.payload['params'], {});
 
-      expect(rows, hasLength(1));
-      final payload = jsonDecode(rows.single.payloadJson) as Map<String, dynamic>;
-      expect(payload['totalSteps'], 1);
-      expect(payload['succeededSteps'], 1);
-      expect(payload['actionIds'], ['stepA']);
-    });
-
-    test('returns an empty result list for an empty workflow', () async {
-      final results = await runner.run(item, []);
-      expect(results, isEmpty);
-
-      final completedEvents = publishedEvents.whereType<WorkflowCompleted>().toList();
-      expect(completedEvents.single.totalSteps, 0);
-      expect(completedEvents.single.succeededSteps, 0);
+      final secondJob = fakeRepo.jobs[jobIds[1]]!;
+      expect(secondJob.payload['workItemId'], item.id);
+      expect(secondJob.payload['actionId'], 'stepB');
+      expect(secondJob.payload['params'], params);
     });
   });
 }
