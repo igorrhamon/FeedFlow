@@ -257,3 +257,43 @@ class JobRetried with _$JobRetried implements DomainEvent {
     required DateTime timestamp,
   }) = _JobRetried;
 }
+
+/// Publicado quando uma nota é criada na Knowledge Base (Onda 8).
+@freezed
+class NoteCreated with _$NoteCreated implements DomainEvent {
+  const NoteCreated._();
+
+  const factory NoteCreated({
+    required String noteId,
+    required String title,
+    String? workItemId,
+    required DateTime timestamp,
+  }) = _NoteCreated;
+}
+
+/// Publicado quando uma nota é editada e uma nova versão é criada (Onda 8).
+@freezed
+class NoteVersioned with _$NoteVersioned implements DomainEvent {
+  const NoteVersioned._();
+
+  const factory NoteVersioned({
+    required String noteId,
+    required String title,
+    required String previousContent,
+    required String newContent,
+    required DateTime timestamp,
+  }) = _NoteVersioned;
+}
+
+/// Publicado quando um arquivo é anexado a uma nota (Onda 8).
+@freezed
+class DocumentAttached with _$DocumentAttached implements DomainEvent {
+  const DocumentAttached._();
+
+  const factory DocumentAttached({
+    required String documentId,
+    required String noteId,
+    required String fileName,
+    required DateTime timestamp,
+  }) = _DocumentAttached;
+}

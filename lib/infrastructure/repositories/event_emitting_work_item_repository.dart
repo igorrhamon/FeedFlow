@@ -1,4 +1,5 @@
 import '../../application/event_bus.dart';
+import '../../domain/document.dart';
 import '../../domain/events/domain_event.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import '../../domain/triage_status.dart';
@@ -53,6 +54,26 @@ class EventEmittingWorkItemRepository implements WorkItemRepository {
           articleId: article.id,
           feedId: article.feedId,
           title: article.title,
+          timestamp: now,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> upsertFromDocuments(List<Document> documents, String providerId) async {
+    await _delegate.upsertFromDocuments(documents, providerId);
+
+    // Publica evento de ingestão para cada documento (Onda 7+)
+    final now = DateTime.now();
+    for (final doc in documents) {
+      await _eventBus.publish(
+        DocumentIngested(
+          workItemId: '$providerId:${doc.sourceId}',
+          documentId: doc.id,
+          sourceConnectorId: doc.sourceConnectorId,
+          sourceId: doc.sourceId,
+          title: doc.title,
           timestamp: now,
         ),
       );

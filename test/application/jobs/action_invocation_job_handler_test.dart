@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/application/action_executor.dart';
 import 'package:feedflow/application/jobs/action_invocation_job_handler.dart';
+import 'package:feedflow/domain/document.dart';
 import 'package:feedflow/domain/job.dart';
 import 'package:feedflow/domain/repositories/work_item_repository.dart';
 import 'package:feedflow/domain/rule.dart';
@@ -204,6 +205,12 @@ class FakeWorkItemRepository implements WorkItemRepository {
   @override
   Future<void> upsertFromArticles(
     List<Article> articles,
+    String providerId,
+  ) async {}
+
+  @override
+  Future<void> upsertFromDocuments(
+    List<Document> documents,
     String providerId,
   ) async {}
 

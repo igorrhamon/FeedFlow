@@ -15,7 +15,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -68,6 +68,11 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(documents);
           await m.createTable(documentVersions);
         }
+        // v9 -> v10: FTS5 para Documents (Onda 8) — busca unificada de notas.
+        // Tabela virtual documents_fts com triggers de sincronização.
+        if (from < 10) {
+          await _ensureDocumentsFtsSchemaObjects(m.database.customStatement);
+        }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar
       // qualquer query do chamador (sequenciado após onCreate/onUpgrade).
@@ -83,6 +88,7 @@ class AppDatabase extends _$AppDatabase {
       // banco para uso.
       beforeOpen: (details) async {
         await _ensureFtsSchemaObjects(customStatement);
+        await _ensureDocumentsFtsSchemaObjects(customStatement);
       },
     );
   }
@@ -204,6 +210,64 @@ class AppDatabase extends _$AppDatabase {
       // Se work_items não existe ou está vazio, ignora. Os triggers cuidarão
       // de sincronizar novos inserts a partir daqui.
     }
+  }
+
+  /// Cria (idempotentemente) a tabela virtual FTS5 para Documents e seus triggers.
+  /// Similar a [_ensureFtsSchemaObjects] mas para documentos (notas, anexos).
+  /// Indexa: title, raw_content, author.
+  static Future<void> _ensureDocumentsFtsSchemaObjects(
+    Future<void> Function(String sql, [List<Object?>? args]) run,
+  ) async {
+    // CREATE VIRTUAL TABLE IF NOT EXISTS para documents_fts
+    await run(
+      '''
+      CREATE VIRTUAL TABLE IF NOT EXISTS documents_fts USING fts5(
+        title,
+        content,
+        author
+      )
+      ''',
+    );
+
+    // Trigger AFTER INSERT
+    await run(
+      '''
+      CREATE TRIGGER IF NOT EXISTS documents_ai AFTER INSERT ON documents BEGIN
+        INSERT INTO documents_fts(rowid, title, content, author)
+        VALUES (
+          new.rowid,
+          COALESCE(new.title, ''),
+          COALESCE(new.raw_content, ''),
+          COALESCE(new.author, '')
+        );
+      END
+      ''',
+    );
+
+    // Trigger AFTER UPDATE
+    await run(
+      '''
+      CREATE TRIGGER IF NOT EXISTS documents_au AFTER UPDATE ON documents BEGIN
+        DELETE FROM documents_fts WHERE rowid = old.rowid;
+        INSERT INTO documents_fts(rowid, title, content, author)
+        VALUES (
+          new.rowid,
+          COALESCE(new.title, ''),
+          COALESCE(new.raw_content, ''),
+          COALESCE(new.author, '')
+        );
+      END
+      ''',
+    );
+
+    // Trigger AFTER DELETE
+    await run(
+      '''
+      CREATE TRIGGER IF NOT EXISTS documents_ad AFTER DELETE ON documents BEGIN
+        DELETE FROM documents_fts WHERE rowid = old.rowid;
+      END
+      ''',
+    );
   }
 
   static QueryExecutor _openConnection() => openConnection();

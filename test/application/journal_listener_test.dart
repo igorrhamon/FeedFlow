@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/application/event_bus.dart';
 import 'package:feedflow/application/journal_listener.dart';
+import 'package:feedflow/domain/document.dart';
 import 'package:feedflow/domain/events/domain_event.dart';
 import 'package:feedflow/domain/repositories/work_item_repository.dart';
 import 'package:feedflow/domain/triage_status.dart';
@@ -46,6 +47,10 @@ class FakeWorkItemRepository implements WorkItemRepository {
 
   @override
   Future<void> upsertFromArticles(articles, String providerId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> upsertFromDocuments(List<Document> documents, String providerId) =>
       throw UnimplementedError();
 
   @override

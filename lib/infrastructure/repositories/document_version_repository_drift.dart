@@ -14,7 +14,14 @@ class DocumentVersionRepositoryDrift {
   final AppDatabase _db;
 
   /// Retorna todas as versões (histórico) de um documento.
+  /// Inclui o título atual do documento em cada versão histórica.
   Future<List<Note>> history(String documentId) async {
+    // Busca o documento atual para obter o título (desnormalizado em todas as versões)
+    final docRow = await (_db.select(_db.documents)
+          ..where((d) => d.id.equals(documentId)))
+        .getSingleOrNull();
+    final title = docRow?.title ?? '';
+
     final rows = await (_db.select(_db.documentVersions)
           ..where((v) => v.documentId.equals(documentId))
           ..orderBy([(v) => OrderingTerm.desc(v.createdAt)]))
@@ -22,7 +29,7 @@ class DocumentVersionRepositoryDrift {
     return rows.map((row) => Note(
           id: row.id.toString(),
           documentId: row.documentId,
-          title: '',
+          title: title,
           content: row.contentSnapshot,
           createdAt: row.createdAt,
           updatedAt: row.createdAt,

@@ -41,12 +41,9 @@ class DocumentRepositoryDrift implements DocumentRepository {
 
   @override
   Stream<List<Document>> watchAll({String? sourceConnectorId}) {
-    var query = _db.select(_db.documents)
-        as Selectable<DocumentRow>;
+    final query = _db.select(_db.documents);
     if (sourceConnectorId != null) {
-      query = (_db.select(_db.documents)
-            ..where((d) => d.sourceConnectorId.equals(sourceConnectorId)))
-          as Selectable<DocumentRow>;
+      query.where((d) => d.sourceConnectorId.equals(sourceConnectorId));
     }
     return (query..orderBy([(d) => OrderingTerm.desc(d.capturedAt)]))
         .watch()

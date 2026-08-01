@@ -7,6 +7,7 @@ import '../providers/feed_provider.dart';
 import '../providers/provider_registry.dart';
 import '../services/provider_settings.dart';
 import '../services/app_settings.dart';
+import 'knowledge_base_page.dart';
 import 'llm_settings_page.dart';
 import 'rule_editor_page.dart';
 
@@ -194,6 +195,20 @@ class _SettingsPageState extends State<SettingsPage> {
               AppSettings.setMarkReadOnScroll(value);
               setState(() => _markReadOnScroll = value);
             },
+          ),
+        ),
+        const Divider(),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+          child: Text('Conhecimento', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+        ),
+        ListTile(
+          leading: const Icon(Icons.library_books),
+          title: const Text('Knowledge Base'),
+          subtitle: const Text('Notas e documentos'),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const KnowledgeBasePage()),
           ),
         ),
         const Divider(),
