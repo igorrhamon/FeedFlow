@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import '../../domain/document.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../../domain/triage_status.dart';
 import '../../domain/work_item.dart';
@@ -91,6 +92,53 @@ class SearchRepositoryDrift implements SearchRepository {
         ingestedAt: ingestedAt,
         updatedAt: updatedAt,
         completedAt: completedAt,
+      );
+    }).toList();
+  }
+
+  @override
+  Future<List<Document>> searchDocuments(String query, {int limit = 50}) async {
+    final escapedQuery = query.trim();
+    if (escapedQuery.isEmpty) {
+      return [];
+    }
+
+    // Busca em documents_fts por título, conteúdo e autor
+    final results = await _db.customSelect(
+      '''
+      SELECT d.* FROM documents d
+      INNER JOIN documents_fts fts ON d.rowid = fts.rowid
+      WHERE documents_fts MATCH ?
+      ORDER BY bm25(documents_fts) ASC
+      LIMIT ?
+      ''',
+      variables: [Variable<String>(escapedQuery), Variable<int>(limit)],
+      readsFrom: {_db.documents},
+    ).get();
+
+    return results.map((row) {
+      final id = row.read<String>('id');
+      final sourceConnectorId = row.read<String>('source_connector_id');
+      final sourceId = row.read<String>('source_id');
+      final contentType = row.read<String>('content_type');
+      final title = row.read<String>('title');
+      final author = row.read<String?>('author');
+      final rawContent = row.read<String?>('raw_content');
+      final url = row.read<String?>('url');
+      final capturedAt = row.read<DateTime>('captured_at');
+      final metadataJson = row.read<String?>('metadata_json');
+
+      return Document(
+        id: id,
+        sourceConnectorId: sourceConnectorId,
+        sourceId: sourceId,
+        contentType: contentType,
+        title: title,
+        author: author,
+        rawContent: rawContent,
+        url: url,
+        capturedAt: capturedAt,
+        metadataJson: metadataJson,
       );
     }).toList();
   }

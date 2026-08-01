@@ -5,15 +5,20 @@ import 'package:drift/drift.dart';
 import '../../domain/note.dart';
 import '../../domain/repositories/knowledge_base_repository.dart';
 import '../db/database.dart';
+import 'document_version_repository_drift.dart';
 
 /// Implementação Drift de [KnowledgeBaseRepository] — persistência de [Note]s
 /// na tabela `Documents` (Onda 8). Uma `Note` é um `Document` com
 /// `sourceConnectorId == 'local-note'`, permitindo que notas sejam indexadas,
 /// versionadas e buscadas junto com conteúdo ingerido de outras fontes.
 class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
-  KnowledgeBaseRepositoryDrift(this._db);
+  KnowledgeBaseRepositoryDrift(
+    this._db, {
+    DocumentVersionRepositoryDrift? documentVersionRepository,
+  }) : _versionRepository = documentVersionRepository ?? DocumentVersionRepositoryDrift(_db);
 
   final AppDatabase _db;
+  final DocumentVersionRepositoryDrift _versionRepository;
 
   @override
   Future<Note> createNote(Note note) async {
@@ -34,11 +39,24 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
             })),
           ),
         );
+    // Grava primeira versão (criação)
+    await _versionRepository.addVersion(
+      note.id,
+      note.content,
+      changeNote: 'Criação',
+    );
     return note;
   }
 
   @override
   Future<Note> updateNote(Note note) async {
+    // Grava versão do conteúdo ANTERIOR antes de sobrescrever
+    final current = await byId(note.id);
+    if (current != null && current.content != note.content) {
+      await _versionRepository.addVersion(current.id, current.content);
+    }
+
+    // Atualiza documento atual
     await (_db.update(_db.documents)..where((d) => d.id.equals(note.id))).write(
       DocumentsCompanion(
         title: Value(note.title),
@@ -101,12 +119,8 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
 
   @override
   Future<List<Note>> history(String documentId) async {
-    final docRows = await (_db.select(_db.documents)
-          ..where((d) => d.sourceConnectorId.equals('local-note') &
-              d.id.equals(documentId)))
-        .get();
-    if (docRows.isEmpty) return [];
-    return docRows.map(_toDomain).toList();
+    // Delega para o repositório de versões
+    return _versionRepository.history(documentId);
   }
 
   @override

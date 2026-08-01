@@ -195,7 +195,10 @@ class DatabaseProvider {
   static KnowledgeBaseRepository? get knowledgeBaseRepository {
     if (kIsWeb) return null;
     _database ??= AppDatabase();
-    return _knowledgeBaseRepository ??= KnowledgeBaseRepositoryDrift(_database!);
+    return _knowledgeBaseRepository ??= KnowledgeBaseRepositoryDrift(
+      _database!,
+      documentVersionRepository: documentVersionRepository,
+    );
   }
 
   /// Repositório de histórico de versões de [Document]s (Onda 8).
