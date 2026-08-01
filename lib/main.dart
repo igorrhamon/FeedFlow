@@ -34,6 +34,7 @@ void main() async {
       repo,
       enricher: DatabaseProvider.enricher,
       enrichmentRepository: DatabaseProvider.enrichmentRepository,
+      knowledgeBaseRepository: DatabaseProvider.knowledgeBaseRepository,
     );
     DatabaseProvider.jobRunner?.start();
     DatabaseProvider.ruleEngine;

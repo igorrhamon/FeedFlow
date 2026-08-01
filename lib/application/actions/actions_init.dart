@@ -3,12 +3,14 @@ import '../event_bus.dart';
 import '../snooze_use_case.dart';
 import '../../domain/enricher.dart';
 import '../../domain/repositories/enrichment_repository.dart';
+import '../../domain/repositories/knowledge_base_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import 'add_tag_action.dart';
 import 'archive_action.dart';
 import 'classify_action.dart';
 import 'complete_action.dart';
 import 'copy_link_action.dart';
+import 'note_action.dart';
 import 'share_action.dart';
 import 'snooze_action.dart';
 import 'summarize_action.dart';
@@ -22,7 +24,7 @@ import 'obsidian_export_action.dart';
 /// Deve ser chamada exatamente uma vez durante o boot da aplicação (em `main()`),
 /// após a inicialização do repositório.
 ///
-/// Registra as 10 ações sempre disponíveis:
+/// Registra as 11 ações sempre disponíveis:
 /// - `complete`: marca como concluído
 /// - `archive`: arquiva
 /// - `snooze`: adia
@@ -33,6 +35,7 @@ import 'obsidian_export_action.dart';
 /// - `webhook`: envia para um webhook
 /// - `notionExport`: exporta para Notion
 /// - `obsidianExport`: exporta para Obsidian
+/// - `createNote`: cria nota na Knowledge Base (Onda 8)
 ///
 /// Se [enricher] e [enrichmentRepository] forem fornecidos (WS-13; `null`
 /// em plataformas sem persistência local, ex. web), registra também:
@@ -43,6 +46,7 @@ void initializeActions(
   WorkItemRepository workItemRepository, {
   Enricher? enricher,
   EnrichmentRepository? enrichmentRepository,
+  KnowledgeBaseRepository? knowledgeBaseRepository,
 }) {
   final snoozeUseCase = SnoozeUseCase(
     workItemRepository: workItemRepository,
@@ -98,6 +102,13 @@ void initializeActions(
     'obsidianExport',
     () => ObsidianExportAction(),
   );
+
+  if (knowledgeBaseRepository != null) {
+    ActionRegistry.register(
+      'createNote',
+      () => NoteAction(knowledgeBaseRepository: knowledgeBaseRepository),
+    );
+  }
 
   if (enricher != null && enrichmentRepository != null) {
     ActionRegistry.register(
