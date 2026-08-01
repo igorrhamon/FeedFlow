@@ -177,3 +177,67 @@ class SyncFailed with _$SyncFailed implements DomainEvent {
     required DateTime timestamp,
   }) = _SyncFailed;
 }
+
+/// Publicado quando um job é enfileirado para execução.
+@freezed
+class JobEnqueued with _$JobEnqueued implements DomainEvent {
+  const JobEnqueued._();
+
+  const factory JobEnqueued({
+    required String jobId,
+    required String type,
+    required DateTime timestamp,
+  }) = _JobEnqueued;
+}
+
+/// Publicado quando um job inicia sua execução.
+@freezed
+class JobStarted with _$JobStarted implements DomainEvent {
+  const JobStarted._();
+
+  const factory JobStarted({
+    required String jobId,
+    required String type,
+    required DateTime timestamp,
+  }) = _JobStarted;
+}
+
+/// Publicado quando um job completa com sucesso.
+@freezed
+class JobSucceeded with _$JobSucceeded implements DomainEvent {
+  const JobSucceeded._();
+
+  const factory JobSucceeded({
+    required String jobId,
+    required String type,
+    required DateTime timestamp,
+  }) = _JobSucceeded;
+}
+
+/// Publicado quando um job falha.
+@freezed
+class JobFailed with _$JobFailed implements DomainEvent {
+  const JobFailed._();
+
+  const factory JobFailed({
+    required String jobId,
+    required String type,
+    required String error,
+    required int attempts,
+    required DateTime timestamp,
+  }) = _JobFailed;
+}
+
+/// Publicado quando um job é retentado após falha.
+@freezed
+class JobRetried with _$JobRetried implements DomainEvent {
+  const JobRetried._();
+
+  const factory JobRetried({
+    required String jobId,
+    required String type,
+    required int attempts,
+    required DateTime nextRunAt,
+    required DateTime timestamp,
+  }) = _JobRetried;
+}

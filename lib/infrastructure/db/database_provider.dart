@@ -3,11 +3,14 @@ import 'package:flutter/foundation.dart';
 import '../../application/action_executor.dart';
 import '../../application/event_bus.dart';
 import '../../application/journal_listener.dart';
+import '../../application/job_runner.dart';
+import '../../application/jobs/jobs_init.dart';
 import '../../application/rule_engine.dart';
 import '../../application/rule_undo_use_case.dart';
 import '../../application/sync_service.dart';
 import '../../domain/enricher.dart';
 import '../../domain/repositories/enrichment_repository.dart';
+import '../../domain/repositories/job_repository.dart';
 import '../../domain/repositories/outbox_repository.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../../domain/repositories/rule_repository.dart';
@@ -17,6 +20,7 @@ import '../../domain/repositories/work_item_repository.dart';
 import '../llm/llm_enricher_router.dart';
 import '../repositories/enrichment_repository_drift.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
+import '../repositories/job_repository_drift.dart';
 import '../repositories/outbox_repository_drift.dart';
 import '../repositories/queue_repository_drift.dart';
 import '../repositories/rule_repository_drift.dart';
@@ -38,6 +42,8 @@ class DatabaseProvider {
   static SearchRepository? _searchRepository;
   static RuleRepository? _ruleRepository;
   static QueueRepository? _queueRepository;
+  static JobRepository? _jobRepository;
+  static JobRunner? _jobRunner;
   static SyncService? _syncService;
   static ActionExecutor? _actionExecutor;
   static RuleEngine? _ruleEngine;
@@ -148,5 +154,24 @@ class DatabaseProvider {
       eventRepository: events,
       ruleRepository: rules,
     );
+  }
+
+  static JobRepository? get jobRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _jobRepository ??= JobRepositoryDrift(_database!);
+  }
+
+  static JobRunner? get jobRunner {
+    if (kIsWeb) return null;
+    final repo = jobRepository;
+    if (repo == null) return null;
+    if (_jobRunner != null) return _jobRunner;
+    _jobRunner = JobRunner(jobRepository: repo, eventBus: eventBus);
+    initializeJobHandlers(
+      workItemRepository: repository!,
+      actionExecutor: actionExecutor!,
+    );
+    return _jobRunner;
   }
 }

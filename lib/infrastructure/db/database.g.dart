@@ -3624,6 +3624,999 @@ class QueuesCompanion extends UpdateCompanion<QueueRow> {
   }
 }
 
+class $JobsTable extends Jobs with TableInfo<$JobsTable, JobRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $JobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _dependsOnJsonMeta = const VerificationMeta(
+    'dependsOnJson',
+  );
+  @override
+  late final GeneratedColumn<String> dependsOnJson = GeneratedColumn<String>(
+    'depends_on_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _maxAttemptsMeta = const VerificationMeta(
+    'maxAttempts',
+  );
+  @override
+  late final GeneratedColumn<int> maxAttempts = GeneratedColumn<int>(
+    'max_attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _nextRunAtMeta = const VerificationMeta(
+    'nextRunAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextRunAt = GeneratedColumn<DateTime>(
+    'next_run_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    type,
+    payloadJson,
+    status,
+    dependsOnJson,
+    attempts,
+    maxAttempts,
+    nextRunAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'jobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<JobRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('depends_on_json')) {
+      context.handle(
+        _dependsOnJsonMeta,
+        dependsOnJson.isAcceptableOrUnknown(
+          data['depends_on_json']!,
+          _dependsOnJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    }
+    if (data.containsKey('max_attempts')) {
+      context.handle(
+        _maxAttemptsMeta,
+        maxAttempts.isAcceptableOrUnknown(
+          data['max_attempts']!,
+          _maxAttemptsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('next_run_at')) {
+      context.handle(
+        _nextRunAtMeta,
+        nextRunAt.isAcceptableOrUnknown(data['next_run_at']!, _nextRunAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nextRunAtMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  JobRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return JobRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      type:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}type'],
+          )!,
+      payloadJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}payload_json'],
+          )!,
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      dependsOnJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}depends_on_json'],
+          )!,
+      attempts:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}attempts'],
+          )!,
+      maxAttempts:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}max_attempts'],
+          )!,
+      nextRunAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}next_run_at'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $JobsTable createAlias(String alias) {
+    return $JobsTable(attachedDatabase, alias);
+  }
+}
+
+class JobRow extends DataClass implements Insertable<JobRow> {
+  final String id;
+  final String type;
+
+  /// Payload do job serializado como JSON — desserializa para `Map<String, dynamic>`
+  final String payloadJson;
+
+  /// Status do job: pending | running | done | failed
+  final String status;
+
+  /// Lista de IDs de jobs dos quais este depende, serializada como JSON — desserializa para `List<String>`
+  final String dependsOnJson;
+
+  /// Número de tentativas já realizadas
+  final int attempts;
+
+  /// Número máximo de tentativas antes de marcar como failed
+  final int maxAttempts;
+
+  /// Quando este job deve ser executado próximo
+  final DateTime nextRunAt;
+
+  /// Quando o job foi criado
+  final DateTime createdAt;
+  const JobRow({
+    required this.id,
+    required this.type,
+    required this.payloadJson,
+    required this.status,
+    required this.dependsOnJson,
+    required this.attempts,
+    required this.maxAttempts,
+    required this.nextRunAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['type'] = Variable<String>(type);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['status'] = Variable<String>(status);
+    map['depends_on_json'] = Variable<String>(dependsOnJson);
+    map['attempts'] = Variable<int>(attempts);
+    map['max_attempts'] = Variable<int>(maxAttempts);
+    map['next_run_at'] = Variable<DateTime>(nextRunAt);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  JobsCompanion toCompanion(bool nullToAbsent) {
+    return JobsCompanion(
+      id: Value(id),
+      type: Value(type),
+      payloadJson: Value(payloadJson),
+      status: Value(status),
+      dependsOnJson: Value(dependsOnJson),
+      attempts: Value(attempts),
+      maxAttempts: Value(maxAttempts),
+      nextRunAt: Value(nextRunAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory JobRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return JobRow(
+      id: serializer.fromJson<String>(json['id']),
+      type: serializer.fromJson<String>(json['type']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      status: serializer.fromJson<String>(json['status']),
+      dependsOnJson: serializer.fromJson<String>(json['dependsOnJson']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      maxAttempts: serializer.fromJson<int>(json['maxAttempts']),
+      nextRunAt: serializer.fromJson<DateTime>(json['nextRunAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'type': serializer.toJson<String>(type),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'status': serializer.toJson<String>(status),
+      'dependsOnJson': serializer.toJson<String>(dependsOnJson),
+      'attempts': serializer.toJson<int>(attempts),
+      'maxAttempts': serializer.toJson<int>(maxAttempts),
+      'nextRunAt': serializer.toJson<DateTime>(nextRunAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  JobRow copyWith({
+    String? id,
+    String? type,
+    String? payloadJson,
+    String? status,
+    String? dependsOnJson,
+    int? attempts,
+    int? maxAttempts,
+    DateTime? nextRunAt,
+    DateTime? createdAt,
+  }) => JobRow(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    payloadJson: payloadJson ?? this.payloadJson,
+    status: status ?? this.status,
+    dependsOnJson: dependsOnJson ?? this.dependsOnJson,
+    attempts: attempts ?? this.attempts,
+    maxAttempts: maxAttempts ?? this.maxAttempts,
+    nextRunAt: nextRunAt ?? this.nextRunAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  JobRow copyWithCompanion(JobsCompanion data) {
+    return JobRow(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      status: data.status.present ? data.status.value : this.status,
+      dependsOnJson:
+          data.dependsOnJson.present
+              ? data.dependsOnJson.value
+              : this.dependsOnJson,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      maxAttempts:
+          data.maxAttempts.present ? data.maxAttempts.value : this.maxAttempts,
+      nextRunAt: data.nextRunAt.present ? data.nextRunAt.value : this.nextRunAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JobRow(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('status: $status, ')
+          ..write('dependsOnJson: $dependsOnJson, ')
+          ..write('attempts: $attempts, ')
+          ..write('maxAttempts: $maxAttempts, ')
+          ..write('nextRunAt: $nextRunAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    type,
+    payloadJson,
+    status,
+    dependsOnJson,
+    attempts,
+    maxAttempts,
+    nextRunAt,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is JobRow &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.payloadJson == this.payloadJson &&
+          other.status == this.status &&
+          other.dependsOnJson == this.dependsOnJson &&
+          other.attempts == this.attempts &&
+          other.maxAttempts == this.maxAttempts &&
+          other.nextRunAt == this.nextRunAt &&
+          other.createdAt == this.createdAt);
+}
+
+class JobsCompanion extends UpdateCompanion<JobRow> {
+  final Value<String> id;
+  final Value<String> type;
+  final Value<String> payloadJson;
+  final Value<String> status;
+  final Value<String> dependsOnJson;
+  final Value<int> attempts;
+  final Value<int> maxAttempts;
+  final Value<DateTime> nextRunAt;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const JobsCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.status = const Value.absent(),
+    this.dependsOnJson = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.maxAttempts = const Value.absent(),
+    this.nextRunAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  JobsCompanion.insert({
+    required String id,
+    required String type,
+    this.payloadJson = const Value.absent(),
+    this.status = const Value.absent(),
+    this.dependsOnJson = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.maxAttempts = const Value.absent(),
+    required DateTime nextRunAt,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       type = Value(type),
+       nextRunAt = Value(nextRunAt),
+       createdAt = Value(createdAt);
+  static Insertable<JobRow> custom({
+    Expression<String>? id,
+    Expression<String>? type,
+    Expression<String>? payloadJson,
+    Expression<String>? status,
+    Expression<String>? dependsOnJson,
+    Expression<int>? attempts,
+    Expression<int>? maxAttempts,
+    Expression<DateTime>? nextRunAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (status != null) 'status': status,
+      if (dependsOnJson != null) 'depends_on_json': dependsOnJson,
+      if (attempts != null) 'attempts': attempts,
+      if (maxAttempts != null) 'max_attempts': maxAttempts,
+      if (nextRunAt != null) 'next_run_at': nextRunAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  JobsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? type,
+    Value<String>? payloadJson,
+    Value<String>? status,
+    Value<String>? dependsOnJson,
+    Value<int>? attempts,
+    Value<int>? maxAttempts,
+    Value<DateTime>? nextRunAt,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return JobsCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      payloadJson: payloadJson ?? this.payloadJson,
+      status: status ?? this.status,
+      dependsOnJson: dependsOnJson ?? this.dependsOnJson,
+      attempts: attempts ?? this.attempts,
+      maxAttempts: maxAttempts ?? this.maxAttempts,
+      nextRunAt: nextRunAt ?? this.nextRunAt,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (dependsOnJson.present) {
+      map['depends_on_json'] = Variable<String>(dependsOnJson.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (maxAttempts.present) {
+      map['max_attempts'] = Variable<int>(maxAttempts.value);
+    }
+    if (nextRunAt.present) {
+      map['next_run_at'] = Variable<DateTime>(nextRunAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JobsCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('status: $status, ')
+          ..write('dependsOnJson: $dependsOnJson, ')
+          ..write('attempts: $attempts, ')
+          ..write('maxAttempts: $maxAttempts, ')
+          ..write('nextRunAt: $nextRunAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $JobRunsTable extends JobRuns with TableInfo<$JobRunsTable, JobRunRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $JobRunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _jobIdMeta = const VerificationMeta('jobId');
+  @override
+  late final GeneratedColumn<String> jobId = GeneratedColumn<String>(
+    'job_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
+    'finishedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
+    'finished_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _successMeta = const VerificationMeta(
+    'success',
+  );
+  @override
+  late final GeneratedColumn<bool> success = GeneratedColumn<bool>(
+    'success',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("success" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _errorMeta = const VerificationMeta('error');
+  @override
+  late final GeneratedColumn<String> error = GeneratedColumn<String>(
+    'error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    jobId,
+    startedAt,
+    finishedAt,
+    success,
+    error,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'job_runs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<JobRunRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('job_id')) {
+      context.handle(
+        _jobIdMeta,
+        jobId.isAcceptableOrUnknown(data['job_id']!, _jobIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jobIdMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('finished_at')) {
+      context.handle(
+        _finishedAtMeta,
+        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('success')) {
+      context.handle(
+        _successMeta,
+        success.isAcceptableOrUnknown(data['success']!, _successMeta),
+      );
+    }
+    if (data.containsKey('error')) {
+      context.handle(
+        _errorMeta,
+        error.isAcceptableOrUnknown(data['error']!, _errorMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  JobRunRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return JobRunRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      jobId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}job_id'],
+          )!,
+      startedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}started_at'],
+          )!,
+      finishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finished_at'],
+      ),
+      success:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}success'],
+          )!,
+      error: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error'],
+      ),
+    );
+  }
+
+  @override
+  $JobRunsTable createAlias(String alias) {
+    return $JobRunsTable(attachedDatabase, alias);
+  }
+}
+
+class JobRunRow extends DataClass implements Insertable<JobRunRow> {
+  final int id;
+  final String jobId;
+
+  /// Quando a execução começou
+  final DateTime startedAt;
+
+  /// Quando a execução terminou (null se ainda em execução)
+  final DateTime? finishedAt;
+
+  /// Se a execução foi bem-sucedida
+  final bool success;
+
+  /// Mensagem de erro, se houver
+  final String? error;
+  const JobRunRow({
+    required this.id,
+    required this.jobId,
+    required this.startedAt,
+    this.finishedAt,
+    required this.success,
+    this.error,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['job_id'] = Variable<String>(jobId);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || finishedAt != null) {
+      map['finished_at'] = Variable<DateTime>(finishedAt);
+    }
+    map['success'] = Variable<bool>(success);
+    if (!nullToAbsent || error != null) {
+      map['error'] = Variable<String>(error);
+    }
+    return map;
+  }
+
+  JobRunsCompanion toCompanion(bool nullToAbsent) {
+    return JobRunsCompanion(
+      id: Value(id),
+      jobId: Value(jobId),
+      startedAt: Value(startedAt),
+      finishedAt:
+          finishedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(finishedAt),
+      success: Value(success),
+      error:
+          error == null && nullToAbsent ? const Value.absent() : Value(error),
+    );
+  }
+
+  factory JobRunRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return JobRunRow(
+      id: serializer.fromJson<int>(json['id']),
+      jobId: serializer.fromJson<String>(json['jobId']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      success: serializer.fromJson<bool>(json['success']),
+      error: serializer.fromJson<String?>(json['error']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'jobId': serializer.toJson<String>(jobId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'success': serializer.toJson<bool>(success),
+      'error': serializer.toJson<String?>(error),
+    };
+  }
+
+  JobRunRow copyWith({
+    int? id,
+    String? jobId,
+    DateTime? startedAt,
+    Value<DateTime?> finishedAt = const Value.absent(),
+    bool? success,
+    Value<String?> error = const Value.absent(),
+  }) => JobRunRow(
+    id: id ?? this.id,
+    jobId: jobId ?? this.jobId,
+    startedAt: startedAt ?? this.startedAt,
+    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    success: success ?? this.success,
+    error: error.present ? error.value : this.error,
+  );
+  JobRunRow copyWithCompanion(JobRunsCompanion data) {
+    return JobRunRow(
+      id: data.id.present ? data.id.value : this.id,
+      jobId: data.jobId.present ? data.jobId.value : this.jobId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      finishedAt:
+          data.finishedAt.present ? data.finishedAt.value : this.finishedAt,
+      success: data.success.present ? data.success.value : this.success,
+      error: data.error.present ? data.error.value : this.error,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JobRunRow(')
+          ..write('id: $id, ')
+          ..write('jobId: $jobId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('success: $success, ')
+          ..write('error: $error')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, jobId, startedAt, finishedAt, success, error);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is JobRunRow &&
+          other.id == this.id &&
+          other.jobId == this.jobId &&
+          other.startedAt == this.startedAt &&
+          other.finishedAt == this.finishedAt &&
+          other.success == this.success &&
+          other.error == this.error);
+}
+
+class JobRunsCompanion extends UpdateCompanion<JobRunRow> {
+  final Value<int> id;
+  final Value<String> jobId;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> finishedAt;
+  final Value<bool> success;
+  final Value<String?> error;
+  const JobRunsCompanion({
+    this.id = const Value.absent(),
+    this.jobId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.success = const Value.absent(),
+    this.error = const Value.absent(),
+  });
+  JobRunsCompanion.insert({
+    this.id = const Value.absent(),
+    required String jobId,
+    required DateTime startedAt,
+    this.finishedAt = const Value.absent(),
+    this.success = const Value.absent(),
+    this.error = const Value.absent(),
+  }) : jobId = Value(jobId),
+       startedAt = Value(startedAt);
+  static Insertable<JobRunRow> custom({
+    Expression<int>? id,
+    Expression<String>? jobId,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? finishedAt,
+    Expression<bool>? success,
+    Expression<String>? error,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (jobId != null) 'job_id': jobId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (finishedAt != null) 'finished_at': finishedAt,
+      if (success != null) 'success': success,
+      if (error != null) 'error': error,
+    });
+  }
+
+  JobRunsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? jobId,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? finishedAt,
+    Value<bool>? success,
+    Value<String?>? error,
+  }) {
+    return JobRunsCompanion(
+      id: id ?? this.id,
+      jobId: jobId ?? this.jobId,
+      startedAt: startedAt ?? this.startedAt,
+      finishedAt: finishedAt ?? this.finishedAt,
+      success: success ?? this.success,
+      error: error ?? this.error,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (jobId.present) {
+      map['job_id'] = Variable<String>(jobId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (finishedAt.present) {
+      map['finished_at'] = Variable<DateTime>(finishedAt.value);
+    }
+    if (success.present) {
+      map['success'] = Variable<bool>(success.value);
+    }
+    if (error.present) {
+      map['error'] = Variable<String>(error.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JobRunsCompanion(')
+          ..write('id: $id, ')
+          ..write('jobId: $jobId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('success: $success, ')
+          ..write('error: $error')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3633,6 +4626,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $OutboxEntriesTable outboxEntries = $OutboxEntriesTable(this);
   late final $RulesTable rules = $RulesTable(this);
   late final $QueuesTable queues = $QueuesTable(this);
+  late final $JobsTable jobs = $JobsTable(this);
+  late final $JobRunsTable jobRuns = $JobRunsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3644,6 +4639,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     outboxEntries,
     rules,
     queues,
+    jobs,
+    jobRuns,
   ];
 }
 
@@ -5431,6 +6428,503 @@ typedef $$QueuesTableProcessedTableManager =
       QueueRow,
       PrefetchHooks Function()
     >;
+typedef $$JobsTableCreateCompanionBuilder =
+    JobsCompanion Function({
+      required String id,
+      required String type,
+      Value<String> payloadJson,
+      Value<String> status,
+      Value<String> dependsOnJson,
+      Value<int> attempts,
+      Value<int> maxAttempts,
+      required DateTime nextRunAt,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$JobsTableUpdateCompanionBuilder =
+    JobsCompanion Function({
+      Value<String> id,
+      Value<String> type,
+      Value<String> payloadJson,
+      Value<String> status,
+      Value<String> dependsOnJson,
+      Value<int> attempts,
+      Value<int> maxAttempts,
+      Value<DateTime> nextRunAt,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$JobsTableFilterComposer extends Composer<_$AppDatabase, $JobsTable> {
+  $$JobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dependsOnJson => $composableBuilder(
+    column: $table.dependsOnJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get maxAttempts => $composableBuilder(
+    column: $table.maxAttempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextRunAt => $composableBuilder(
+    column: $table.nextRunAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$JobsTableOrderingComposer extends Composer<_$AppDatabase, $JobsTable> {
+  $$JobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dependsOnJson => $composableBuilder(
+    column: $table.dependsOnJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get maxAttempts => $composableBuilder(
+    column: $table.maxAttempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get nextRunAt => $composableBuilder(
+    column: $table.nextRunAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$JobsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $JobsTable> {
+  $$JobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get dependsOnJson => $composableBuilder(
+    column: $table.dependsOnJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<int> get maxAttempts => $composableBuilder(
+    column: $table.maxAttempts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get nextRunAt =>
+      $composableBuilder(column: $table.nextRunAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$JobsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $JobsTable,
+          JobRow,
+          $$JobsTableFilterComposer,
+          $$JobsTableOrderingComposer,
+          $$JobsTableAnnotationComposer,
+          $$JobsTableCreateCompanionBuilder,
+          $$JobsTableUpdateCompanionBuilder,
+          (JobRow, BaseReferences<_$AppDatabase, $JobsTable, JobRow>),
+          JobRow,
+          PrefetchHooks Function()
+        > {
+  $$JobsTableTableManager(_$AppDatabase db, $JobsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$JobsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$JobsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$JobsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> dependsOnJson = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<int> maxAttempts = const Value.absent(),
+                Value<DateTime> nextRunAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => JobsCompanion(
+                id: id,
+                type: type,
+                payloadJson: payloadJson,
+                status: status,
+                dependsOnJson: dependsOnJson,
+                attempts: attempts,
+                maxAttempts: maxAttempts,
+                nextRunAt: nextRunAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String type,
+                Value<String> payloadJson = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> dependsOnJson = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<int> maxAttempts = const Value.absent(),
+                required DateTime nextRunAt,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => JobsCompanion.insert(
+                id: id,
+                type: type,
+                payloadJson: payloadJson,
+                status: status,
+                dependsOnJson: dependsOnJson,
+                attempts: attempts,
+                maxAttempts: maxAttempts,
+                nextRunAt: nextRunAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$JobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $JobsTable,
+      JobRow,
+      $$JobsTableFilterComposer,
+      $$JobsTableOrderingComposer,
+      $$JobsTableAnnotationComposer,
+      $$JobsTableCreateCompanionBuilder,
+      $$JobsTableUpdateCompanionBuilder,
+      (JobRow, BaseReferences<_$AppDatabase, $JobsTable, JobRow>),
+      JobRow,
+      PrefetchHooks Function()
+    >;
+typedef $$JobRunsTableCreateCompanionBuilder =
+    JobRunsCompanion Function({
+      Value<int> id,
+      required String jobId,
+      required DateTime startedAt,
+      Value<DateTime?> finishedAt,
+      Value<bool> success,
+      Value<String?> error,
+    });
+typedef $$JobRunsTableUpdateCompanionBuilder =
+    JobRunsCompanion Function({
+      Value<int> id,
+      Value<String> jobId,
+      Value<DateTime> startedAt,
+      Value<DateTime?> finishedAt,
+      Value<bool> success,
+      Value<String?> error,
+    });
+
+class $$JobRunsTableFilterComposer
+    extends Composer<_$AppDatabase, $JobRunsTable> {
+  $$JobRunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get jobId => $composableBuilder(
+    column: $table.jobId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get success => $composableBuilder(
+    column: $table.success,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get error => $composableBuilder(
+    column: $table.error,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$JobRunsTableOrderingComposer
+    extends Composer<_$AppDatabase, $JobRunsTable> {
+  $$JobRunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get jobId => $composableBuilder(
+    column: $table.jobId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get success => $composableBuilder(
+    column: $table.success,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get error => $composableBuilder(
+    column: $table.error,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$JobRunsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $JobRunsTable> {
+  $$JobRunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get jobId =>
+      $composableBuilder(column: $table.jobId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get success =>
+      $composableBuilder(column: $table.success, builder: (column) => column);
+
+  GeneratedColumn<String> get error =>
+      $composableBuilder(column: $table.error, builder: (column) => column);
+}
+
+class $$JobRunsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $JobRunsTable,
+          JobRunRow,
+          $$JobRunsTableFilterComposer,
+          $$JobRunsTableOrderingComposer,
+          $$JobRunsTableAnnotationComposer,
+          $$JobRunsTableCreateCompanionBuilder,
+          $$JobRunsTableUpdateCompanionBuilder,
+          (JobRunRow, BaseReferences<_$AppDatabase, $JobRunsTable, JobRunRow>),
+          JobRunRow,
+          PrefetchHooks Function()
+        > {
+  $$JobRunsTableTableManager(_$AppDatabase db, $JobRunsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$JobRunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$JobRunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$JobRunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> jobId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<bool> success = const Value.absent(),
+                Value<String?> error = const Value.absent(),
+              }) => JobRunsCompanion(
+                id: id,
+                jobId: jobId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                success: success,
+                error: error,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String jobId,
+                required DateTime startedAt,
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<bool> success = const Value.absent(),
+                Value<String?> error = const Value.absent(),
+              }) => JobRunsCompanion.insert(
+                id: id,
+                jobId: jobId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                success: success,
+                error: error,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$JobRunsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $JobRunsTable,
+      JobRunRow,
+      $$JobRunsTableFilterComposer,
+      $$JobRunsTableOrderingComposer,
+      $$JobRunsTableAnnotationComposer,
+      $$JobRunsTableCreateCompanionBuilder,
+      $$JobRunsTableUpdateCompanionBuilder,
+      (JobRunRow, BaseReferences<_$AppDatabase, $JobRunsTable, JobRunRow>),
+      JobRunRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5447,4 +6941,7 @@ class $AppDatabaseManager {
       $$RulesTableTableManager(_db, _db.rules);
   $$QueuesTableTableManager get queues =>
       $$QueuesTableTableManager(_db, _db.queues);
+  $$JobsTableTableManager get jobs => $$JobsTableTableManager(_db, _db.jobs);
+  $$JobRunsTableTableManager get jobRuns =>
+      $$JobRunsTableTableManager(_db, _db.jobRuns);
 }

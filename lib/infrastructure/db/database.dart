@@ -10,12 +10,12 @@ part 'database.g.dart';
 /// eventos/enriquecimentos). Suporte nativo (Android/iOS/desktop) apenas
 /// nesta fase — web/WASM fica para uma iteração futura (ver EVOLUTION-PLAN,
 /// Fase 1: "web via WASM/OPFS" listado como risco a validar cedo no CI).
-@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries, Rules, Queues])
+@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries, Rules, Queues, Jobs, JobRuns])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -55,6 +55,11 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(enrichments, enrichments.language);
           await m.addColumn(enrichments, enrichments.tokensUsed);
           await m.addColumn(enrichments, enrichments.costEstimate);
+        }
+        // v7 -> v8: fila de jobs persistida (Onda 6) — Jobs + JobRuns.
+        if (from < 8) {
+          await m.createTable(jobs);
+          await m.createTable(jobRuns);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar

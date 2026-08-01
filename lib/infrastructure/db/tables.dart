@@ -141,3 +141,49 @@ class Queues extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Jobs na fila de processamento (Onda 6 — fila de jobs persistida).
+/// Um job é uma unidade de trabalho que pode ser executado de forma assíncrona
+/// e dependências entre jobs são suportadas via `dependsOnJson`.
+///
+/// `@DataClassName('JobRow')` evita colisão com a classe de domínio `Job`.
+@DataClassName('JobRow')
+class Jobs extends Table {
+  TextColumn get id => text()();
+  TextColumn get type => text()();
+  /// Payload do job serializado como JSON — desserializa para `Map<String, dynamic>`
+  TextColumn get payloadJson => text().withDefault(const Constant('{}'))();
+  /// Status do job: pending | running | done | failed
+  TextColumn get status => text().withDefault(const Constant('pending'))();
+  /// Lista de IDs de jobs dos quais este depende, serializada como JSON — desserializa para `List<String>`
+  TextColumn get dependsOnJson => text().withDefault(const Constant('[]'))();
+  /// Número de tentativas já realizadas
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  /// Número máximo de tentativas antes de marcar como failed
+  IntColumn get maxAttempts => integer().withDefault(const Constant(3))();
+  /// Quando este job deve ser executado próximo
+  DateTimeColumn get nextRunAt => dateTime()();
+  /// Quando o job foi criado
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Registros de execução de um job (Onda 6 — auditoria de execuções).
+/// Um job pode ter múltiplos registros de execução (um por tentativa).
+///
+/// `@DataClassName('JobRunRow')` evita colisão com a classe de domínio `JobRun`.
+@DataClassName('JobRunRow')
+class JobRuns extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get jobId => text()();
+  /// Quando a execução começou
+  DateTimeColumn get startedAt => dateTime()();
+  /// Quando a execução terminou (null se ainda em execução)
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+  /// Se a execução foi bem-sucedida
+  BoolColumn get success => boolean().withDefault(const Constant(false))();
+  /// Mensagem de erro, se houver
+  TextColumn get error => text().nullable()();
+}
