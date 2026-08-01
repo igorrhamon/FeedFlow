@@ -24,6 +24,22 @@ class ArticleIngested with _$ArticleIngested implements DomainEvent {
   }) = _ArticleIngested;
 }
 
+/// Publicado quando um [Document] é ingerido de qualquer [SourceConnector]
+/// (Onda 7+) e cria (ou atualiza) um [WorkItem] local.
+@freezed
+class DocumentIngested with _$DocumentIngested implements DomainEvent {
+  const DocumentIngested._();
+
+  const factory DocumentIngested({
+    required String workItemId,
+    required String documentId,
+    required String sourceConnectorId,
+    required String sourceId,
+    required String title,
+    required DateTime timestamp,
+  }) = _DocumentIngested;
+}
+
 /// Publicado quando o status de um [WorkItem] muda via [changeStatus].
 @freezed
 class StatusChanged with _$StatusChanged implements DomainEvent {

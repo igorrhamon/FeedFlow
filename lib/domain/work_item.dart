@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../models/article.dart';
+import 'document.dart';
 import 'triage_status.dart';
 
 part 'work_item.freezed.dart';
@@ -41,6 +42,7 @@ class WorkItem with _$WorkItem {
     required DateTime ingestedAt,
     required DateTime updatedAt,
     DateTime? completedAt,
+    String? documentId,
   }) = _WorkItem;
 
   /// Constrói um [WorkItem] novo a partir do snapshot de ingestão de um
@@ -66,6 +68,32 @@ class WorkItem with _$WorkItem {
       isStarred: article.isStarred,
       ingestedAt: now,
       updatedAt: now,
+    );
+  }
+
+  /// Constrói um [WorkItem] novo a partir de um [Document] — adaptador
+  /// genérico usado pelo [SyncService] quando a ingestão vem de qualquer
+  /// [SourceConnector] (Onda 7+).
+  factory WorkItem.fromDocument(
+    Document document,
+    String providerId,
+    String articleId,
+    String feedId,
+  ) {
+    final now = DateTime.now();
+    return WorkItem(
+      id: workItemIdFor(providerId, articleId),
+      providerId: providerId,
+      articleId: articleId,
+      feedId: feedId,
+      title: document.title,
+      author: document.author,
+      content: document.rawContent,
+      url: document.url,
+      published: document.capturedAt,
+      ingestedAt: now,
+      updatedAt: now,
+      documentId: document.id,
     );
   }
 

@@ -38,6 +38,7 @@ mixin _$WorkItem {
   DateTime get ingestedAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
   DateTime? get completedAt => throw _privateConstructorUsedError;
+  String? get documentId => throw _privateConstructorUsedError;
 
   /// Create a copy of WorkItem
   /// with the given fields replaced by the non-null parameter values.
@@ -73,6 +74,7 @@ abstract class $WorkItemCopyWith<$Res> {
     DateTime ingestedAt,
     DateTime updatedAt,
     DateTime? completedAt,
+    String? documentId,
   });
 }
 
@@ -112,6 +114,7 @@ class _$WorkItemCopyWithImpl<$Res, $Val extends WorkItem>
     Object? ingestedAt = null,
     Object? updatedAt = null,
     Object? completedAt = freezed,
+    Object? documentId = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -220,6 +223,11 @@ class _$WorkItemCopyWithImpl<$Res, $Val extends WorkItem>
                     ? _value.completedAt
                     : completedAt // ignore: cast_nullable_to_non_nullable
                         as DateTime?,
+            documentId:
+                freezed == documentId
+                    ? _value.documentId
+                    : documentId // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -257,6 +265,7 @@ abstract class _$$WorkItemImplCopyWith<$Res>
     DateTime ingestedAt,
     DateTime updatedAt,
     DateTime? completedAt,
+    String? documentId,
   });
 }
 
@@ -295,6 +304,7 @@ class __$$WorkItemImplCopyWithImpl<$Res>
     Object? ingestedAt = null,
     Object? updatedAt = null,
     Object? completedAt = freezed,
+    Object? documentId = freezed,
   }) {
     return _then(
       _$WorkItemImpl(
@@ -403,6 +413,11 @@ class __$$WorkItemImplCopyWithImpl<$Res>
                 ? _value.completedAt
                 : completedAt // ignore: cast_nullable_to_non_nullable
                     as DateTime?,
+        documentId:
+            freezed == documentId
+                ? _value.documentId
+                : documentId // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -433,6 +448,7 @@ class _$WorkItemImpl extends _WorkItem {
     required this.ingestedAt,
     required this.updatedAt,
     this.completedAt,
+    this.documentId,
   }) : _tags = tags,
        super._();
 
@@ -489,10 +505,12 @@ class _$WorkItemImpl extends _WorkItem {
   final DateTime updatedAt;
   @override
   final DateTime? completedAt;
+  @override
+  final String? documentId;
 
   @override
   String toString() {
-    return 'WorkItem(id: $id, providerId: $providerId, articleId: $articleId, feedId: $feedId, title: $title, author: $author, summary: $summary, content: $content, url: $url, published: $published, updated: $updated, status: $status, priority: $priority, tags: $tags, isRead: $isRead, isStarred: $isStarred, snoozedUntil: $snoozedUntil, notes: $notes, ingestedAt: $ingestedAt, updatedAt: $updatedAt, completedAt: $completedAt)';
+    return 'WorkItem(id: $id, providerId: $providerId, articleId: $articleId, feedId: $feedId, title: $title, author: $author, summary: $summary, content: $content, url: $url, published: $published, updated: $updated, status: $status, priority: $priority, tags: $tags, isRead: $isRead, isStarred: $isStarred, snoozedUntil: $snoozedUntil, notes: $notes, ingestedAt: $ingestedAt, updatedAt: $updatedAt, completedAt: $completedAt, documentId: $documentId)';
   }
 
   @override
@@ -529,7 +547,9 @@ class _$WorkItemImpl extends _WorkItem {
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
             (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt));
+                other.completedAt == completedAt) &&
+            (identical(other.documentId, documentId) ||
+                other.documentId == documentId));
   }
 
   @override
@@ -556,6 +576,7 @@ class _$WorkItemImpl extends _WorkItem {
     ingestedAt,
     updatedAt,
     completedAt,
+    documentId,
   ]);
 
   /// Create a copy of WorkItem
@@ -590,6 +611,7 @@ abstract class _WorkItem extends WorkItem {
     required final DateTime ingestedAt,
     required final DateTime updatedAt,
     final DateTime? completedAt,
+    final String? documentId,
   }) = _$WorkItemImpl;
   const _WorkItem._() : super._();
 
@@ -635,6 +657,8 @@ abstract class _WorkItem extends WorkItem {
   DateTime get updatedAt;
   @override
   DateTime? get completedAt;
+  @override
+  String? get documentId;
 
   /// Create a copy of WorkItem
   /// with the given fields replaced by the non-null parameter values.

@@ -1,4 +1,5 @@
 import '../../models/article.dart';
+import '../document.dart';
 import '../triage_status.dart';
 import '../work_item.dart';
 
@@ -20,6 +21,10 @@ abstract class WorkItemRepository {
   /// conteúdo, read/star) de um item já existente — nunca sobrescreve
   /// status/tags/priority/notes definidos localmente pelo usuário.
   Future<void> upsertFromArticles(List<Article> articles, String providerId);
+
+  /// Ingestão genérica a partir de [Document]s (Onda 7+). Mesmo comportamento
+  /// de [upsertFromArticles], mas funciona com qualquer [SourceConnector].
+  Future<void> upsertFromDocuments(List<Document> documents, String providerId);
 
   Future<void> save(WorkItem item);
 

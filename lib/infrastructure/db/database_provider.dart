@@ -9,8 +9,10 @@ import '../../application/rule_engine.dart';
 import '../../application/rule_undo_use_case.dart';
 import '../../application/sync_service.dart';
 import '../../domain/enricher.dart';
+import '../../domain/repositories/document_repository.dart';
 import '../../domain/repositories/enrichment_repository.dart';
 import '../../domain/repositories/job_repository.dart';
+import '../../domain/repositories/knowledge_base_repository.dart';
 import '../../domain/repositories/outbox_repository.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../../domain/repositories/rule_repository.dart';
@@ -18,9 +20,12 @@ import '../../domain/repositories/search_repository.dart';
 import '../../domain/repositories/work_item_event_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import '../llm/llm_enricher_router.dart';
+import '../repositories/document_repository_drift.dart';
+import '../repositories/document_version_repository_drift.dart';
 import '../repositories/enrichment_repository_drift.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
 import '../repositories/job_repository_drift.dart';
+import '../repositories/knowledge_base_repository_drift.dart';
 import '../repositories/outbox_repository_drift.dart';
 import '../repositories/queue_repository_drift.dart';
 import '../repositories/rule_repository_drift.dart';
@@ -52,6 +57,9 @@ class DatabaseProvider {
   static WorkItemEventRepository? _workItemEventRepository;
   static RuleUndoUseCase? _ruleUndoUseCase;
   static JournalListener? _journalListener;
+  static DocumentRepository? _documentRepository;
+  static KnowledgeBaseRepository? _knowledgeBaseRepository;
+  static DocumentVersionRepositoryDrift? _documentVersionRepository;
 
   static WorkItemRepository? get repository {
     if (kIsWeb) return null;
@@ -173,5 +181,27 @@ class DatabaseProvider {
       actionExecutor: actionExecutor!,
     );
     return _jobRunner;
+  }
+
+  /// Repositório de [Document]s (Onda 7 — ingestão genérica).
+  static DocumentRepository? get documentRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _documentRepository ??= DocumentRepositoryDrift(_database!);
+  }
+
+  /// Repositório de [Note]s / Knowledge Base (Onda 8).
+  /// Oferece CRUD de notas, versionamento e busca.
+  static KnowledgeBaseRepository? get knowledgeBaseRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _knowledgeBaseRepository ??= KnowledgeBaseRepositoryDrift(_database!);
+  }
+
+  /// Repositório de histórico de versões de [Document]s (Onda 8).
+  static DocumentVersionRepositoryDrift? get documentVersionRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _documentVersionRepository ??= DocumentVersionRepositoryDrift(_database!);
   }
 }

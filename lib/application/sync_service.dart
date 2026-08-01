@@ -1,3 +1,4 @@
+import '../domain/document.dart';
 import '../domain/outbox_entry.dart';
 import '../domain/repositories/outbox_repository.dart';
 import '../domain/repositories/work_item_repository.dart';
@@ -29,8 +30,21 @@ class SyncService {
   /// Ingestão: grava/atualiza os [WorkItem]s a partir de artigos recém
   /// carregados de um provider (shadow-write da Fase 1, agora centralizado
   /// aqui em vez de chamado diretamente pela página).
-  Future<void> ingest(List<Article> articles, String providerId) {
-    return _workItems.upsertFromArticles(articles, providerId);
+  ///
+  /// Internamente converte `Article → Document → WorkItem` (Onda 7+).
+  Future<void> ingest(List<Article> articles, String providerId) async {
+    final documents = articles.map((a) => Document.fromArticle(a, providerId)).toList();
+    await ingestDocuments(documents, providerId);
+  }
+
+  /// Ingestão genérica: grava/atualiza os [WorkItem]s a partir de [Document]s
+  /// (Onda 7+). Permite que qualquer [SourceConnector] alimente o sistema
+  /// sem conhecer a identidade interna de `providerId`/`articleId`.
+  ///
+  /// Nota: [providerId] aqui é o id do conector, não necessariamente o mesmo
+  /// de um [FeedProvider]. Para RSS, é `rss:the-old-reader` etc.
+  Future<void> ingestDocuments(List<Document> documents, String providerId) {
+    return _workItems.upsertFromDocuments(documents, providerId);
   }
 
   Future<void> markAsRead(FeedProvider provider, String providerId, String articleId) =>

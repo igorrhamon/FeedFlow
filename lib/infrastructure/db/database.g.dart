@@ -235,6 +235,17 @@ class $WorkItemsTable extends WorkItems
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _documentIdMeta = const VerificationMeta(
+    'documentId',
+  );
+  @override
+  late final GeneratedColumn<String> documentId = GeneratedColumn<String>(
+    'document_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -258,6 +269,7 @@ class $WorkItemsTable extends WorkItems
     ingestedAt,
     updatedAt,
     completedAt,
+    documentId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -414,6 +426,12 @@ class $WorkItemsTable extends WorkItems
         ),
       );
     }
+    if (data.containsKey('document_id')) {
+      context.handle(
+        _documentIdMeta,
+        documentId.isAcceptableOrUnknown(data['document_id']!, _documentIdMeta),
+      );
+    }
     return context;
   }
 
@@ -519,6 +537,10 @@ class $WorkItemsTable extends WorkItems
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
       ),
+      documentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}document_id'],
+      ),
     );
   }
 
@@ -552,6 +574,10 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
   final DateTime ingestedAt;
   final DateTime updatedAt;
   final DateTime? completedAt;
+
+  /// ID do [Document] de origem (Onda 7 — campo nullable, sem FK obrigatória
+  /// para manter compatibilidade de migração).
+  final String? documentId;
   const WorkItemRow({
     required this.id,
     required this.providerId,
@@ -574,6 +600,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     required this.ingestedAt,
     required this.updatedAt,
     this.completedAt,
+    this.documentId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -616,6 +643,9 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || completedAt != null) {
       map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || documentId != null) {
+      map['document_id'] = Variable<String>(documentId);
     }
     return map;
   }
@@ -663,6 +693,10 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
           completedAt == null && nullToAbsent
               ? const Value.absent()
               : Value(completedAt),
+      documentId:
+          documentId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(documentId),
     );
   }
 
@@ -693,6 +727,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       ingestedAt: serializer.fromJson<DateTime>(json['ingestedAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      documentId: serializer.fromJson<String?>(json['documentId']),
     );
   }
   @override
@@ -720,6 +755,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       'ingestedAt': serializer.toJson<DateTime>(ingestedAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'documentId': serializer.toJson<String?>(documentId),
     };
   }
 
@@ -745,6 +781,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     DateTime? ingestedAt,
     DateTime? updatedAt,
     Value<DateTime?> completedAt = const Value.absent(),
+    Value<String?> documentId = const Value.absent(),
   }) => WorkItemRow(
     id: id ?? this.id,
     providerId: providerId ?? this.providerId,
@@ -767,6 +804,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     ingestedAt: ingestedAt ?? this.ingestedAt,
     updatedAt: updatedAt ?? this.updatedAt,
     completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    documentId: documentId.present ? documentId.value : this.documentId,
   );
   WorkItemRow copyWithCompanion(WorkItemsCompanion data) {
     return WorkItemRow(
@@ -797,6 +835,8 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       completedAt:
           data.completedAt.present ? data.completedAt.value : this.completedAt,
+      documentId:
+          data.documentId.present ? data.documentId.value : this.documentId,
     );
   }
 
@@ -823,7 +863,8 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
           ..write('notes: $notes, ')
           ..write('ingestedAt: $ingestedAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('completedAt: $completedAt')
+          ..write('completedAt: $completedAt, ')
+          ..write('documentId: $documentId')
           ..write(')'))
         .toString();
   }
@@ -851,6 +892,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     ingestedAt,
     updatedAt,
     completedAt,
+    documentId,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -876,7 +918,8 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
           other.notes == this.notes &&
           other.ingestedAt == this.ingestedAt &&
           other.updatedAt == this.updatedAt &&
-          other.completedAt == this.completedAt);
+          other.completedAt == this.completedAt &&
+          other.documentId == this.documentId);
 }
 
 class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
@@ -901,6 +944,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
   final Value<DateTime> ingestedAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> completedAt;
+  final Value<String?> documentId;
   final Value<int> rowid;
   const WorkItemsCompanion({
     this.id = const Value.absent(),
@@ -924,6 +968,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     this.ingestedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.completedAt = const Value.absent(),
+    this.documentId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WorkItemsCompanion.insert({
@@ -948,6 +993,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     required DateTime ingestedAt,
     required DateTime updatedAt,
     this.completedAt = const Value.absent(),
+    this.documentId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        providerId = Value(providerId),
@@ -978,6 +1024,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     Expression<DateTime>? ingestedAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? completedAt,
+    Expression<String>? documentId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1002,6 +1049,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
       if (ingestedAt != null) 'ingested_at': ingestedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (completedAt != null) 'completed_at': completedAt,
+      if (documentId != null) 'document_id': documentId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1028,6 +1076,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     Value<DateTime>? ingestedAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? completedAt,
+    Value<String?>? documentId,
     Value<int>? rowid,
   }) {
     return WorkItemsCompanion(
@@ -1052,6 +1101,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
       ingestedAt: ingestedAt ?? this.ingestedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       completedAt: completedAt ?? this.completedAt,
+      documentId: documentId ?? this.documentId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1122,6 +1172,9 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
     }
+    if (documentId.present) {
+      map['document_id'] = Variable<String>(documentId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1152,6 +1205,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
           ..write('ingestedAt: $ingestedAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('completedAt: $completedAt, ')
+          ..write('documentId: $documentId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4617,6 +4671,1004 @@ class JobRunsCompanion extends UpdateCompanion<JobRunRow> {
   }
 }
 
+class $DocumentsTable extends Documents
+    with TableInfo<$DocumentsTable, DocumentRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DocumentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceConnectorIdMeta = const VerificationMeta(
+    'sourceConnectorId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceConnectorId =
+      GeneratedColumn<String>(
+        'source_connector_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceId = GeneratedColumn<String>(
+    'source_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentTypeMeta = const VerificationMeta(
+    'contentType',
+  );
+  @override
+  late final GeneratedColumn<String> contentType = GeneratedColumn<String>(
+    'content_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _rawContentMeta = const VerificationMeta(
+    'rawContent',
+  );
+  @override
+  late final GeneratedColumn<String> rawContent = GeneratedColumn<String>(
+    'raw_content',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+    'url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _capturedAtMeta = const VerificationMeta(
+    'capturedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> capturedAt = GeneratedColumn<DateTime>(
+    'captured_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _metadataJsonMeta = const VerificationMeta(
+    'metadataJson',
+  );
+  @override
+  late final GeneratedColumn<String> metadataJson = GeneratedColumn<String>(
+    'metadata_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sourceConnectorId,
+    sourceId,
+    contentType,
+    title,
+    author,
+    rawContent,
+    url,
+    capturedAt,
+    metadataJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'documents';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DocumentRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('source_connector_id')) {
+      context.handle(
+        _sourceConnectorIdMeta,
+        sourceConnectorId.isAcceptableOrUnknown(
+          data['source_connector_id']!,
+          _sourceConnectorIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceConnectorIdMeta);
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceIdMeta);
+    }
+    if (data.containsKey('content_type')) {
+      context.handle(
+        _contentTypeMeta,
+        contentType.isAcceptableOrUnknown(
+          data['content_type']!,
+          _contentTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentTypeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    }
+    if (data.containsKey('raw_content')) {
+      context.handle(
+        _rawContentMeta,
+        rawContent.isAcceptableOrUnknown(data['raw_content']!, _rawContentMeta),
+      );
+    }
+    if (data.containsKey('url')) {
+      context.handle(
+        _urlMeta,
+        url.isAcceptableOrUnknown(data['url']!, _urlMeta),
+      );
+    }
+    if (data.containsKey('captured_at')) {
+      context.handle(
+        _capturedAtMeta,
+        capturedAt.isAcceptableOrUnknown(data['captured_at']!, _capturedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_capturedAtMeta);
+    }
+    if (data.containsKey('metadata_json')) {
+      context.handle(
+        _metadataJsonMeta,
+        metadataJson.isAcceptableOrUnknown(
+          data['metadata_json']!,
+          _metadataJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DocumentRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DocumentRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      sourceConnectorId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}source_connector_id'],
+          )!,
+      sourceId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}source_id'],
+          )!,
+      contentType:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}content_type'],
+          )!,
+      title:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}title'],
+          )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      ),
+      rawContent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_content'],
+      ),
+      url: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}url'],
+      ),
+      capturedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}captured_at'],
+          )!,
+      metadataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metadata_json'],
+      ),
+    );
+  }
+
+  @override
+  $DocumentsTable createAlias(String alias) {
+    return $DocumentsTable(attachedDatabase, alias);
+  }
+}
+
+class DocumentRow extends DataClass implements Insertable<DocumentRow> {
+  final String id;
+  final String sourceConnectorId;
+  final String sourceId;
+  final String contentType;
+  final String title;
+  final String? author;
+  final String? rawContent;
+  final String? url;
+  final DateTime capturedAt;
+  final String? metadataJson;
+  const DocumentRow({
+    required this.id,
+    required this.sourceConnectorId,
+    required this.sourceId,
+    required this.contentType,
+    required this.title,
+    this.author,
+    this.rawContent,
+    this.url,
+    required this.capturedAt,
+    this.metadataJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['source_connector_id'] = Variable<String>(sourceConnectorId);
+    map['source_id'] = Variable<String>(sourceId);
+    map['content_type'] = Variable<String>(contentType);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || author != null) {
+      map['author'] = Variable<String>(author);
+    }
+    if (!nullToAbsent || rawContent != null) {
+      map['raw_content'] = Variable<String>(rawContent);
+    }
+    if (!nullToAbsent || url != null) {
+      map['url'] = Variable<String>(url);
+    }
+    map['captured_at'] = Variable<DateTime>(capturedAt);
+    if (!nullToAbsent || metadataJson != null) {
+      map['metadata_json'] = Variable<String>(metadataJson);
+    }
+    return map;
+  }
+
+  DocumentsCompanion toCompanion(bool nullToAbsent) {
+    return DocumentsCompanion(
+      id: Value(id),
+      sourceConnectorId: Value(sourceConnectorId),
+      sourceId: Value(sourceId),
+      contentType: Value(contentType),
+      title: Value(title),
+      author:
+          author == null && nullToAbsent ? const Value.absent() : Value(author),
+      rawContent:
+          rawContent == null && nullToAbsent
+              ? const Value.absent()
+              : Value(rawContent),
+      url: url == null && nullToAbsent ? const Value.absent() : Value(url),
+      capturedAt: Value(capturedAt),
+      metadataJson:
+          metadataJson == null && nullToAbsent
+              ? const Value.absent()
+              : Value(metadataJson),
+    );
+  }
+
+  factory DocumentRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DocumentRow(
+      id: serializer.fromJson<String>(json['id']),
+      sourceConnectorId: serializer.fromJson<String>(json['sourceConnectorId']),
+      sourceId: serializer.fromJson<String>(json['sourceId']),
+      contentType: serializer.fromJson<String>(json['contentType']),
+      title: serializer.fromJson<String>(json['title']),
+      author: serializer.fromJson<String?>(json['author']),
+      rawContent: serializer.fromJson<String?>(json['rawContent']),
+      url: serializer.fromJson<String?>(json['url']),
+      capturedAt: serializer.fromJson<DateTime>(json['capturedAt']),
+      metadataJson: serializer.fromJson<String?>(json['metadataJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sourceConnectorId': serializer.toJson<String>(sourceConnectorId),
+      'sourceId': serializer.toJson<String>(sourceId),
+      'contentType': serializer.toJson<String>(contentType),
+      'title': serializer.toJson<String>(title),
+      'author': serializer.toJson<String?>(author),
+      'rawContent': serializer.toJson<String?>(rawContent),
+      'url': serializer.toJson<String?>(url),
+      'capturedAt': serializer.toJson<DateTime>(capturedAt),
+      'metadataJson': serializer.toJson<String?>(metadataJson),
+    };
+  }
+
+  DocumentRow copyWith({
+    String? id,
+    String? sourceConnectorId,
+    String? sourceId,
+    String? contentType,
+    String? title,
+    Value<String?> author = const Value.absent(),
+    Value<String?> rawContent = const Value.absent(),
+    Value<String?> url = const Value.absent(),
+    DateTime? capturedAt,
+    Value<String?> metadataJson = const Value.absent(),
+  }) => DocumentRow(
+    id: id ?? this.id,
+    sourceConnectorId: sourceConnectorId ?? this.sourceConnectorId,
+    sourceId: sourceId ?? this.sourceId,
+    contentType: contentType ?? this.contentType,
+    title: title ?? this.title,
+    author: author.present ? author.value : this.author,
+    rawContent: rawContent.present ? rawContent.value : this.rawContent,
+    url: url.present ? url.value : this.url,
+    capturedAt: capturedAt ?? this.capturedAt,
+    metadataJson: metadataJson.present ? metadataJson.value : this.metadataJson,
+  );
+  DocumentRow copyWithCompanion(DocumentsCompanion data) {
+    return DocumentRow(
+      id: data.id.present ? data.id.value : this.id,
+      sourceConnectorId:
+          data.sourceConnectorId.present
+              ? data.sourceConnectorId.value
+              : this.sourceConnectorId,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
+      contentType:
+          data.contentType.present ? data.contentType.value : this.contentType,
+      title: data.title.present ? data.title.value : this.title,
+      author: data.author.present ? data.author.value : this.author,
+      rawContent:
+          data.rawContent.present ? data.rawContent.value : this.rawContent,
+      url: data.url.present ? data.url.value : this.url,
+      capturedAt:
+          data.capturedAt.present ? data.capturedAt.value : this.capturedAt,
+      metadataJson:
+          data.metadataJson.present
+              ? data.metadataJson.value
+              : this.metadataJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentRow(')
+          ..write('id: $id, ')
+          ..write('sourceConnectorId: $sourceConnectorId, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('contentType: $contentType, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('rawContent: $rawContent, ')
+          ..write('url: $url, ')
+          ..write('capturedAt: $capturedAt, ')
+          ..write('metadataJson: $metadataJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sourceConnectorId,
+    sourceId,
+    contentType,
+    title,
+    author,
+    rawContent,
+    url,
+    capturedAt,
+    metadataJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DocumentRow &&
+          other.id == this.id &&
+          other.sourceConnectorId == this.sourceConnectorId &&
+          other.sourceId == this.sourceId &&
+          other.contentType == this.contentType &&
+          other.title == this.title &&
+          other.author == this.author &&
+          other.rawContent == this.rawContent &&
+          other.url == this.url &&
+          other.capturedAt == this.capturedAt &&
+          other.metadataJson == this.metadataJson);
+}
+
+class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
+  final Value<String> id;
+  final Value<String> sourceConnectorId;
+  final Value<String> sourceId;
+  final Value<String> contentType;
+  final Value<String> title;
+  final Value<String?> author;
+  final Value<String?> rawContent;
+  final Value<String?> url;
+  final Value<DateTime> capturedAt;
+  final Value<String?> metadataJson;
+  final Value<int> rowid;
+  const DocumentsCompanion({
+    this.id = const Value.absent(),
+    this.sourceConnectorId = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.contentType = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.rawContent = const Value.absent(),
+    this.url = const Value.absent(),
+    this.capturedAt = const Value.absent(),
+    this.metadataJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DocumentsCompanion.insert({
+    required String id,
+    required String sourceConnectorId,
+    required String sourceId,
+    required String contentType,
+    required String title,
+    this.author = const Value.absent(),
+    this.rawContent = const Value.absent(),
+    this.url = const Value.absent(),
+    required DateTime capturedAt,
+    this.metadataJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       sourceConnectorId = Value(sourceConnectorId),
+       sourceId = Value(sourceId),
+       contentType = Value(contentType),
+       title = Value(title),
+       capturedAt = Value(capturedAt);
+  static Insertable<DocumentRow> custom({
+    Expression<String>? id,
+    Expression<String>? sourceConnectorId,
+    Expression<String>? sourceId,
+    Expression<String>? contentType,
+    Expression<String>? title,
+    Expression<String>? author,
+    Expression<String>? rawContent,
+    Expression<String>? url,
+    Expression<DateTime>? capturedAt,
+    Expression<String>? metadataJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sourceConnectorId != null) 'source_connector_id': sourceConnectorId,
+      if (sourceId != null) 'source_id': sourceId,
+      if (contentType != null) 'content_type': contentType,
+      if (title != null) 'title': title,
+      if (author != null) 'author': author,
+      if (rawContent != null) 'raw_content': rawContent,
+      if (url != null) 'url': url,
+      if (capturedAt != null) 'captured_at': capturedAt,
+      if (metadataJson != null) 'metadata_json': metadataJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DocumentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? sourceConnectorId,
+    Value<String>? sourceId,
+    Value<String>? contentType,
+    Value<String>? title,
+    Value<String?>? author,
+    Value<String?>? rawContent,
+    Value<String?>? url,
+    Value<DateTime>? capturedAt,
+    Value<String?>? metadataJson,
+    Value<int>? rowid,
+  }) {
+    return DocumentsCompanion(
+      id: id ?? this.id,
+      sourceConnectorId: sourceConnectorId ?? this.sourceConnectorId,
+      sourceId: sourceId ?? this.sourceId,
+      contentType: contentType ?? this.contentType,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      rawContent: rawContent ?? this.rawContent,
+      url: url ?? this.url,
+      capturedAt: capturedAt ?? this.capturedAt,
+      metadataJson: metadataJson ?? this.metadataJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sourceConnectorId.present) {
+      map['source_connector_id'] = Variable<String>(sourceConnectorId.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<String>(sourceId.value);
+    }
+    if (contentType.present) {
+      map['content_type'] = Variable<String>(contentType.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (rawContent.present) {
+      map['raw_content'] = Variable<String>(rawContent.value);
+    }
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (capturedAt.present) {
+      map['captured_at'] = Variable<DateTime>(capturedAt.value);
+    }
+    if (metadataJson.present) {
+      map['metadata_json'] = Variable<String>(metadataJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentsCompanion(')
+          ..write('id: $id, ')
+          ..write('sourceConnectorId: $sourceConnectorId, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('contentType: $contentType, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('rawContent: $rawContent, ')
+          ..write('url: $url, ')
+          ..write('capturedAt: $capturedAt, ')
+          ..write('metadataJson: $metadataJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DocumentVersionsTable extends DocumentVersions
+    with TableInfo<$DocumentVersionsTable, DocumentVersionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DocumentVersionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _documentIdMeta = const VerificationMeta(
+    'documentId',
+  );
+  @override
+  late final GeneratedColumn<String> documentId = GeneratedColumn<String>(
+    'document_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentSnapshotMeta = const VerificationMeta(
+    'contentSnapshot',
+  );
+  @override
+  late final GeneratedColumn<String> contentSnapshot = GeneratedColumn<String>(
+    'content_snapshot',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _changeNoteMeta = const VerificationMeta(
+    'changeNote',
+  );
+  @override
+  late final GeneratedColumn<String> changeNote = GeneratedColumn<String>(
+    'change_note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    documentId,
+    contentSnapshot,
+    createdAt,
+    changeNote,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'document_versions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DocumentVersionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('document_id')) {
+      context.handle(
+        _documentIdMeta,
+        documentId.isAcceptableOrUnknown(data['document_id']!, _documentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_documentIdMeta);
+    }
+    if (data.containsKey('content_snapshot')) {
+      context.handle(
+        _contentSnapshotMeta,
+        contentSnapshot.isAcceptableOrUnknown(
+          data['content_snapshot']!,
+          _contentSnapshotMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentSnapshotMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('change_note')) {
+      context.handle(
+        _changeNoteMeta,
+        changeNote.isAcceptableOrUnknown(data['change_note']!, _changeNoteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DocumentVersionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DocumentVersionRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      documentId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}document_id'],
+          )!,
+      contentSnapshot:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}content_snapshot'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      changeNote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}change_note'],
+      ),
+    );
+  }
+
+  @override
+  $DocumentVersionsTable createAlias(String alias) {
+    return $DocumentVersionsTable(attachedDatabase, alias);
+  }
+}
+
+class DocumentVersionRow extends DataClass
+    implements Insertable<DocumentVersionRow> {
+  final int id;
+  final String documentId;
+  final String contentSnapshot;
+  final DateTime createdAt;
+  final String? changeNote;
+  const DocumentVersionRow({
+    required this.id,
+    required this.documentId,
+    required this.contentSnapshot,
+    required this.createdAt,
+    this.changeNote,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['document_id'] = Variable<String>(documentId);
+    map['content_snapshot'] = Variable<String>(contentSnapshot);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || changeNote != null) {
+      map['change_note'] = Variable<String>(changeNote);
+    }
+    return map;
+  }
+
+  DocumentVersionsCompanion toCompanion(bool nullToAbsent) {
+    return DocumentVersionsCompanion(
+      id: Value(id),
+      documentId: Value(documentId),
+      contentSnapshot: Value(contentSnapshot),
+      createdAt: Value(createdAt),
+      changeNote:
+          changeNote == null && nullToAbsent
+              ? const Value.absent()
+              : Value(changeNote),
+    );
+  }
+
+  factory DocumentVersionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DocumentVersionRow(
+      id: serializer.fromJson<int>(json['id']),
+      documentId: serializer.fromJson<String>(json['documentId']),
+      contentSnapshot: serializer.fromJson<String>(json['contentSnapshot']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      changeNote: serializer.fromJson<String?>(json['changeNote']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'documentId': serializer.toJson<String>(documentId),
+      'contentSnapshot': serializer.toJson<String>(contentSnapshot),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'changeNote': serializer.toJson<String?>(changeNote),
+    };
+  }
+
+  DocumentVersionRow copyWith({
+    int? id,
+    String? documentId,
+    String? contentSnapshot,
+    DateTime? createdAt,
+    Value<String?> changeNote = const Value.absent(),
+  }) => DocumentVersionRow(
+    id: id ?? this.id,
+    documentId: documentId ?? this.documentId,
+    contentSnapshot: contentSnapshot ?? this.contentSnapshot,
+    createdAt: createdAt ?? this.createdAt,
+    changeNote: changeNote.present ? changeNote.value : this.changeNote,
+  );
+  DocumentVersionRow copyWithCompanion(DocumentVersionsCompanion data) {
+    return DocumentVersionRow(
+      id: data.id.present ? data.id.value : this.id,
+      documentId:
+          data.documentId.present ? data.documentId.value : this.documentId,
+      contentSnapshot:
+          data.contentSnapshot.present
+              ? data.contentSnapshot.value
+              : this.contentSnapshot,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      changeNote:
+          data.changeNote.present ? data.changeNote.value : this.changeNote,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentVersionRow(')
+          ..write('id: $id, ')
+          ..write('documentId: $documentId, ')
+          ..write('contentSnapshot: $contentSnapshot, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('changeNote: $changeNote')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, documentId, contentSnapshot, createdAt, changeNote);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DocumentVersionRow &&
+          other.id == this.id &&
+          other.documentId == this.documentId &&
+          other.contentSnapshot == this.contentSnapshot &&
+          other.createdAt == this.createdAt &&
+          other.changeNote == this.changeNote);
+}
+
+class DocumentVersionsCompanion extends UpdateCompanion<DocumentVersionRow> {
+  final Value<int> id;
+  final Value<String> documentId;
+  final Value<String> contentSnapshot;
+  final Value<DateTime> createdAt;
+  final Value<String?> changeNote;
+  const DocumentVersionsCompanion({
+    this.id = const Value.absent(),
+    this.documentId = const Value.absent(),
+    this.contentSnapshot = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.changeNote = const Value.absent(),
+  });
+  DocumentVersionsCompanion.insert({
+    this.id = const Value.absent(),
+    required String documentId,
+    required String contentSnapshot,
+    required DateTime createdAt,
+    this.changeNote = const Value.absent(),
+  }) : documentId = Value(documentId),
+       contentSnapshot = Value(contentSnapshot),
+       createdAt = Value(createdAt);
+  static Insertable<DocumentVersionRow> custom({
+    Expression<int>? id,
+    Expression<String>? documentId,
+    Expression<String>? contentSnapshot,
+    Expression<DateTime>? createdAt,
+    Expression<String>? changeNote,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (documentId != null) 'document_id': documentId,
+      if (contentSnapshot != null) 'content_snapshot': contentSnapshot,
+      if (createdAt != null) 'created_at': createdAt,
+      if (changeNote != null) 'change_note': changeNote,
+    });
+  }
+
+  DocumentVersionsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? documentId,
+    Value<String>? contentSnapshot,
+    Value<DateTime>? createdAt,
+    Value<String?>? changeNote,
+  }) {
+    return DocumentVersionsCompanion(
+      id: id ?? this.id,
+      documentId: documentId ?? this.documentId,
+      contentSnapshot: contentSnapshot ?? this.contentSnapshot,
+      createdAt: createdAt ?? this.createdAt,
+      changeNote: changeNote ?? this.changeNote,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (documentId.present) {
+      map['document_id'] = Variable<String>(documentId.value);
+    }
+    if (contentSnapshot.present) {
+      map['content_snapshot'] = Variable<String>(contentSnapshot.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (changeNote.present) {
+      map['change_note'] = Variable<String>(changeNote.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentVersionsCompanion(')
+          ..write('id: $id, ')
+          ..write('documentId: $documentId, ')
+          ..write('contentSnapshot: $contentSnapshot, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('changeNote: $changeNote')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4628,6 +5680,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $QueuesTable queues = $QueuesTable(this);
   late final $JobsTable jobs = $JobsTable(this);
   late final $JobRunsTable jobRuns = $JobRunsTable(this);
+  late final $DocumentsTable documents = $DocumentsTable(this);
+  late final $DocumentVersionsTable documentVersions = $DocumentVersionsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4641,6 +5697,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     queues,
     jobs,
     jobRuns,
+    documents,
+    documentVersions,
   ];
 }
 
@@ -4667,6 +5725,7 @@ typedef $$WorkItemsTableCreateCompanionBuilder =
       required DateTime ingestedAt,
       required DateTime updatedAt,
       Value<DateTime?> completedAt,
+      Value<String?> documentId,
       Value<int> rowid,
     });
 typedef $$WorkItemsTableUpdateCompanionBuilder =
@@ -4692,6 +5751,7 @@ typedef $$WorkItemsTableUpdateCompanionBuilder =
       Value<DateTime> ingestedAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> completedAt,
+      Value<String?> documentId,
       Value<int> rowid,
     });
 
@@ -4806,6 +5866,11 @@ class $$WorkItemsTableFilterComposer
 
   ColumnFilters<DateTime> get completedAt => $composableBuilder(
     column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get documentId => $composableBuilder(
+    column: $table.documentId,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4923,6 +5988,11 @@ class $$WorkItemsTableOrderingComposer
     column: $table.completedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$WorkItemsTableAnnotationComposer
@@ -5004,6 +6074,11 @@ class $$WorkItemsTableAnnotationComposer
     column: $table.completedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => column,
+  );
 }
 
 class $$WorkItemsTableTableManager
@@ -5058,6 +6133,7 @@ class $$WorkItemsTableTableManager
                 Value<DateTime> ingestedAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
+                Value<String?> documentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WorkItemsCompanion(
                 id: id,
@@ -5081,6 +6157,7 @@ class $$WorkItemsTableTableManager
                 ingestedAt: ingestedAt,
                 updatedAt: updatedAt,
                 completedAt: completedAt,
+                documentId: documentId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5106,6 +6183,7 @@ class $$WorkItemsTableTableManager
                 required DateTime ingestedAt,
                 required DateTime updatedAt,
                 Value<DateTime?> completedAt = const Value.absent(),
+                Value<String?> documentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WorkItemsCompanion.insert(
                 id: id,
@@ -5129,6 +6207,7 @@ class $$WorkItemsTableTableManager
                 ingestedAt: ingestedAt,
                 updatedAt: updatedAt,
                 completedAt: completedAt,
+                documentId: documentId,
                 rowid: rowid,
               ),
           withReferenceMapper:
@@ -6925,6 +8004,542 @@ typedef $$JobRunsTableProcessedTableManager =
       JobRunRow,
       PrefetchHooks Function()
     >;
+typedef $$DocumentsTableCreateCompanionBuilder =
+    DocumentsCompanion Function({
+      required String id,
+      required String sourceConnectorId,
+      required String sourceId,
+      required String contentType,
+      required String title,
+      Value<String?> author,
+      Value<String?> rawContent,
+      Value<String?> url,
+      required DateTime capturedAt,
+      Value<String?> metadataJson,
+      Value<int> rowid,
+    });
+typedef $$DocumentsTableUpdateCompanionBuilder =
+    DocumentsCompanion Function({
+      Value<String> id,
+      Value<String> sourceConnectorId,
+      Value<String> sourceId,
+      Value<String> contentType,
+      Value<String> title,
+      Value<String?> author,
+      Value<String?> rawContent,
+      Value<String?> url,
+      Value<DateTime> capturedAt,
+      Value<String?> metadataJson,
+      Value<int> rowid,
+    });
+
+class $$DocumentsTableFilterComposer
+    extends Composer<_$AppDatabase, $DocumentsTable> {
+  $$DocumentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceConnectorId => $composableBuilder(
+    column: $table.sourceConnectorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentType => $composableBuilder(
+    column: $table.contentType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawContent => $composableBuilder(
+    column: $table.rawContent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metadataJson => $composableBuilder(
+    column: $table.metadataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DocumentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DocumentsTable> {
+  $$DocumentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceConnectorId => $composableBuilder(
+    column: $table.sourceConnectorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentType => $composableBuilder(
+    column: $table.contentType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawContent => $composableBuilder(
+    column: $table.rawContent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metadataJson => $composableBuilder(
+    column: $table.metadataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DocumentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DocumentsTable> {
+  $$DocumentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceConnectorId => $composableBuilder(
+    column: $table.sourceConnectorId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
+
+  GeneratedColumn<String> get contentType => $composableBuilder(
+    column: $table.contentType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<String> get rawContent => $composableBuilder(
+    column: $table.rawContent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get metadataJson => $composableBuilder(
+    column: $table.metadataJson,
+    builder: (column) => column,
+  );
+}
+
+class $$DocumentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DocumentsTable,
+          DocumentRow,
+          $$DocumentsTableFilterComposer,
+          $$DocumentsTableOrderingComposer,
+          $$DocumentsTableAnnotationComposer,
+          $$DocumentsTableCreateCompanionBuilder,
+          $$DocumentsTableUpdateCompanionBuilder,
+          (
+            DocumentRow,
+            BaseReferences<_$AppDatabase, $DocumentsTable, DocumentRow>,
+          ),
+          DocumentRow,
+          PrefetchHooks Function()
+        > {
+  $$DocumentsTableTableManager(_$AppDatabase db, $DocumentsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$DocumentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$DocumentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$DocumentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> sourceConnectorId = const Value.absent(),
+                Value<String> sourceId = const Value.absent(),
+                Value<String> contentType = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> author = const Value.absent(),
+                Value<String?> rawContent = const Value.absent(),
+                Value<String?> url = const Value.absent(),
+                Value<DateTime> capturedAt = const Value.absent(),
+                Value<String?> metadataJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DocumentsCompanion(
+                id: id,
+                sourceConnectorId: sourceConnectorId,
+                sourceId: sourceId,
+                contentType: contentType,
+                title: title,
+                author: author,
+                rawContent: rawContent,
+                url: url,
+                capturedAt: capturedAt,
+                metadataJson: metadataJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String sourceConnectorId,
+                required String sourceId,
+                required String contentType,
+                required String title,
+                Value<String?> author = const Value.absent(),
+                Value<String?> rawContent = const Value.absent(),
+                Value<String?> url = const Value.absent(),
+                required DateTime capturedAt,
+                Value<String?> metadataJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DocumentsCompanion.insert(
+                id: id,
+                sourceConnectorId: sourceConnectorId,
+                sourceId: sourceId,
+                contentType: contentType,
+                title: title,
+                author: author,
+                rawContent: rawContent,
+                url: url,
+                capturedAt: capturedAt,
+                metadataJson: metadataJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DocumentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DocumentsTable,
+      DocumentRow,
+      $$DocumentsTableFilterComposer,
+      $$DocumentsTableOrderingComposer,
+      $$DocumentsTableAnnotationComposer,
+      $$DocumentsTableCreateCompanionBuilder,
+      $$DocumentsTableUpdateCompanionBuilder,
+      (
+        DocumentRow,
+        BaseReferences<_$AppDatabase, $DocumentsTable, DocumentRow>,
+      ),
+      DocumentRow,
+      PrefetchHooks Function()
+    >;
+typedef $$DocumentVersionsTableCreateCompanionBuilder =
+    DocumentVersionsCompanion Function({
+      Value<int> id,
+      required String documentId,
+      required String contentSnapshot,
+      required DateTime createdAt,
+      Value<String?> changeNote,
+    });
+typedef $$DocumentVersionsTableUpdateCompanionBuilder =
+    DocumentVersionsCompanion Function({
+      Value<int> id,
+      Value<String> documentId,
+      Value<String> contentSnapshot,
+      Value<DateTime> createdAt,
+      Value<String?> changeNote,
+    });
+
+class $$DocumentVersionsTableFilterComposer
+    extends Composer<_$AppDatabase, $DocumentVersionsTable> {
+  $$DocumentVersionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentSnapshot => $composableBuilder(
+    column: $table.contentSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get changeNote => $composableBuilder(
+    column: $table.changeNote,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DocumentVersionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DocumentVersionsTable> {
+  $$DocumentVersionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentSnapshot => $composableBuilder(
+    column: $table.contentSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get changeNote => $composableBuilder(
+    column: $table.changeNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DocumentVersionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DocumentVersionsTable> {
+  $$DocumentVersionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentSnapshot => $composableBuilder(
+    column: $table.contentSnapshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get changeNote => $composableBuilder(
+    column: $table.changeNote,
+    builder: (column) => column,
+  );
+}
+
+class $$DocumentVersionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DocumentVersionsTable,
+          DocumentVersionRow,
+          $$DocumentVersionsTableFilterComposer,
+          $$DocumentVersionsTableOrderingComposer,
+          $$DocumentVersionsTableAnnotationComposer,
+          $$DocumentVersionsTableCreateCompanionBuilder,
+          $$DocumentVersionsTableUpdateCompanionBuilder,
+          (
+            DocumentVersionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $DocumentVersionsTable,
+              DocumentVersionRow
+            >,
+          ),
+          DocumentVersionRow,
+          PrefetchHooks Function()
+        > {
+  $$DocumentVersionsTableTableManager(
+    _$AppDatabase db,
+    $DocumentVersionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$DocumentVersionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$DocumentVersionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$DocumentVersionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> documentId = const Value.absent(),
+                Value<String> contentSnapshot = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> changeNote = const Value.absent(),
+              }) => DocumentVersionsCompanion(
+                id: id,
+                documentId: documentId,
+                contentSnapshot: contentSnapshot,
+                createdAt: createdAt,
+                changeNote: changeNote,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String documentId,
+                required String contentSnapshot,
+                required DateTime createdAt,
+                Value<String?> changeNote = const Value.absent(),
+              }) => DocumentVersionsCompanion.insert(
+                id: id,
+                documentId: documentId,
+                contentSnapshot: contentSnapshot,
+                createdAt: createdAt,
+                changeNote: changeNote,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DocumentVersionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DocumentVersionsTable,
+      DocumentVersionRow,
+      $$DocumentVersionsTableFilterComposer,
+      $$DocumentVersionsTableOrderingComposer,
+      $$DocumentVersionsTableAnnotationComposer,
+      $$DocumentVersionsTableCreateCompanionBuilder,
+      $$DocumentVersionsTableUpdateCompanionBuilder,
+      (
+        DocumentVersionRow,
+        BaseReferences<
+          _$AppDatabase,
+          $DocumentVersionsTable,
+          DocumentVersionRow
+        >,
+      ),
+      DocumentVersionRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6944,4 +8559,8 @@ class $AppDatabaseManager {
   $$JobsTableTableManager get jobs => $$JobsTableTableManager(_db, _db.jobs);
   $$JobRunsTableTableManager get jobRuns =>
       $$JobRunsTableTableManager(_db, _db.jobRuns);
+  $$DocumentsTableTableManager get documents =>
+      $$DocumentsTableTableManager(_db, _db.documents);
+  $$DocumentVersionsTableTableManager get documentVersions =>
+      $$DocumentVersionsTableTableManager(_db, _db.documentVersions);
 }

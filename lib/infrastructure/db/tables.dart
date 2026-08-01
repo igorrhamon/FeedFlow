@@ -30,6 +30,9 @@ class WorkItems extends Table {
   DateTimeColumn get ingestedAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
+  /// ID do [Document] de origem (Onda 7 — campo nullable, sem FK obrigatória
+  /// para manter compatibilidade de migração).
+  TextColumn get documentId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -186,4 +189,42 @@ class JobRuns extends Table {
   BoolColumn get success => boolean().withDefault(const Constant(false))();
   /// Mensagem de erro, se houver
   TextColumn get error => text().nullable()();
+}
+
+/// Conteúdo bruto ingerido de qualquer fonte (Onda 7). Um [Document] é uma
+/// abstração universal de conteúdo, com proveniência explícita via
+/// `sourceConnectorId` e `sourceId`. Permite que RSS, email, arquivos, etc.
+/// sejam ingeridos e tratados uniformemente.
+///
+/// `@DataClassName('DocumentRow')` evita colisão com a classe de domínio
+/// `Document` (Freezed).
+@DataClassName('DocumentRow')
+class Documents extends Table {
+  TextColumn get id => text()();
+  TextColumn get sourceConnectorId => text()();
+  TextColumn get sourceId => text()();
+  TextColumn get contentType => text()();
+  TextColumn get title => text()();
+  TextColumn get author => text().nullable()();
+  TextColumn get rawContent => text().nullable()();
+  TextColumn get url => text().nullable()();
+  DateTimeColumn get capturedAt => dateTime()();
+  TextColumn get metadataJson => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Histórico de versões de um [Document] (Onda 8 - Knowledge Base).
+/// Permite rastrear mudanças em notas e anexos sem sobrescrever.
+///
+/// `@DataClassName('DocumentVersionRow')` evita colisão com a classe de domínio
+/// que pode existir no futuro.
+@DataClassName('DocumentVersionRow')
+class DocumentVersions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get documentId => text()();
+  TextColumn get contentSnapshot => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get changeNote => text().nullable()();
 }

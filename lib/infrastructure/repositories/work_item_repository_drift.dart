@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import '../../domain/document.dart';
 import '../../domain/repositories/work_item_repository.dart';
 import '../../domain/triage_status.dart';
 import '../../domain/work_item.dart';
@@ -78,6 +79,49 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
               isRead: Value(article.isRead),
               isStarred: Value(article.isStarred),
               updatedAt: Value(now),
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  /// Ingestão genérica a partir de [Document]s (Onda 7+). Mesmo comportamento
+  /// de `upsertFromArticles`, mas genérico para qualquer SourceConnector.
+  Future<void> upsertFromDocuments(List<Document> documents, String providerId) async {
+    if (documents.isEmpty) return;
+    final now = DateTime.now();
+    await _db.batch((batch) {
+      for (final doc in documents) {
+        // Como não temos a identidade granular de article.id de um `Article`,
+        // usamos `sourceId` do Document e `providerId` do conector (ex.: 'rss:the-old-reader')
+        // para formar um id estável. Isso permite re-ingestão idempotente.
+        final id = workItemIdFor(providerId, doc.sourceId);
+        batch.insert(
+          _db.workItems,
+          WorkItemsCompanion.insert(
+            id: id,
+            providerId: providerId,
+            articleId: doc.sourceId,
+            feedId: doc.sourceConnectorId, // Usa sourceConnectorId como feedId por falta de melhor opção
+            title: doc.title,
+            author: Value(doc.author),
+            content: Value(doc.rawContent),
+            url: Value(doc.url),
+            published: Value(doc.capturedAt),
+            ingestedAt: now,
+            updatedAt: now,
+            documentId: Value(doc.id),
+          ),
+          onConflict: DoUpdate(
+            (old) => WorkItemsCompanion(
+              title: Value(doc.title),
+              author: Value(doc.author),
+              content: Value(doc.rawContent),
+              url: Value(doc.url),
+              published: Value(doc.capturedAt),
+              updatedAt: Value(now),
+              documentId: Value(doc.id),
             ),
           ),
         );
@@ -215,6 +259,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
       ingestedAt: row.ingestedAt,
       updatedAt: row.updatedAt,
       completedAt: row.completedAt,
+      documentId: row.documentId,
     );
   }
 
@@ -241,6 +286,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
       ingestedAt: item.ingestedAt,
       updatedAt: item.updatedAt,
       completedAt: Value(item.completedAt),
+      documentId: Value(item.documentId),
     );
   }
 }

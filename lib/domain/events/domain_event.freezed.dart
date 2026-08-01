@@ -288,6 +288,279 @@ abstract class _ArticleIngested extends ArticleIngested {
 }
 
 /// @nodoc
+mixin _$DocumentIngested {
+  String get workItemId => throw _privateConstructorUsedError;
+  String get documentId => throw _privateConstructorUsedError;
+  String get sourceConnectorId => throw _privateConstructorUsedError;
+  String get sourceId => throw _privateConstructorUsedError;
+  String get title => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of DocumentIngested
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $DocumentIngestedCopyWith<DocumentIngested> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DocumentIngestedCopyWith<$Res> {
+  factory $DocumentIngestedCopyWith(
+    DocumentIngested value,
+    $Res Function(DocumentIngested) then,
+  ) = _$DocumentIngestedCopyWithImpl<$Res, DocumentIngested>;
+  @useResult
+  $Res call({
+    String workItemId,
+    String documentId,
+    String sourceConnectorId,
+    String sourceId,
+    String title,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$DocumentIngestedCopyWithImpl<$Res, $Val extends DocumentIngested>
+    implements $DocumentIngestedCopyWith<$Res> {
+  _$DocumentIngestedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of DocumentIngested
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? workItemId = null,
+    Object? documentId = null,
+    Object? sourceConnectorId = null,
+    Object? sourceId = null,
+    Object? title = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            workItemId:
+                null == workItemId
+                    ? _value.workItemId
+                    : workItemId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            documentId:
+                null == documentId
+                    ? _value.documentId
+                    : documentId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            sourceConnectorId:
+                null == sourceConnectorId
+                    ? _value.sourceConnectorId
+                    : sourceConnectorId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            sourceId:
+                null == sourceId
+                    ? _value.sourceId
+                    : sourceId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            title:
+                null == title
+                    ? _value.title
+                    : title // ignore: cast_nullable_to_non_nullable
+                        as String,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$DocumentIngestedImplCopyWith<$Res>
+    implements $DocumentIngestedCopyWith<$Res> {
+  factory _$$DocumentIngestedImplCopyWith(
+    _$DocumentIngestedImpl value,
+    $Res Function(_$DocumentIngestedImpl) then,
+  ) = __$$DocumentIngestedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String workItemId,
+    String documentId,
+    String sourceConnectorId,
+    String sourceId,
+    String title,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$DocumentIngestedImplCopyWithImpl<$Res>
+    extends _$DocumentIngestedCopyWithImpl<$Res, _$DocumentIngestedImpl>
+    implements _$$DocumentIngestedImplCopyWith<$Res> {
+  __$$DocumentIngestedImplCopyWithImpl(
+    _$DocumentIngestedImpl _value,
+    $Res Function(_$DocumentIngestedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of DocumentIngested
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? workItemId = null,
+    Object? documentId = null,
+    Object? sourceConnectorId = null,
+    Object? sourceId = null,
+    Object? title = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$DocumentIngestedImpl(
+        workItemId:
+            null == workItemId
+                ? _value.workItemId
+                : workItemId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        documentId:
+            null == documentId
+                ? _value.documentId
+                : documentId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        sourceConnectorId:
+            null == sourceConnectorId
+                ? _value.sourceConnectorId
+                : sourceConnectorId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        sourceId:
+            null == sourceId
+                ? _value.sourceId
+                : sourceId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        title:
+            null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                    as String,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$DocumentIngestedImpl extends _DocumentIngested {
+  const _$DocumentIngestedImpl({
+    required this.workItemId,
+    required this.documentId,
+    required this.sourceConnectorId,
+    required this.sourceId,
+    required this.title,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String workItemId;
+  @override
+  final String documentId;
+  @override
+  final String sourceConnectorId;
+  @override
+  final String sourceId;
+  @override
+  final String title;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'DocumentIngested(workItemId: $workItemId, documentId: $documentId, sourceConnectorId: $sourceConnectorId, sourceId: $sourceId, title: $title, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DocumentIngestedImpl &&
+            (identical(other.workItemId, workItemId) ||
+                other.workItemId == workItemId) &&
+            (identical(other.documentId, documentId) ||
+                other.documentId == documentId) &&
+            (identical(other.sourceConnectorId, sourceConnectorId) ||
+                other.sourceConnectorId == sourceConnectorId) &&
+            (identical(other.sourceId, sourceId) ||
+                other.sourceId == sourceId) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    workItemId,
+    documentId,
+    sourceConnectorId,
+    sourceId,
+    title,
+    timestamp,
+  );
+
+  /// Create a copy of DocumentIngested
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DocumentIngestedImplCopyWith<_$DocumentIngestedImpl> get copyWith =>
+      __$$DocumentIngestedImplCopyWithImpl<_$DocumentIngestedImpl>(
+        this,
+        _$identity,
+      );
+}
+
+abstract class _DocumentIngested extends DocumentIngested {
+  const factory _DocumentIngested({
+    required final String workItemId,
+    required final String documentId,
+    required final String sourceConnectorId,
+    required final String sourceId,
+    required final String title,
+    required final DateTime timestamp,
+  }) = _$DocumentIngestedImpl;
+  const _DocumentIngested._() : super._();
+
+  @override
+  String get workItemId;
+  @override
+  String get documentId;
+  @override
+  String get sourceConnectorId;
+  @override
+  String get sourceId;
+  @override
+  String get title;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of DocumentIngested
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$DocumentIngestedImplCopyWith<_$DocumentIngestedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$StatusChanged {
   String get workItemId => throw _privateConstructorUsedError;
   String get fromStatus => throw _privateConstructorUsedError;
