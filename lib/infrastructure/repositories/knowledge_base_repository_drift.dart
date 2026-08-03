@@ -136,7 +136,7 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
   Future<void> attachFile(String documentId, String filePath, String fileName) async {
     await _db.into(_db.documents).insert(
           DocumentsCompanion.insert(
-            id: '${documentId}:attachment:${DateTime.now().millisecondsSinceEpoch}',
+            id: '$documentId:attachment:${DateTime.now().millisecondsSinceEpoch}',
             sourceConnectorId: 'local-note',
             sourceId: documentId,
             contentType: 'application/octet-stream',

@@ -8,7 +8,7 @@ import '../infrastructure/db/database_provider.dart';
 class NoteEditorPage extends StatefulWidget {
   final Note note;
 
-  const NoteEditorPage({Key? key, required this.note}) : super(key: key);
+  const NoteEditorPage({super.key, required this.note});
 
   @override
   State<NoteEditorPage> createState() => _NoteEditorPageState();
@@ -57,7 +57,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
               );
               await kbRepo.updateNote(updatedNote);
               if (mounted) {
-                Navigator.pop(context);
+                Navigator.of(context).pop();
               }
             },
           ),
