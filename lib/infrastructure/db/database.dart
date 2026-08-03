@@ -137,7 +137,7 @@ class AppDatabase extends _$AppDatabase {
       CREATE TRIGGER IF NOT EXISTS work_items_ai AFTER INSERT ON work_items BEGIN
         INSERT INTO work_items_fts(rowid, title, content, author, tags_plaintext)
         VALUES (
-          new.id,
+          new.rowid,
           COALESCE(new.title, ''),
           COALESCE(new.content, ''),
           COALESCE(new.author, ''),
@@ -150,10 +150,10 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS work_items_au AFTER UPDATE ON work_items BEGIN
-        DELETE FROM work_items_fts WHERE rowid = old.id;
+        DELETE FROM work_items_fts WHERE rowid = old.rowid;
         INSERT INTO work_items_fts(rowid, title, content, author, tags_plaintext)
         VALUES (
-          new.id,
+          new.rowid,
           COALESCE(new.title, ''),
           COALESCE(new.content, ''),
           COALESCE(new.author, ''),
@@ -166,7 +166,7 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS work_items_ad AFTER DELETE ON work_items BEGIN
-        DELETE FROM work_items_fts WHERE rowid = old.id;
+        DELETE FROM work_items_fts WHERE rowid = old.rowid;
       END
       ''',
     );
@@ -242,7 +242,7 @@ class AppDatabase extends _$AppDatabase {
       CREATE TRIGGER IF NOT EXISTS documents_ai AFTER INSERT ON documents BEGIN
         INSERT INTO documents_fts(rowid, title, content, author)
         VALUES (
-          new.id,
+          new.rowid,
           COALESCE(new.title, ''),
           COALESCE(new.raw_content, ''),
           COALESCE(new.author, '')
@@ -255,10 +255,10 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS documents_au AFTER UPDATE ON documents BEGIN
-        DELETE FROM documents_fts WHERE rowid = old.id;
+        DELETE FROM documents_fts WHERE rowid = old.rowid;
         INSERT INTO documents_fts(rowid, title, content, author)
         VALUES (
-          new.id,
+          new.rowid,
           COALESCE(new.title, ''),
           COALESCE(new.raw_content, ''),
           COALESCE(new.author, '')
@@ -271,7 +271,7 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS documents_ad AFTER DELETE ON documents BEGIN
-        DELETE FROM documents_fts WHERE rowid = old.id;
+        DELETE FROM documents_fts WHERE rowid = old.rowid;
       END
       ''',
     );
