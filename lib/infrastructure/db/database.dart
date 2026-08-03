@@ -73,10 +73,11 @@ class AppDatabase extends _$AppDatabase {
         if (from < 10) {
           await _ensureDocumentsFtsSchemaObjects(m.database.customStatement);
         }
-        // v10 -> v11: Campo updatedAt em Documents (Onda 8) — rastreia última
-        // modificação de uma nota, separado de capturedAt (criação). Nullable
-        // para manter compatibilidade com dados existentes.
+        // v10 -> v11: Campo updatedAt em WorkItems e Documents (Onda 8) —
+        // rastreia última modificação. Nullable para compatibilidade com dados
+        // existentes migrados de versões anteriores.
         if (from < 11) {
+          await m.addColumn(workItems, workItems.updatedAt);
           await m.addColumn(documents, documents.updatedAt);
         }
       },
