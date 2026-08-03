@@ -62,7 +62,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
             isRead: Value(article.isRead),
             isStarred: Value(article.isStarred),
             ingestedAt: now,
-            updatedAt: now,
+            updatedAt: Value(now),
           ),
           // status/priority/tagsJson/snoozedUntil/notes/completedAt/
           // ingestedAt propositalmente omitidos do update: preservam o
@@ -110,7 +110,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
             url: Value(doc.url),
             published: Value(doc.capturedAt),
             ingestedAt: now,
-            updatedAt: now,
+            updatedAt: Value(now),
             documentId: Value(doc.id),
           ),
           onConflict: DoUpdate(
@@ -257,7 +257,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
       snoozedUntil: row.snoozedUntil,
       notes: row.notes,
       ingestedAt: row.ingestedAt,
-      updatedAt: row.updatedAt,
+      updatedAt: row.updatedAt ?? row.ingestedAt,
       completedAt: row.completedAt,
       documentId: row.documentId,
     );

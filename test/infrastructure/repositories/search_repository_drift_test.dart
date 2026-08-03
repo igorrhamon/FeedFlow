@@ -36,7 +36,7 @@ void main() {
               feedId: 'feed1',
               title: 'Hello World',
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -56,7 +56,7 @@ void main() {
               title: 'Flutter Tips and Tricks',
               author: const Value('John Doe'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -76,7 +76,7 @@ void main() {
               title: 'Some Article',
               author: const Value('Jane Smith'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -97,7 +97,7 @@ void main() {
               content: const Value(
                   'Learn about distributed ledgers and cryptography in this comprehensive guide.'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -117,7 +117,7 @@ void main() {
               title: 'Article with HTML',
               content: const Value('<p>This is important content</p><br><p>More details here</p>'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -137,7 +137,7 @@ void main() {
               title: 'Some article without the search term in its title',
               tagsJson: const Value('["urgent","work","followup"]'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -164,7 +164,7 @@ void main() {
               title: 'Some article without the search term in its title',
               tagsJson: const Value('["urgent","work","followup"]'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -185,7 +185,7 @@ void main() {
               title: 'Programação em português',
               author: const Value('José Silva'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -208,7 +208,7 @@ void main() {
                 feedId: 'feed1',
                 title: 'Search Result $i',
                 ingestedAt: now,
-                updatedAt: now,
+                updatedAt: Value(now),
               ),
             );
       }
@@ -229,7 +229,7 @@ void main() {
               feedId: 'feed1',
               title: 'Item One',
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
       await db.into(db.workItems).insert(
@@ -240,7 +240,7 @@ void main() {
               feedId: 'feed1',
               title: 'Item Two',
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
       await db.into(db.workItems).insert(
@@ -251,7 +251,7 @@ void main() {
               feedId: 'feed1',
               title: 'Item Three',
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -271,7 +271,7 @@ void main() {
               title: 'Original Title',
               content: const Value('original content'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -304,7 +304,7 @@ void main() {
               feedId: 'feed1',
               title: 'Item to Delete',
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -331,7 +331,7 @@ void main() {
               title: 'Searchable Item',
               status: const Value('triado'),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
@@ -352,7 +352,7 @@ void main() {
               title: 'Tagged Item',
               tagsJson: const Value(tags),
               ingestedAt: now,
-              updatedAt: now,
+              updatedAt: Value(now),
             ),
           );
 
