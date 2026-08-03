@@ -220,9 +220,9 @@ class $WorkItemsTable extends WorkItems
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _completedAtMeta = const VerificationMeta(
     'completedAt',
@@ -414,8 +414,6 @@ class $WorkItemsTable extends WorkItems
         _updatedAtMeta,
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('completed_at')) {
       context.handle(
@@ -528,11 +526,10 @@ class $WorkItemsTable extends WorkItems
             DriftSqlType.dateTime,
             data['${effectivePrefix}ingested_at'],
           )!,
-      updatedAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}updated_at'],
-          )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
       completedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
@@ -572,7 +569,10 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
   final DateTime? snoozedUntil;
   final String? notes;
   final DateTime ingestedAt;
-  final DateTime updatedAt;
+
+  /// Timestamp da última modificação (Onda 8). Nullable para compatibilidade
+  /// com dados existentes migrados de v10→v11. Sempre preenchido em novos itens.
+  final DateTime? updatedAt;
   final DateTime? completedAt;
 
   /// ID do [Document] de origem (Onda 7 — campo nullable, sem FK obrigatória
@@ -598,7 +598,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     this.snoozedUntil,
     this.notes,
     required this.ingestedAt,
-    required this.updatedAt,
+    this.updatedAt,
     this.completedAt,
     this.documentId,
   });
@@ -640,7 +640,9 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       map['notes'] = Variable<String>(notes);
     }
     map['ingested_at'] = Variable<DateTime>(ingestedAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
     if (!nullToAbsent || completedAt != null) {
       map['completed_at'] = Variable<DateTime>(completedAt);
     }
@@ -688,7 +690,10 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       ingestedAt: Value(ingestedAt),
-      updatedAt: Value(updatedAt),
+      updatedAt:
+          updatedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(updatedAt),
       completedAt:
           completedAt == null && nullToAbsent
               ? const Value.absent()
@@ -725,7 +730,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       snoozedUntil: serializer.fromJson<DateTime?>(json['snoozedUntil']),
       notes: serializer.fromJson<String?>(json['notes']),
       ingestedAt: serializer.fromJson<DateTime>(json['ingestedAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       documentId: serializer.fromJson<String?>(json['documentId']),
     );
@@ -753,7 +758,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       'snoozedUntil': serializer.toJson<DateTime?>(snoozedUntil),
       'notes': serializer.toJson<String?>(notes),
       'ingestedAt': serializer.toJson<DateTime>(ingestedAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
       'documentId': serializer.toJson<String?>(documentId),
     };
@@ -779,7 +784,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     Value<DateTime?> snoozedUntil = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     DateTime? ingestedAt,
-    DateTime? updatedAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
     Value<DateTime?> completedAt = const Value.absent(),
     Value<String?> documentId = const Value.absent(),
   }) => WorkItemRow(
@@ -802,7 +807,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     snoozedUntil: snoozedUntil.present ? snoozedUntil.value : this.snoozedUntil,
     notes: notes.present ? notes.value : this.notes,
     ingestedAt: ingestedAt ?? this.ingestedAt,
-    updatedAt: updatedAt ?? this.updatedAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     completedAt: completedAt.present ? completedAt.value : this.completedAt,
     documentId: documentId.present ? documentId.value : this.documentId,
   );
@@ -942,7 +947,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
   final Value<DateTime?> snoozedUntil;
   final Value<String?> notes;
   final Value<DateTime> ingestedAt;
-  final Value<DateTime> updatedAt;
+  final Value<DateTime?> updatedAt;
   final Value<DateTime?> completedAt;
   final Value<String?> documentId;
   final Value<int> rowid;
@@ -991,7 +996,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     this.snoozedUntil = const Value.absent(),
     this.notes = const Value.absent(),
     required DateTime ingestedAt,
-    required DateTime updatedAt,
+    this.updatedAt = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.documentId = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1000,8 +1005,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
        articleId = Value(articleId),
        feedId = Value(feedId),
        title = Value(title),
-       ingestedAt = Value(ingestedAt),
-       updatedAt = Value(updatedAt);
+       ingestedAt = Value(ingestedAt);
   static Insertable<WorkItemRow> custom({
     Expression<String>? id,
     Expression<String>? providerId,
@@ -1074,7 +1078,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     Value<DateTime?>? snoozedUntil,
     Value<String?>? notes,
     Value<DateTime>? ingestedAt,
-    Value<DateTime>? updatedAt,
+    Value<DateTime?>? updatedAt,
     Value<DateTime?>? completedAt,
     Value<String?>? documentId,
     Value<int>? rowid,
@@ -5776,7 +5780,7 @@ typedef $$WorkItemsTableCreateCompanionBuilder =
       Value<DateTime?> snoozedUntil,
       Value<String?> notes,
       required DateTime ingestedAt,
-      required DateTime updatedAt,
+      Value<DateTime?> updatedAt,
       Value<DateTime?> completedAt,
       Value<String?> documentId,
       Value<int> rowid,
@@ -5802,7 +5806,7 @@ typedef $$WorkItemsTableUpdateCompanionBuilder =
       Value<DateTime?> snoozedUntil,
       Value<String?> notes,
       Value<DateTime> ingestedAt,
-      Value<DateTime> updatedAt,
+      Value<DateTime?> updatedAt,
       Value<DateTime?> completedAt,
       Value<String?> documentId,
       Value<int> rowid,
@@ -6184,7 +6188,7 @@ class $$WorkItemsTableTableManager
                 Value<DateTime?> snoozedUntil = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> ingestedAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<String?> documentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6234,7 +6238,7 @@ class $$WorkItemsTableTableManager
                 Value<DateTime?> snoozedUntil = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 required DateTime ingestedAt,
-                required DateTime updatedAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<String?> documentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),

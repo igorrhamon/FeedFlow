@@ -28,7 +28,9 @@ class WorkItems extends Table {
   DateTimeColumn get snoozedUntil => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get ingestedAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();
+  /// Timestamp da última modificação (Onda 8). Nullable para compatibilidade
+  /// com dados existentes migrados de v10→v11. Sempre preenchido em novos itens.
+  DateTimeColumn get updatedAt => dateTime().nullable()();
   DateTimeColumn get completedAt => dateTime().nullable()();
   /// ID do [Document] de origem (Onda 7 — campo nullable, sem FK obrigatória
   /// para manter compatibilidade de migração).

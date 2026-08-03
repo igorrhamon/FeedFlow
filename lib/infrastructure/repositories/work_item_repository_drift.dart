@@ -284,7 +284,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
       snoozedUntil: Value(item.snoozedUntil),
       notes: Value(item.notes),
       ingestedAt: item.ingestedAt,
-      updatedAt: item.updatedAt,
+      updatedAt: Value(item.updatedAt),
       completedAt: Value(item.completedAt),
       documentId: Value(item.documentId),
     );
