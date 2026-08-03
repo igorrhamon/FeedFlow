@@ -33,6 +33,7 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
             author: Value(note.author),
             rawContent: Value(note.content),
             capturedAt: now,
+            updatedAt: Value(now),
             metadataJson: Value(jsonEncode({
               'workItemId': note.workItemId,
               'tags': note.tags,
@@ -50,18 +51,26 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
 
   @override
   Future<Note> updateNote(Note note) async {
-    // Grava versão do conteúdo ANTERIOR antes de sobrescrever
-    final current = await byId(note.id);
-    if (current != null && current.content != note.content) {
-      await _versionRepository.addVersion(current.id, current.content);
+    final now = DateTime.now();
+
+    // Grava versão do conteúdo ANTERIOR antes de sobrescrever (append-only)
+    try {
+      final current = await byId(note.id);
+      if (current != null && current.content != note.content) {
+        await _versionRepository.addVersion(current.id, current.content);
+      }
+    } catch (e) {
+      // Se houver erro ao buscar versão anterior, continua mesmo assim
+      // — a atualização de nota é mais crítica que o histórico
     }
 
-    // Atualiza documento atual
+    // Atualiza documento atual com novo conteúdo e timestamp de modificação
     await (_db.update(_db.documents)..where((d) => d.id.equals(note.id))).write(
       DocumentsCompanion(
         title: Value(note.title),
         rawContent: Value(note.content),
         author: Value(note.author),
+        updatedAt: Value(now),
         metadataJson: Value(jsonEncode({
           if (note.workItemId != null) 'workItemId': note.workItemId,
           'tags': note.tags,
@@ -88,7 +97,7 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
   Stream<List<Note>> watchAll() {
     return (_db.select(_db.documents)
           ..where((d) => d.sourceConnectorId.equals('local-note'))
-          ..orderBy([(d) => OrderingTerm.desc(d.capturedAt)]))
+          ..orderBy([(d) => OrderingTerm.desc(d.updatedAt)]))
         .watch()
         .map((rows) => rows.map(_toDomain).toList());
   }
@@ -99,7 +108,7 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
           ..where((d) =>
               d.sourceConnectorId.equals('local-note') &
               d.metadataJson.like('%$workItemId%'))
-          ..orderBy([(d) => OrderingTerm.desc(d.capturedAt)]))
+          ..orderBy([(d) => OrderingTerm.desc(d.updatedAt)]))
         .watch()
         .map((rows) => rows.map(_toDomain).toList());
   }
@@ -112,7 +121,7 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
               d.sourceConnectorId.equals('local-note') &
               (d.title.like('%$escaped%') |
                   d.rawContent.like('%$escaped%')))
-          ..orderBy([(d) => OrderingTerm.desc(d.capturedAt)]))
+          ..orderBy([(d) => OrderingTerm.desc(d.updatedAt)]))
         .watch()
         .map((rows) => rows.map(_toDomain).toList());
   }
@@ -153,7 +162,7 @@ class KnowledgeBaseRepositoryDrift implements KnowledgeBaseRepository {
       workItemId: metadata['workItemId'] as String?,
       tags: (metadata['tags'] as List?)?.cast<String>() ?? [],
       createdAt: row.capturedAt,
-      updatedAt: row.capturedAt,
+      updatedAt: row.updatedAt ?? row.capturedAt,
     );
   }
 }

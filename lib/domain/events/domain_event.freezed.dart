@@ -4112,3 +4112,684 @@ abstract class _JobRetried extends JobRetried {
   _$$JobRetriedImplCopyWith<_$JobRetriedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+/// @nodoc
+mixin _$NoteCreated {
+  String get noteId => throw _privateConstructorUsedError;
+  String get title => throw _privateConstructorUsedError;
+  String? get workItemId => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of NoteCreated
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $NoteCreatedCopyWith<NoteCreated> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $NoteCreatedCopyWith<$Res> {
+  factory $NoteCreatedCopyWith(
+    NoteCreated value,
+    $Res Function(NoteCreated) then,
+  ) = _$NoteCreatedCopyWithImpl<$Res, NoteCreated>;
+  @useResult
+  $Res call({
+    String noteId,
+    String title,
+    String? workItemId,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$NoteCreatedCopyWithImpl<$Res, $Val extends NoteCreated>
+    implements $NoteCreatedCopyWith<$Res> {
+  _$NoteCreatedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of NoteCreated
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? noteId = null,
+    Object? title = null,
+    Object? workItemId = freezed,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            noteId:
+                null == noteId
+                    ? _value.noteId
+                    : noteId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            title:
+                null == title
+                    ? _value.title
+                    : title // ignore: cast_nullable_to_non_nullable
+                        as String,
+            workItemId:
+                freezed == workItemId
+                    ? _value.workItemId
+                    : workItemId // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$NoteCreatedImplCopyWith<$Res>
+    implements $NoteCreatedCopyWith<$Res> {
+  factory _$$NoteCreatedImplCopyWith(
+    _$NoteCreatedImpl value,
+    $Res Function(_$NoteCreatedImpl) then,
+  ) = __$$NoteCreatedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String noteId,
+    String title,
+    String? workItemId,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$NoteCreatedImplCopyWithImpl<$Res>
+    extends _$NoteCreatedCopyWithImpl<$Res, _$NoteCreatedImpl>
+    implements _$$NoteCreatedImplCopyWith<$Res> {
+  __$$NoteCreatedImplCopyWithImpl(
+    _$NoteCreatedImpl _value,
+    $Res Function(_$NoteCreatedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of NoteCreated
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? noteId = null,
+    Object? title = null,
+    Object? workItemId = freezed,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$NoteCreatedImpl(
+        noteId:
+            null == noteId
+                ? _value.noteId
+                : noteId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        title:
+            null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                    as String,
+        workItemId:
+            freezed == workItemId
+                ? _value.workItemId
+                : workItemId // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$NoteCreatedImpl extends _NoteCreated {
+  const _$NoteCreatedImpl({
+    required this.noteId,
+    required this.title,
+    this.workItemId,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String noteId;
+  @override
+  final String title;
+  @override
+  final String? workItemId;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'NoteCreated(noteId: $noteId, title: $title, workItemId: $workItemId, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$NoteCreatedImpl &&
+            (identical(other.noteId, noteId) || other.noteId == noteId) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.workItemId, workItemId) ||
+                other.workItemId == workItemId) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, noteId, title, workItemId, timestamp);
+
+  /// Create a copy of NoteCreated
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$NoteCreatedImplCopyWith<_$NoteCreatedImpl> get copyWith =>
+      __$$NoteCreatedImplCopyWithImpl<_$NoteCreatedImpl>(this, _$identity);
+}
+
+abstract class _NoteCreated extends NoteCreated {
+  const factory _NoteCreated({
+    required final String noteId,
+    required final String title,
+    final String? workItemId,
+    required final DateTime timestamp,
+  }) = _$NoteCreatedImpl;
+  const _NoteCreated._() : super._();
+
+  @override
+  String get noteId;
+  @override
+  String get title;
+  @override
+  String? get workItemId;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of NoteCreated
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$NoteCreatedImplCopyWith<_$NoteCreatedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$NoteVersioned {
+  String get noteId => throw _privateConstructorUsedError;
+  String get title => throw _privateConstructorUsedError;
+  String get previousContent => throw _privateConstructorUsedError;
+  String get newContent => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of NoteVersioned
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $NoteVersionedCopyWith<NoteVersioned> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $NoteVersionedCopyWith<$Res> {
+  factory $NoteVersionedCopyWith(
+    NoteVersioned value,
+    $Res Function(NoteVersioned) then,
+  ) = _$NoteVersionedCopyWithImpl<$Res, NoteVersioned>;
+  @useResult
+  $Res call({
+    String noteId,
+    String title,
+    String previousContent,
+    String newContent,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$NoteVersionedCopyWithImpl<$Res, $Val extends NoteVersioned>
+    implements $NoteVersionedCopyWith<$Res> {
+  _$NoteVersionedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of NoteVersioned
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? noteId = null,
+    Object? title = null,
+    Object? previousContent = null,
+    Object? newContent = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            noteId:
+                null == noteId
+                    ? _value.noteId
+                    : noteId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            title:
+                null == title
+                    ? _value.title
+                    : title // ignore: cast_nullable_to_non_nullable
+                        as String,
+            previousContent:
+                null == previousContent
+                    ? _value.previousContent
+                    : previousContent // ignore: cast_nullable_to_non_nullable
+                        as String,
+            newContent:
+                null == newContent
+                    ? _value.newContent
+                    : newContent // ignore: cast_nullable_to_non_nullable
+                        as String,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$NoteVersionedImplCopyWith<$Res>
+    implements $NoteVersionedCopyWith<$Res> {
+  factory _$$NoteVersionedImplCopyWith(
+    _$NoteVersionedImpl value,
+    $Res Function(_$NoteVersionedImpl) then,
+  ) = __$$NoteVersionedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String noteId,
+    String title,
+    String previousContent,
+    String newContent,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$NoteVersionedImplCopyWithImpl<$Res>
+    extends _$NoteVersionedCopyWithImpl<$Res, _$NoteVersionedImpl>
+    implements _$$NoteVersionedImplCopyWith<$Res> {
+  __$$NoteVersionedImplCopyWithImpl(
+    _$NoteVersionedImpl _value,
+    $Res Function(_$NoteVersionedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of NoteVersioned
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? noteId = null,
+    Object? title = null,
+    Object? previousContent = null,
+    Object? newContent = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$NoteVersionedImpl(
+        noteId:
+            null == noteId
+                ? _value.noteId
+                : noteId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        title:
+            null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                    as String,
+        previousContent:
+            null == previousContent
+                ? _value.previousContent
+                : previousContent // ignore: cast_nullable_to_non_nullable
+                    as String,
+        newContent:
+            null == newContent
+                ? _value.newContent
+                : newContent // ignore: cast_nullable_to_non_nullable
+                    as String,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$NoteVersionedImpl extends _NoteVersioned {
+  const _$NoteVersionedImpl({
+    required this.noteId,
+    required this.title,
+    required this.previousContent,
+    required this.newContent,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String noteId;
+  @override
+  final String title;
+  @override
+  final String previousContent;
+  @override
+  final String newContent;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'NoteVersioned(noteId: $noteId, title: $title, previousContent: $previousContent, newContent: $newContent, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$NoteVersionedImpl &&
+            (identical(other.noteId, noteId) || other.noteId == noteId) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.previousContent, previousContent) ||
+                other.previousContent == previousContent) &&
+            (identical(other.newContent, newContent) ||
+                other.newContent == newContent) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    noteId,
+    title,
+    previousContent,
+    newContent,
+    timestamp,
+  );
+
+  /// Create a copy of NoteVersioned
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$NoteVersionedImplCopyWith<_$NoteVersionedImpl> get copyWith =>
+      __$$NoteVersionedImplCopyWithImpl<_$NoteVersionedImpl>(this, _$identity);
+}
+
+abstract class _NoteVersioned extends NoteVersioned {
+  const factory _NoteVersioned({
+    required final String noteId,
+    required final String title,
+    required final String previousContent,
+    required final String newContent,
+    required final DateTime timestamp,
+  }) = _$NoteVersionedImpl;
+  const _NoteVersioned._() : super._();
+
+  @override
+  String get noteId;
+  @override
+  String get title;
+  @override
+  String get previousContent;
+  @override
+  String get newContent;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of NoteVersioned
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$NoteVersionedImplCopyWith<_$NoteVersionedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$DocumentAttached {
+  String get documentId => throw _privateConstructorUsedError;
+  String get noteId => throw _privateConstructorUsedError;
+  String get fileName => throw _privateConstructorUsedError;
+  DateTime get timestamp => throw _privateConstructorUsedError;
+
+  /// Create a copy of DocumentAttached
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $DocumentAttachedCopyWith<DocumentAttached> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DocumentAttachedCopyWith<$Res> {
+  factory $DocumentAttachedCopyWith(
+    DocumentAttached value,
+    $Res Function(DocumentAttached) then,
+  ) = _$DocumentAttachedCopyWithImpl<$Res, DocumentAttached>;
+  @useResult
+  $Res call({
+    String documentId,
+    String noteId,
+    String fileName,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class _$DocumentAttachedCopyWithImpl<$Res, $Val extends DocumentAttached>
+    implements $DocumentAttachedCopyWith<$Res> {
+  _$DocumentAttachedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of DocumentAttached
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? documentId = null,
+    Object? noteId = null,
+    Object? fileName = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            documentId:
+                null == documentId
+                    ? _value.documentId
+                    : documentId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            noteId:
+                null == noteId
+                    ? _value.noteId
+                    : noteId // ignore: cast_nullable_to_non_nullable
+                        as String,
+            fileName:
+                null == fileName
+                    ? _value.fileName
+                    : fileName // ignore: cast_nullable_to_non_nullable
+                        as String,
+            timestamp:
+                null == timestamp
+                    ? _value.timestamp
+                    : timestamp // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$DocumentAttachedImplCopyWith<$Res>
+    implements $DocumentAttachedCopyWith<$Res> {
+  factory _$$DocumentAttachedImplCopyWith(
+    _$DocumentAttachedImpl value,
+    $Res Function(_$DocumentAttachedImpl) then,
+  ) = __$$DocumentAttachedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String documentId,
+    String noteId,
+    String fileName,
+    DateTime timestamp,
+  });
+}
+
+/// @nodoc
+class __$$DocumentAttachedImplCopyWithImpl<$Res>
+    extends _$DocumentAttachedCopyWithImpl<$Res, _$DocumentAttachedImpl>
+    implements _$$DocumentAttachedImplCopyWith<$Res> {
+  __$$DocumentAttachedImplCopyWithImpl(
+    _$DocumentAttachedImpl _value,
+    $Res Function(_$DocumentAttachedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of DocumentAttached
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? documentId = null,
+    Object? noteId = null,
+    Object? fileName = null,
+    Object? timestamp = null,
+  }) {
+    return _then(
+      _$DocumentAttachedImpl(
+        documentId:
+            null == documentId
+                ? _value.documentId
+                : documentId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        noteId:
+            null == noteId
+                ? _value.noteId
+                : noteId // ignore: cast_nullable_to_non_nullable
+                    as String,
+        fileName:
+            null == fileName
+                ? _value.fileName
+                : fileName // ignore: cast_nullable_to_non_nullable
+                    as String,
+        timestamp:
+            null == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$DocumentAttachedImpl extends _DocumentAttached {
+  const _$DocumentAttachedImpl({
+    required this.documentId,
+    required this.noteId,
+    required this.fileName,
+    required this.timestamp,
+  }) : super._();
+
+  @override
+  final String documentId;
+  @override
+  final String noteId;
+  @override
+  final String fileName;
+  @override
+  final DateTime timestamp;
+
+  @override
+  String toString() {
+    return 'DocumentAttached(documentId: $documentId, noteId: $noteId, fileName: $fileName, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DocumentAttachedImpl &&
+            (identical(other.documentId, documentId) ||
+                other.documentId == documentId) &&
+            (identical(other.noteId, noteId) || other.noteId == noteId) &&
+            (identical(other.fileName, fileName) ||
+                other.fileName == fileName) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, documentId, noteId, fileName, timestamp);
+
+  /// Create a copy of DocumentAttached
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DocumentAttachedImplCopyWith<_$DocumentAttachedImpl> get copyWith =>
+      __$$DocumentAttachedImplCopyWithImpl<_$DocumentAttachedImpl>(
+        this,
+        _$identity,
+      );
+}
+
+abstract class _DocumentAttached extends DocumentAttached {
+  const factory _DocumentAttached({
+    required final String documentId,
+    required final String noteId,
+    required final String fileName,
+    required final DateTime timestamp,
+  }) = _$DocumentAttachedImpl;
+  const _DocumentAttached._() : super._();
+
+  @override
+  String get documentId;
+  @override
+  String get noteId;
+  @override
+  String get fileName;
+  @override
+  DateTime get timestamp;
+
+  /// Create a copy of DocumentAttached
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$DocumentAttachedImplCopyWith<_$DocumentAttachedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

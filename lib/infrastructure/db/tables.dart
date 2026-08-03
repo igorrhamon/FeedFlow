@@ -209,6 +209,9 @@ class Documents extends Table {
   TextColumn get rawContent => text().nullable()();
   TextColumn get url => text().nullable()();
   DateTimeColumn get capturedAt => dateTime()();
+  /// Timestamp da última modificação (Onda 8 - Knowledge Base). Inicialmente
+  /// igual a [capturedAt]; atualizado quando a nota é editada.
+  DateTimeColumn get updatedAt => dateTime().nullable()();
   TextColumn get metadataJson => text().nullable()();
 
   @override
