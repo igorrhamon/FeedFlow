@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart' as drift;
 import 'package:feedflow/domain/enrichment.dart';
 import 'package:feedflow/infrastructure/db/database.dart';
