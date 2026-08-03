@@ -88,6 +88,7 @@ class WorkItemRepositoryDrift implements WorkItemRepository {
 
   /// Ingestão genérica a partir de [Document]s (Onda 7+). Mesmo comportamento
   /// de `upsertFromArticles`, mas genérico para qualquer SourceConnector.
+  @override
   Future<void> upsertFromDocuments(List<Document> documents, String providerId) async {
     if (documents.isEmpty) return;
     final now = DateTime.now();

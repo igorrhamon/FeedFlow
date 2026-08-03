@@ -55,9 +55,10 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                 content: _contentController.text,
                 updatedAt: DateTime.now(),
               );
+              final nav = Navigator.of(context);
               await kbRepo.updateNote(updatedNote);
               if (mounted) {
-                Navigator.of(context).pop();
+                nav.pop();
               }
             },
           ),
