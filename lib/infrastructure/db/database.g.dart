@@ -220,9 +220,9 @@ class $WorkItemsTable extends WorkItems
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _completedAtMeta = const VerificationMeta(
     'completedAt',
@@ -414,8 +414,6 @@ class $WorkItemsTable extends WorkItems
         _updatedAtMeta,
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('completed_at')) {
       context.handle(
@@ -528,11 +526,10 @@ class $WorkItemsTable extends WorkItems
             DriftSqlType.dateTime,
             data['${effectivePrefix}ingested_at'],
           )!,
-      updatedAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}updated_at'],
-          )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
       completedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
@@ -572,7 +569,10 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
   final DateTime? snoozedUntil;
   final String? notes;
   final DateTime ingestedAt;
-  final DateTime updatedAt;
+
+  /// Timestamp da última modificação (Onda 8). Nullable para compatibilidade
+  /// com dados existentes migrados de v10→v11. Sempre preenchido em novos itens.
+  final DateTime? updatedAt;
   final DateTime? completedAt;
 
   /// ID do [Document] de origem (Onda 7 — campo nullable, sem FK obrigatória
@@ -598,7 +598,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     this.snoozedUntil,
     this.notes,
     required this.ingestedAt,
-    required this.updatedAt,
+    this.updatedAt,
     this.completedAt,
     this.documentId,
   });
@@ -640,7 +640,9 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       map['notes'] = Variable<String>(notes);
     }
     map['ingested_at'] = Variable<DateTime>(ingestedAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
     if (!nullToAbsent || completedAt != null) {
       map['completed_at'] = Variable<DateTime>(completedAt);
     }
@@ -688,7 +690,10 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       ingestedAt: Value(ingestedAt),
-      updatedAt: Value(updatedAt),
+      updatedAt:
+          updatedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(updatedAt),
       completedAt:
           completedAt == null && nullToAbsent
               ? const Value.absent()
@@ -725,7 +730,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       snoozedUntil: serializer.fromJson<DateTime?>(json['snoozedUntil']),
       notes: serializer.fromJson<String?>(json['notes']),
       ingestedAt: serializer.fromJson<DateTime>(json['ingestedAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       documentId: serializer.fromJson<String?>(json['documentId']),
     );
@@ -753,7 +758,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
       'snoozedUntil': serializer.toJson<DateTime?>(snoozedUntil),
       'notes': serializer.toJson<String?>(notes),
       'ingestedAt': serializer.toJson<DateTime>(ingestedAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
       'documentId': serializer.toJson<String?>(documentId),
     };
@@ -779,7 +784,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     Value<DateTime?> snoozedUntil = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     DateTime? ingestedAt,
-    DateTime? updatedAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
     Value<DateTime?> completedAt = const Value.absent(),
     Value<String?> documentId = const Value.absent(),
   }) => WorkItemRow(
@@ -802,7 +807,7 @@ class WorkItemRow extends DataClass implements Insertable<WorkItemRow> {
     snoozedUntil: snoozedUntil.present ? snoozedUntil.value : this.snoozedUntil,
     notes: notes.present ? notes.value : this.notes,
     ingestedAt: ingestedAt ?? this.ingestedAt,
-    updatedAt: updatedAt ?? this.updatedAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     completedAt: completedAt.present ? completedAt.value : this.completedAt,
     documentId: documentId.present ? documentId.value : this.documentId,
   );
@@ -942,7 +947,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
   final Value<DateTime?> snoozedUntil;
   final Value<String?> notes;
   final Value<DateTime> ingestedAt;
-  final Value<DateTime> updatedAt;
+  final Value<DateTime?> updatedAt;
   final Value<DateTime?> completedAt;
   final Value<String?> documentId;
   final Value<int> rowid;
@@ -991,7 +996,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     this.snoozedUntil = const Value.absent(),
     this.notes = const Value.absent(),
     required DateTime ingestedAt,
-    required DateTime updatedAt,
+    this.updatedAt = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.documentId = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1000,8 +1005,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
        articleId = Value(articleId),
        feedId = Value(feedId),
        title = Value(title),
-       ingestedAt = Value(ingestedAt),
-       updatedAt = Value(updatedAt);
+       ingestedAt = Value(ingestedAt);
   static Insertable<WorkItemRow> custom({
     Expression<String>? id,
     Expression<String>? providerId,
@@ -1074,7 +1078,7 @@ class WorkItemsCompanion extends UpdateCompanion<WorkItemRow> {
     Value<DateTime?>? snoozedUntil,
     Value<String?>? notes,
     Value<DateTime>? ingestedAt,
-    Value<DateTime>? updatedAt,
+    Value<DateTime?>? updatedAt,
     Value<DateTime?>? completedAt,
     Value<String?>? documentId,
     Value<int>? rowid,
@@ -4769,6 +4773,17 @@ class $DocumentsTable extends Documents
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _metadataJsonMeta = const VerificationMeta(
     'metadataJson',
   );
@@ -4791,6 +4806,7 @@ class $DocumentsTable extends Documents
     rawContent,
     url,
     capturedAt,
+    updatedAt,
     metadataJson,
   ];
   @override
@@ -4874,6 +4890,12 @@ class $DocumentsTable extends Documents
     } else if (isInserting) {
       context.missing(_capturedAtMeta);
     }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
     if (data.containsKey('metadata_json')) {
       context.handle(
         _metadataJsonMeta,
@@ -4934,6 +4956,10 @@ class $DocumentsTable extends Documents
             DriftSqlType.dateTime,
             data['${effectivePrefix}captured_at'],
           )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
       metadataJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}metadata_json'],
@@ -4957,6 +4983,10 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
   final String? rawContent;
   final String? url;
   final DateTime capturedAt;
+
+  /// Timestamp da última modificação (Onda 8 - Knowledge Base). Inicialmente
+  /// igual a [capturedAt]; atualizado quando a nota é editada.
+  final DateTime? updatedAt;
   final String? metadataJson;
   const DocumentRow({
     required this.id,
@@ -4968,6 +4998,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     this.rawContent,
     this.url,
     required this.capturedAt,
+    this.updatedAt,
     this.metadataJson,
   });
   @override
@@ -4988,6 +5019,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       map['url'] = Variable<String>(url);
     }
     map['captured_at'] = Variable<DateTime>(capturedAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
     if (!nullToAbsent || metadataJson != null) {
       map['metadata_json'] = Variable<String>(metadataJson);
     }
@@ -5009,6 +5043,10 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
               : Value(rawContent),
       url: url == null && nullToAbsent ? const Value.absent() : Value(url),
       capturedAt: Value(capturedAt),
+      updatedAt:
+          updatedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(updatedAt),
       metadataJson:
           metadataJson == null && nullToAbsent
               ? const Value.absent()
@@ -5031,6 +5069,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       rawContent: serializer.fromJson<String?>(json['rawContent']),
       url: serializer.fromJson<String?>(json['url']),
       capturedAt: serializer.fromJson<DateTime>(json['capturedAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       metadataJson: serializer.fromJson<String?>(json['metadataJson']),
     );
   }
@@ -5047,6 +5086,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       'rawContent': serializer.toJson<String?>(rawContent),
       'url': serializer.toJson<String?>(url),
       'capturedAt': serializer.toJson<DateTime>(capturedAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'metadataJson': serializer.toJson<String?>(metadataJson),
     };
   }
@@ -5061,6 +5101,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     Value<String?> rawContent = const Value.absent(),
     Value<String?> url = const Value.absent(),
     DateTime? capturedAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
     Value<String?> metadataJson = const Value.absent(),
   }) => DocumentRow(
     id: id ?? this.id,
@@ -5072,6 +5113,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     rawContent: rawContent.present ? rawContent.value : this.rawContent,
     url: url.present ? url.value : this.url,
     capturedAt: capturedAt ?? this.capturedAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     metadataJson: metadataJson.present ? metadataJson.value : this.metadataJson,
   );
   DocumentRow copyWithCompanion(DocumentsCompanion data) {
@@ -5091,6 +5133,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       url: data.url.present ? data.url.value : this.url,
       capturedAt:
           data.capturedAt.present ? data.capturedAt.value : this.capturedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       metadataJson:
           data.metadataJson.present
               ? data.metadataJson.value
@@ -5110,6 +5153,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           ..write('rawContent: $rawContent, ')
           ..write('url: $url, ')
           ..write('capturedAt: $capturedAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('metadataJson: $metadataJson')
           ..write(')'))
         .toString();
@@ -5126,6 +5170,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     rawContent,
     url,
     capturedAt,
+    updatedAt,
     metadataJson,
   );
   @override
@@ -5141,6 +5186,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           other.rawContent == this.rawContent &&
           other.url == this.url &&
           other.capturedAt == this.capturedAt &&
+          other.updatedAt == this.updatedAt &&
           other.metadataJson == this.metadataJson);
 }
 
@@ -5154,6 +5200,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
   final Value<String?> rawContent;
   final Value<String?> url;
   final Value<DateTime> capturedAt;
+  final Value<DateTime?> updatedAt;
   final Value<String?> metadataJson;
   final Value<int> rowid;
   const DocumentsCompanion({
@@ -5166,6 +5213,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.rawContent = const Value.absent(),
     this.url = const Value.absent(),
     this.capturedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.metadataJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5179,6 +5227,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.rawContent = const Value.absent(),
     this.url = const Value.absent(),
     required DateTime capturedAt,
+    this.updatedAt = const Value.absent(),
     this.metadataJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -5197,6 +5246,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Expression<String>? rawContent,
     Expression<String>? url,
     Expression<DateTime>? capturedAt,
+    Expression<DateTime>? updatedAt,
     Expression<String>? metadataJson,
     Expression<int>? rowid,
   }) {
@@ -5210,6 +5260,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
       if (rawContent != null) 'raw_content': rawContent,
       if (url != null) 'url': url,
       if (capturedAt != null) 'captured_at': capturedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (metadataJson != null) 'metadata_json': metadataJson,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5225,6 +5276,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Value<String?>? rawContent,
     Value<String?>? url,
     Value<DateTime>? capturedAt,
+    Value<DateTime?>? updatedAt,
     Value<String?>? metadataJson,
     Value<int>? rowid,
   }) {
@@ -5238,6 +5290,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
       rawContent: rawContent ?? this.rawContent,
       url: url ?? this.url,
       capturedAt: capturedAt ?? this.capturedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       metadataJson: metadataJson ?? this.metadataJson,
       rowid: rowid ?? this.rowid,
     );
@@ -5273,6 +5326,9 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     if (capturedAt.present) {
       map['captured_at'] = Variable<DateTime>(capturedAt.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
     if (metadataJson.present) {
       map['metadata_json'] = Variable<String>(metadataJson.value);
     }
@@ -5294,6 +5350,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
           ..write('rawContent: $rawContent, ')
           ..write('url: $url, ')
           ..write('capturedAt: $capturedAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('metadataJson: $metadataJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -5723,7 +5780,7 @@ typedef $$WorkItemsTableCreateCompanionBuilder =
       Value<DateTime?> snoozedUntil,
       Value<String?> notes,
       required DateTime ingestedAt,
-      required DateTime updatedAt,
+      Value<DateTime?> updatedAt,
       Value<DateTime?> completedAt,
       Value<String?> documentId,
       Value<int> rowid,
@@ -5749,7 +5806,7 @@ typedef $$WorkItemsTableUpdateCompanionBuilder =
       Value<DateTime?> snoozedUntil,
       Value<String?> notes,
       Value<DateTime> ingestedAt,
-      Value<DateTime> updatedAt,
+      Value<DateTime?> updatedAt,
       Value<DateTime?> completedAt,
       Value<String?> documentId,
       Value<int> rowid,
@@ -6131,7 +6188,7 @@ class $$WorkItemsTableTableManager
                 Value<DateTime?> snoozedUntil = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> ingestedAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<String?> documentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6181,7 +6238,7 @@ class $$WorkItemsTableTableManager
                 Value<DateTime?> snoozedUntil = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 required DateTime ingestedAt,
-                required DateTime updatedAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<String?> documentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -8015,6 +8072,7 @@ typedef $$DocumentsTableCreateCompanionBuilder =
       Value<String?> rawContent,
       Value<String?> url,
       required DateTime capturedAt,
+      Value<DateTime?> updatedAt,
       Value<String?> metadataJson,
       Value<int> rowid,
     });
@@ -8029,6 +8087,7 @@ typedef $$DocumentsTableUpdateCompanionBuilder =
       Value<String?> rawContent,
       Value<String?> url,
       Value<DateTime> capturedAt,
+      Value<DateTime?> updatedAt,
       Value<String?> metadataJson,
       Value<int> rowid,
     });
@@ -8084,6 +8143,11 @@ class $$DocumentsTableFilterComposer
 
   ColumnFilters<DateTime> get capturedAt => $composableBuilder(
     column: $table.capturedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8147,6 +8211,11 @@ class $$DocumentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get metadataJson => $composableBuilder(
     column: $table.metadataJson,
     builder: (column) => ColumnOrderings(column),
@@ -8197,6 +8266,9 @@ class $$DocumentsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
   GeneratedColumn<String> get metadataJson => $composableBuilder(
     column: $table.metadataJson,
     builder: (column) => column,
@@ -8243,6 +8315,7 @@ class $$DocumentsTableTableManager
                 Value<String?> rawContent = const Value.absent(),
                 Value<String?> url = const Value.absent(),
                 Value<DateTime> capturedAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<String?> metadataJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DocumentsCompanion(
@@ -8255,6 +8328,7 @@ class $$DocumentsTableTableManager
                 rawContent: rawContent,
                 url: url,
                 capturedAt: capturedAt,
+                updatedAt: updatedAt,
                 metadataJson: metadataJson,
                 rowid: rowid,
               ),
@@ -8269,6 +8343,7 @@ class $$DocumentsTableTableManager
                 Value<String?> rawContent = const Value.absent(),
                 Value<String?> url = const Value.absent(),
                 required DateTime capturedAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<String?> metadataJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DocumentsCompanion.insert(
@@ -8281,6 +8356,7 @@ class $$DocumentsTableTableManager
                 rawContent: rawContent,
                 url: url,
                 capturedAt: capturedAt,
+                updatedAt: updatedAt,
                 metadataJson: metadataJson,
                 rowid: rowid,
               ),

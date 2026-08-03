@@ -7,7 +7,7 @@ import 'note_editor_page.dart';
 /// Página da Knowledge Base — biblioteca de notas locais e documentos ingeridos.
 /// Onda 8: MVVM básico, sem refinamento de UI. Apenas exibe lista de notas.
 class KnowledgeBasePage extends StatefulWidget {
-  const KnowledgeBasePage({Key? key}) : super(key: key);
+  const KnowledgeBasePage({super.key});
 
   @override
   State<KnowledgeBasePage> createState() => _KnowledgeBasePageState();

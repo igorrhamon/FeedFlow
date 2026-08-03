@@ -22,7 +22,7 @@ void main() {
               feedId: 'feed1',
               title: 'Test Article',
               ingestedAt: DateTime.now(),
-              updatedAt: DateTime.now(),
+              updatedAt: Value(DateTime.now()),
             ),
           );
     });

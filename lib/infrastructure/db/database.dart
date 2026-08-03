@@ -15,7 +15,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -72,6 +72,12 @@ class AppDatabase extends _$AppDatabase {
         // Tabela virtual documents_fts com triggers de sincronização.
         if (from < 10) {
           await _ensureDocumentsFtsSchemaObjects(m.database.customStatement);
+        }
+        // v10 -> v11: Campo updatedAt em Documents (Onda 8) — rastreia última
+        // modificação de uma nota, separado de capturedAt (criação). Nullable
+        // para manter compatibilidade com dados existentes.
+        if (from < 11) {
+          await m.addColumn(documents, documents.updatedAt);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar
@@ -130,7 +136,7 @@ class AppDatabase extends _$AppDatabase {
       CREATE TRIGGER IF NOT EXISTS work_items_ai AFTER INSERT ON work_items BEGIN
         INSERT INTO work_items_fts(rowid, title, content, author, tags_plaintext)
         VALUES (
-          new.rowid,
+          new.id,
           COALESCE(new.title, ''),
           COALESCE(new.content, ''),
           COALESCE(new.author, ''),
@@ -143,10 +149,10 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS work_items_au AFTER UPDATE ON work_items BEGIN
-        DELETE FROM work_items_fts WHERE rowid = old.rowid;
+        DELETE FROM work_items_fts WHERE rowid = old.id;
         INSERT INTO work_items_fts(rowid, title, content, author, tags_plaintext)
         VALUES (
-          new.rowid,
+          new.id,
           COALESCE(new.title, ''),
           COALESCE(new.content, ''),
           COALESCE(new.author, ''),
@@ -159,7 +165,7 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS work_items_ad AFTER DELETE ON work_items BEGIN
-        DELETE FROM work_items_fts WHERE rowid = old.rowid;
+        DELETE FROM work_items_fts WHERE rowid = old.id;
       END
       ''',
     );
@@ -235,7 +241,7 @@ class AppDatabase extends _$AppDatabase {
       CREATE TRIGGER IF NOT EXISTS documents_ai AFTER INSERT ON documents BEGIN
         INSERT INTO documents_fts(rowid, title, content, author)
         VALUES (
-          new.rowid,
+          new.id,
           COALESCE(new.title, ''),
           COALESCE(new.raw_content, ''),
           COALESCE(new.author, '')
@@ -248,10 +254,10 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS documents_au AFTER UPDATE ON documents BEGIN
-        DELETE FROM documents_fts WHERE rowid = old.rowid;
+        DELETE FROM documents_fts WHERE rowid = old.id;
         INSERT INTO documents_fts(rowid, title, content, author)
         VALUES (
-          new.rowid,
+          new.id,
           COALESCE(new.title, ''),
           COALESCE(new.raw_content, ''),
           COALESCE(new.author, '')
@@ -264,7 +270,7 @@ class AppDatabase extends _$AppDatabase {
     await run(
       '''
       CREATE TRIGGER IF NOT EXISTS documents_ad AFTER DELETE ON documents BEGIN
-        DELETE FROM documents_fts WHERE rowid = old.rowid;
+        DELETE FROM documents_fts WHERE rowid = old.id;
       END
       ''',
     );
