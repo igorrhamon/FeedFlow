@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
     const outline = Color(0xFF3A3A3C);
 
     return MaterialApp(
-      title: 'FeedFlow',
+      title: 'Feed Flow',
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,

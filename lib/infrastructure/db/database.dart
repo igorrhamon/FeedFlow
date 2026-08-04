@@ -17,6 +17,22 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 11;
 
+  /// Executa `m.addColumn` apenas se a coluna ainda não existir na tabela.
+  ///
+  /// Necessário porque instalações de desenvolvimento passaram por builds
+  /// intermediários onde a coluna já tinha sido adicionada fisicamente ao
+  /// banco (ex.: via `onCreate` de uma versão que já incluía a coluna na
+  /// definição da tabela) sem que o `PRAGMA user_version` do SQLite
+  /// refletisse isso — o `onUpgrade` então tenta adicionar a coluna de novo
+  /// e o `ALTER TABLE ... ADD COLUMN` falha com "duplicate column name".
+  Future<void> _addColumnIfMissing(Migrator m, TableInfo table, GeneratedColumn column) async {
+    final rows = await m.database.customSelect('PRAGMA table_info(${table.actualTableName})').get();
+    final exists = rows.any((row) => row.data['name'] == column.name);
+    if (!exists) {
+      await m.addColumn(table, column);
+    }
+  }
+
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -46,15 +62,15 @@ class AppDatabase extends _$AppDatabase {
         // v5 -> v6: gatilho de schedule (RuleScheduler) introduziu
         // intervalMinutes/lastRunAt em Rules.
         if (from < 6) {
-          await m.addColumn(rules, rules.intervalMinutes);
-          await m.addColumn(rules, rules.lastRunAt);
+          await _addColumnIfMissing(m, rules, rules.intervalMinutes);
+          await _addColumnIfMissing(m, rules, rules.lastRunAt);
         }
         // v6 -> v7: enriquecimento como ação (WS-13) passou a registrar
         // idioma/tokens/custo de cada chamada ao LLM.
         if (from < 7) {
-          await m.addColumn(enrichments, enrichments.language);
-          await m.addColumn(enrichments, enrichments.tokensUsed);
-          await m.addColumn(enrichments, enrichments.costEstimate);
+          await _addColumnIfMissing(m, enrichments, enrichments.language);
+          await _addColumnIfMissing(m, enrichments, enrichments.tokensUsed);
+          await _addColumnIfMissing(m, enrichments, enrichments.costEstimate);
         }
         // v7 -> v8: fila de jobs persistida (Onda 6) — Jobs + JobRuns.
         if (from < 8) {
@@ -64,7 +80,7 @@ class AppDatabase extends _$AppDatabase {
         // v8 -> v9: Document + SourceConnector (Onda 7) — adiciona campo documentId
         // em WorkItems e cria tabelas Documents/DocumentVersions.
         if (from < 9) {
-          await m.addColumn(workItems, workItems.documentId);
+          await _addColumnIfMissing(m, workItems, workItems.documentId);
           await m.createTable(documents);
           await m.createTable(documentVersions);
         }
@@ -77,8 +93,8 @@ class AppDatabase extends _$AppDatabase {
         // rastreia última modificação. Nullable para compatibilidade com dados
         // existentes migrados de versões anteriores.
         if (from < 11) {
-          await m.addColumn(workItems, workItems.updatedAt);
-          await m.addColumn(documents, documents.updatedAt);
+          await _addColumnIfMissing(m, workItems, workItems.updatedAt);
+          await _addColumnIfMissing(m, documents, documents.updatedAt);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar
