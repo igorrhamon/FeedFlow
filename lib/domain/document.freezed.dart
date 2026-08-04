@@ -54,6 +54,12 @@ mixin _$Document {
   /// Exemplos: `{ "workItemId": "...", "tags": [...], "attachmentCount": 2 }`.
   String? get metadataJson => throw _privateConstructorUsedError;
 
+  /// Estado de leitura na origem (ex.: Article.isRead), quando aplicável.
+  bool get isRead => throw _privateConstructorUsedError;
+
+  /// Estado de destaque/favorito na origem (ex.: Article.isStarred), quando aplicável.
+  bool get isStarred => throw _privateConstructorUsedError;
+
   /// Serializes this Document to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
@@ -80,6 +86,8 @@ abstract class $DocumentCopyWith<$Res> {
     String? url,
     DateTime capturedAt,
     String? metadataJson,
+    bool isRead,
+    bool isStarred,
   });
 }
 
@@ -108,6 +116,8 @@ class _$DocumentCopyWithImpl<$Res, $Val extends Document>
     Object? url = freezed,
     Object? capturedAt = null,
     Object? metadataJson = freezed,
+    Object? isRead = null,
+    Object? isStarred = null,
   }) {
     return _then(
       _value.copyWith(
@@ -161,6 +171,16 @@ class _$DocumentCopyWithImpl<$Res, $Val extends Document>
                     ? _value.metadataJson
                     : metadataJson // ignore: cast_nullable_to_non_nullable
                         as String?,
+            isRead:
+                null == isRead
+                    ? _value.isRead
+                    : isRead // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            isStarred:
+                null == isStarred
+                    ? _value.isStarred
+                    : isStarred // ignore: cast_nullable_to_non_nullable
+                        as bool,
           )
           as $Val,
     );
@@ -187,6 +207,8 @@ abstract class _$$DocumentImplCopyWith<$Res>
     String? url,
     DateTime capturedAt,
     String? metadataJson,
+    bool isRead,
+    bool isStarred,
   });
 }
 
@@ -214,6 +236,8 @@ class __$$DocumentImplCopyWithImpl<$Res>
     Object? url = freezed,
     Object? capturedAt = null,
     Object? metadataJson = freezed,
+    Object? isRead = null,
+    Object? isStarred = null,
   }) {
     return _then(
       _$DocumentImpl(
@@ -267,6 +291,16 @@ class __$$DocumentImplCopyWithImpl<$Res>
                 ? _value.metadataJson
                 : metadataJson // ignore: cast_nullable_to_non_nullable
                     as String?,
+        isRead:
+            null == isRead
+                ? _value.isRead
+                : isRead // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        isStarred:
+            null == isStarred
+                ? _value.isStarred
+                : isStarred // ignore: cast_nullable_to_non_nullable
+                    as bool,
       ),
     );
   }
@@ -286,6 +320,8 @@ class _$DocumentImpl extends _Document {
     this.url,
     required this.capturedAt,
     this.metadataJson,
+    this.isRead = false,
+    this.isStarred = false,
   }) : super._();
 
   factory _$DocumentImpl.fromJson(Map<String, dynamic> json) =>
@@ -334,9 +370,19 @@ class _$DocumentImpl extends _Document {
   @override
   final String? metadataJson;
 
+  /// Estado de leitura na origem (ex.: Article.isRead), quando aplicável.
+  @override
+  @JsonKey()
+  final bool isRead;
+
+  /// Estado de destaque/favorito na origem (ex.: Article.isStarred), quando aplicável.
+  @override
+  @JsonKey()
+  final bool isStarred;
+
   @override
   String toString() {
-    return 'Document(id: $id, sourceConnectorId: $sourceConnectorId, sourceId: $sourceId, contentType: $contentType, title: $title, author: $author, rawContent: $rawContent, url: $url, capturedAt: $capturedAt, metadataJson: $metadataJson)';
+    return 'Document(id: $id, sourceConnectorId: $sourceConnectorId, sourceId: $sourceId, contentType: $contentType, title: $title, author: $author, rawContent: $rawContent, url: $url, capturedAt: $capturedAt, metadataJson: $metadataJson, isRead: $isRead, isStarred: $isStarred)';
   }
 
   @override
@@ -359,7 +405,10 @@ class _$DocumentImpl extends _Document {
             (identical(other.capturedAt, capturedAt) ||
                 other.capturedAt == capturedAt) &&
             (identical(other.metadataJson, metadataJson) ||
-                other.metadataJson == metadataJson));
+                other.metadataJson == metadataJson) &&
+            (identical(other.isRead, isRead) || other.isRead == isRead) &&
+            (identical(other.isStarred, isStarred) ||
+                other.isStarred == isStarred));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -376,6 +425,8 @@ class _$DocumentImpl extends _Document {
     url,
     capturedAt,
     metadataJson,
+    isRead,
+    isStarred,
   );
 
   /// Create a copy of Document
@@ -404,6 +455,8 @@ abstract class _Document extends Document {
     final String? url,
     required final DateTime capturedAt,
     final String? metadataJson,
+    final bool isRead,
+    final bool isStarred,
   }) = _$DocumentImpl;
   const _Document._() : super._();
 
@@ -452,6 +505,14 @@ abstract class _Document extends Document {
   /// Exemplos: `{ "workItemId": "...", "tags": [...], "attachmentCount": 2 }`.
   @override
   String? get metadataJson;
+
+  /// Estado de leitura na origem (ex.: Article.isRead), quando aplicável.
+  @override
+  bool get isRead;
+
+  /// Estado de destaque/favorito na origem (ex.: Article.isStarred), quando aplicável.
+  @override
+  bool get isStarred;
 
   /// Create a copy of Document
   /// with the given fields replaced by the non-null parameter values.

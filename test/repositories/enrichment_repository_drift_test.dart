@@ -1,5 +1,5 @@
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift/drift.dart' hide isNotNull, isNull;
+import 'package:drift/native.dart' as drift;
 import 'package:feedflow/domain/enrichment.dart';
 import 'package:feedflow/infrastructure/db/database.dart';
 import 'package:feedflow/infrastructure/repositories/enrichment_repository_drift.dart';
@@ -11,7 +11,7 @@ void main() {
     late EnrichmentRepositoryDrift repository;
 
     setUp(() async {
-      database = AppDatabase(NativeDatabase.memory());
+      database = AppDatabase(drift.NativeDatabase.memory());
       repository = EnrichmentRepositoryDrift(database);
 
       // Insert a test WorkItem to reference in enrichments
