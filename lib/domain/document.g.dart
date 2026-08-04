@@ -18,6 +18,8 @@ _$DocumentImpl _$$DocumentImplFromJson(Map<String, dynamic> json) =>
       url: json['url'] as String?,
       capturedAt: DateTime.parse(json['capturedAt'] as String),
       metadataJson: json['metadataJson'] as String?,
+      isRead: json['isRead'] as bool? ?? false,
+      isStarred: json['isStarred'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$DocumentImplToJson(_$DocumentImpl instance) =>
@@ -32,4 +34,6 @@ Map<String, dynamic> _$$DocumentImplToJson(_$DocumentImpl instance) =>
       'url': instance.url,
       'capturedAt': instance.capturedAt.toIso8601String(),
       'metadataJson': instance.metadataJson,
+      'isRead': instance.isRead,
+      'isStarred': instance.isStarred,
     };

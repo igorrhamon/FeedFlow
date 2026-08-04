@@ -49,6 +49,12 @@ class Document with _$Document {
     /// Metadados adicionais específicos do conector, serializados como JSON.
     /// Exemplos: `{ "workItemId": "...", "tags": [...], "attachmentCount": 2 }`.
     String? metadataJson,
+
+    /// Estado de leitura na origem (ex.: Article.isRead), quando aplicável.
+    @Default(false) bool isRead,
+
+    /// Estado de destaque/favorito na origem (ex.: Article.isStarred), quando aplicável.
+    @Default(false) bool isStarred,
   }) = _Document;
 
   /// Cria um [Document] a partir de um [Article] — adaptador que permite
@@ -66,6 +72,8 @@ class Document with _$Document {
       url: article.url,
       capturedAt: article.published ?? DateTime.now(),
       metadataJson: null,
+      isRead: article.isRead,
+      isStarred: article.isStarred,
     );
   }
 
