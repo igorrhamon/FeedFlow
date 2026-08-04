@@ -13,7 +13,7 @@ import '../providers/feed_provider.dart';
 import 'article_page.dart';
 import 'queue_editor_page.dart';
 
-const _accent = Color(0xFFFF6B2C);
+const _accent = Color(0xFF7C5CFF);
 
 /// Fila de triagem local: lista [WorkItem]s por [TriageStatus], com chips de
 /// filtro e ações rápidas. Ações dinâmicas via [ActionRegistry] (WS-11),
@@ -285,7 +285,7 @@ class _InboxPageState extends State<InboxPage> {
                       label: Text(_statusLabel(status)),
                       selected: selected,
                       onSelected: (_) => _toggleStatus(status),
-                      selectedColor: const Color(0x33FF6B2C),
+                      selectedColor: const Color(0x337C5CFF),
                       checkmarkColor: _accent,
                     );
                   }).toList(),

@@ -15,9 +15,10 @@ import 'infrastructure/db/database_provider.dart';
 import 'pages/login_page.dart';
 import 'pages/splash_screen.dart';
 import 'widget/feed_widget_service.dart';
+import 'pages/dashboard_page.dart';
 import 'pages/favorites_page.dart';
-import 'pages/add_feed_page.dart';
 import 'pages/inbox_page.dart';
+import 'pages/rule_editor_page.dart';
 import 'pages/search_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/folders_page.dart';
@@ -50,7 +51,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Color(0xFFFF6B2C);
+    const accent = Color(0xFF7C5CFF);
     const bg = Color(0xFF0F0F0F);
     const surface = Color(0xFF1C1C1E);
     const surfaceHigh = Color(0xFF2C2C2E);
@@ -92,7 +93,7 @@ class MyApp extends StatelessWidget {
         ),
         navigationBarTheme: const NavigationBarThemeData(
           backgroundColor: surface,
-          indicatorColor: Color(0x33FF6B2C),
+          indicatorColor: Color(0x337C5CFF),
           iconTheme: WidgetStatePropertyAll(IconThemeData(color: textSecondary)),
           labelTextStyle: WidgetStatePropertyAll(
             TextStyle(color: textSecondary, fontSize: 11),
@@ -188,19 +189,33 @@ class _MainScaffoldState extends State<MainScaffold> {
     });
   }
 
+  Widget _buildSettingsPage() {
+    return SettingsPage(
+      provider: _provider!,
+      activeProviderId: _provider!.providerId,
+      onSwitchProvider: _switchProvider,
+      onLogout: () async {
+        final providerId = _provider!.providerId;
+        await _provider!.logout();
+        await ProviderSettings.clearAuthConfig(providerId);
+        setState(() => _provider = null);
+      },
+    );
+  }
+
   Widget _drawerItem(BuildContext context, IconData icon, String label, int index) {
     final selected = _selectedIndex == index;
     return ListTile(
-      leading: Icon(icon, color: selected ? const Color(0xFFFF6B2C) : const Color(0xFF8E8E93), size: 20),
+      leading: Icon(icon, color: selected ? const Color(0xFF7C5CFF) : const Color(0xFF8E8E93), size: 20),
       title: Text(
         label,
         style: TextStyle(
-          color: selected ? const Color(0xFFFF6B2C) : const Color(0xFFF2F2F7),
+          color: selected ? const Color(0xFF7C5CFF) : const Color(0xFFF2F2F7),
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
           fontSize: 15,
         ),
       ),
-      selectedTileColor: const Color(0x1AFF6B2C),
+      selectedTileColor: const Color(0x1A7C5CFF),
       selected: selected,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -226,7 +241,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.rss_feed_rounded, color: Color(0xFFFF6B2C), size: 18),
+            const Icon(Icons.rss_feed_rounded, color: Color(0xFF7C5CFF), size: 18),
             const SizedBox(width: 8),
             Text(providerName),
           ],
@@ -271,7 +286,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF6B2C),
+                            color: const Color(0xFF7C5CFF),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.rss_feed, color: Colors.white, size: 20),
@@ -284,7 +299,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                       ],
                     ),
                   ),
-                  _drawerItem(context, Icons.rss_feed_rounded, 'Feeds', 0),
+                  _drawerItem(context, Icons.home_rounded, 'Início', 0),
+                  _drawerItem(context, Icons.inbox_rounded, 'Inbox', 1),
+                  _drawerItem(context, Icons.rss_feed_rounded, 'Base', 2),
                   ListTile(
                     leading: const Icon(Icons.folder_rounded, color: Color(0xFF8E8E93), size: 20),
                     title: const Text('Pastas', style: TextStyle(color: Color(0xFFF2F2F7), fontSize: 15)),
@@ -299,100 +316,108 @@ class _MainScaffoldState extends State<MainScaffold> {
                       if (mounted) setState(() {});
                     },
                   ),
-                  _drawerItem(context, Icons.inbox_rounded, 'Inbox', 1),
-                  _drawerItem(context, Icons.bookmark_rounded, 'Favoritos', 2),
-                  _drawerItem(context, Icons.settings_rounded, 'Configurações', 3),
+                  _drawerItem(context, Icons.bolt_rounded, 'Ações', 3),
+                  const Divider(color: Color(0xFF3A3A3C)),
+                  ListTile(
+                    leading: const Icon(Icons.bookmark_rounded, color: Color(0xFF8E8E93), size: 20),
+                    title: const Text('Favoritos', style: TextStyle(color: Color(0xFFF2F2F7), fontSize: 15)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => FavoritesPage(provider: _provider!)),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings_rounded, color: Color(0xFF8E8E93), size: 20),
+                    title: const Text('Configurações', style: TextStyle(color: Color(0xFFF2F2F7), fontSize: 15)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => _buildSettingsPage()),
+                      );
+                    },
+                  ),
                 ],
               ),
             )
           : null,
       body: isLogged
-          ? Stack(
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
-                  child: IndexedStack(
-                    key: ValueKey(_selectedIndex),
-                    index: _selectedIndex,
-                    children: [
-                      HomePage(provider: _provider!),
-                      InboxPage(provider: _provider!),
-                      FavoritesPage(provider: _provider!),
-                      SettingsPage(
-                        provider: _provider!,
-                        activeProviderId: _provider!.providerId,
-                        onSwitchProvider: _switchProvider,
-                        onLogout: () async {
-                          final providerId = _provider!.providerId;
-                          await _provider!.logout();
-                          await ProviderSettings.clearAuthConfig(providerId);
-                          setState(() => _provider = null);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                    bottom: 24,
-                    right: 24,
-                    child: AnimatedScale(
-                      scale: _selectedIndex == 0 ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut,
-                      child: FloatingActionButton(
-                      backgroundColor: const Color(0xFFFF6B2C),
-                      foregroundColor: Colors.white,
-                      elevation: 4,
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddFeedPage(provider: _provider!),
-                          ),
-                        );
-                        if (result == true) setState(() {});
-                      },
-                      tooltip: 'Adicionar feed',
-                      child: const Icon(Icons.add_rounded),
-                    ),
-                  ),
-                  ),
-              ],
+          ? AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+              child: IndexedStack(
+                key: ValueKey(_selectedIndex),
+                index: _selectedIndex,
+                children: [
+                  DashboardPage(provider: _provider!),
+                  InboxPage(provider: _provider!),
+                  HomePage(provider: _provider!),
+                  const RuleEditorPage(),
+                ],
+              ),
             )
           : LoginPage(onLogin: _onLogin),
-      bottomNavigationBar: isLogged
-          ? NavigationBar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onTabTapped,
-              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.rss_feed_outlined),
-                  selectedIcon: Icon(Icons.rss_feed_rounded, color: Color(0xFFFF6B2C)),
-                  label: 'Feeds',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.inbox_outlined),
-                  selectedIcon: Icon(Icons.inbox_rounded, color: Color(0xFFFF6B2C)),
-                  label: 'Inbox',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.bookmark_border_rounded),
-                  selectedIcon: Icon(Icons.bookmark_rounded, color: Color(0xFFFF6B2C)),
-                  label: 'Favoritos',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFFFF6B2C)),
-                  label: 'Ajustes',
-                ),
-              ],
+      floatingActionButton: isLogged
+          ? FloatingActionButton(
+              backgroundColor: const Color(0xFF7C5CFF),
+              foregroundColor: Colors.white,
+              elevation: 4,
+              tooltip: 'Novo fluxo',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RuleEditorPage()),
+              ),
+              child: const Icon(Icons.add_rounded),
             )
           : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: isLogged
+          ? BottomAppBar(
+              color: const Color(0xFF1C1C1E),
+              shape: const CircularNotchedRectangle(),
+              notchMargin: 8,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _navBarItem(context, Icons.home_outlined, Icons.home_rounded, 'Início', 0),
+                  _navBarItem(context, Icons.inbox_outlined, Icons.inbox_rounded, 'Inbox', 1),
+                  const SizedBox(width: 40),
+                  _navBarItem(context, Icons.rss_feed_outlined, Icons.rss_feed_rounded, 'Base', 2),
+                  _navBarItem(context, Icons.bolt_outlined, Icons.bolt_rounded, 'Ações', 3),
+                ],
+              ),
+            )
+          : null,
+    );
+  }
+
+  Widget _navBarItem(BuildContext context, IconData icon, IconData selectedIcon, String label, int index) {
+    final selected = _selectedIndex == index;
+    final color = selected ? const Color(0xFF7C5CFF) : const Color(0xFF8E8E93);
+    return InkWell(
+      onTap: () => _onTabTapped(index),
+      customBorder: const CircleBorder(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(selected ? selectedIcon : icon, color: color, size: 22),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(color: color, fontSize: 11)),
+          ],
+        ),
+      ),
     );
   }
 }

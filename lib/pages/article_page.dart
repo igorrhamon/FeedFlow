@@ -4,7 +4,7 @@ import '../domain/work_item.dart';
 import '../providers/feed_provider.dart';
 import '../models/article.dart';
 
-const _accent = Color(0xFFFF6B2C);
+const _accent = Color(0xFF7C5CFF);
 const _textPrimary = Color(0xFFF2F2F7);
 const _textSecondary = Color(0xFF8E8E93);
 const _bg = Color(0xFF0F0F0F);
