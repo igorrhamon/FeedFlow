@@ -6,7 +6,7 @@ import '../services/app_settings.dart';
 import '../infrastructure/db/database_provider.dart';
 import 'article_page.dart';
 
-const _accent = Color(0xFFFF6B2C);
+const _accent = Color(0xFF7C5CFF);
 const _textPrimary = Color(0xFFF2F2F7);
 const _textSecondary = Color(0xFF8E8E93);
 const _cardBg = Color(0xFF1C1C1E);
@@ -535,7 +535,7 @@ class _AnimatedFavoriteButtonState extends State<_AnimatedFavoriteButton>
       child: IconButton(
         icon: Icon(
           widget.isFav ? Icons.star : Icons.star_border,
-          color: widget.isFav ? const Color(0xFFFF6B2C) : const Color(0xFF8E8E93),
+          color: widget.isFav ? const Color(0xFF7C5CFF) : const Color(0xFF8E8E93),
           size: 20,
         ),
         onPressed: widget.onPressed,

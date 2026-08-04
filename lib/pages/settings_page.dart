@@ -9,7 +9,6 @@ import '../services/provider_settings.dart';
 import '../services/app_settings.dart';
 import 'knowledge_base_page.dart';
 import 'llm_settings_page.dart';
-import 'rule_editor_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final FeedProvider provider;
@@ -214,20 +213,6 @@ class _SettingsPageState extends State<SettingsPage> {
         const Divider(),
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: Text('Automação', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-        ),
-        ListTile(
-          leading: const Icon(Icons.rule),
-          title: const Text('Automações'),
-          subtitle: const Text('Criar e gerenciar regras de automação'),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const RuleEditorPage()),
-          ),
-        ),
-        const Divider(),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text('IA / Enriquecimento', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
         ),
         ListTile(
@@ -261,13 +246,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   ? Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(0x33FF6B2C),
+                        color: const Color(0x337C5CFF),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text('Ativo', style: TextStyle(color: Color(0xFFFF6B2C), fontSize: 11, fontWeight: FontWeight.w600)),
+                      child: const Text('Ativo', style: TextStyle(color: Color(0xFF7C5CFF), fontSize: 11, fontWeight: FontWeight.w600)),
                     )
                   : null,
-              tileColor: isActive ? const Color(0x0AFF6B2C) : null,
+              tileColor: isActive ? const Color(0x0A7C5CFF) : null,
               onTap: isActive ? null : () => widget.onSwitchProvider(info.id),
             );
           }),

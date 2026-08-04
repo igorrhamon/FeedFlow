@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../providers/provider_registry.dart';
 
-const _accent = Color(0xFFFF6B2C);
+const _accent = Color(0xFF7C5CFF);
 const _bg = Color(0xFF0F0F0F);
 const _surface = Color(0xFF1C1C1E);
 const _textPrimary = Color(0xFFF2F2F7);

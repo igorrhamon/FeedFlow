@@ -4,10 +4,11 @@ import '../models/feed.dart';
 import '../models/category.dart';
 import '../widget/feed_widget_service.dart';
 import '../infrastructure/db/database_provider.dart';
+import 'add_feed_page.dart';
 import 'feed_articles_page.dart';
 import 'folder_feeds_page.dart';
 
-const _accent = Color(0xFFFF6B2C);
+const _accent = Color(0xFF7C5CFF);
 const _maxWidgetArticles = 5;
 const _textPrimary = Color(0xFFF2F2F7);
 const _textSecondary = Color(0xFF8E8E93);
@@ -149,20 +150,41 @@ class _HomePageState extends State<HomePage> {
     // Se há repositório local (não é web), usar stream de contagens locais
     final hasLocalRepo = DatabaseProvider.repository != null;
 
-    if (hasLocalRepo) {
-      return StreamBuilder<Map<String, int>>(
-        stream: DatabaseProvider.repository!.watchUnreadCountsByFeed(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            unreadCounts = snapshot.data ?? {};
-          }
-          return _buildContent(context);
-        },
-      );
-    } else {
-      // Fallback remoto para web
-      return _buildContent(context);
-    }
+    final content = hasLocalRepo
+        ? StreamBuilder<Map<String, int>>(
+            stream: DatabaseProvider.repository!.watchUnreadCountsByFeed(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                unreadCounts = snapshot.data ?? {};
+              }
+              return _buildContent(context);
+            },
+          )
+        : _buildContent(context); // Fallback remoto para web
+
+    return Stack(
+      children: [
+        content,
+        Positioned(
+          bottom: 24,
+          right: 24,
+          child: FloatingActionButton(
+            backgroundColor: _accent,
+            foregroundColor: Colors.white,
+            elevation: 4,
+            tooltip: 'Adicionar feed',
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddFeedPage(provider: widget.provider)),
+              );
+              if (result == true) _loadFeedsAndCategories();
+            },
+            child: const Icon(Icons.add_rounded),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildContent(BuildContext context) {
@@ -307,7 +329,7 @@ class _HomePageState extends State<HomePage> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: hasUnread ? const Color(0x1AFF6B2C) : const Color(0xFF2C2C2E),
+                color: hasUnread ? const Color(0x1A7C5CFF) : const Color(0xFF2C2C2E),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: hasUnread ? _accent : _textSecondary, size: 18),
@@ -461,7 +483,7 @@ class _FolderSectionState extends State<_FolderSection> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: hasUnread ? const Color(0x1AFF6B2C) : const Color(0xFF2C2C2E),
+                    color: hasUnread ? const Color(0x1A7C5CFF) : const Color(0xFF2C2C2E),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
