@@ -69,15 +69,46 @@ O objetivo deste documento é dividir o restante (fim da Fase 2 + Fases 3, 4 e 5
 
 **Status real (2026-07-24)**: implementado e testado, mas **pendente de merge** — existe apenas no branch `worktree-ws16-rule-undo` (commit `fdd1361`, sobre `78e972f`), não em `novaVersao`. `lib/application/rule_undo_use_case.dart` e `work_item_event_repository*.dart` não existem no HEAD atual. Ver `Onda 5.md` (raiz), que faz o merge desta workstream como primeiro passo.
 
-## Continuação: Ondas 5-34 (plataforma de planejamento inteligente)
+## Onda 5 — Journal de eventos + higiene
 
-A partir daqui o plano de execução migrou para `docs/PLATFORM-ROADMAP.md`, que cobre a
+**Status**: ✅ **CONCLUÍDO** (commit `b40ffd7`, 2026-08-03)
+
+Implementou event bus assíncrono, persistência de eventos em `WorkItemEvents`, `RuleUndoUseCase` funcionando.
+
+## Onda 6 — Job queue + DAG runner persistido
+
+**Status**: ✅ **CONCLUÍDO** (commits `feb2141` até `b4ff505`, 2026-08-03)
+
+Implementou `Job`, `JobStatus`, `JobRun`, `JobRepository`, `JobRunner` com retry/backoff, `JobRegistry` factory, integração com `WorkflowRunner`. `ActionInvocationJobHandler` registrado.
+
+## Onda 7 — `Document` + `SourceConnector`
+
+**Status**: ✅ **CONCLUÍDO** (commit `2b8641a`, 2026-08-03)
+
+Abstraiu ingestão universal: `Document` (conteúdo bruto + proveniência), `SourceConnector` interface, `RssSourceConnector` adaptando `FeedProvider` existente. `SyncService` converte `Document → WorkItem`.
+
+## Onda 8 — Knowledge Base
+
+**Status**: ✅ **CONCLUÍDO** (commit `498cc1e` + fixes `07790dc`, 2026-08-03)
+
+Notas Markdown vinculadas a `Document`; versionamento via `document_versions` append-only; busca unificada (FTS5 sobre Documents também); `NoteAction` registrada. Testes passando após correções de schema (`updatedAt` nullable, imports).
+
+## Continuação: Ondas 9-34 (plataforma de planejamento inteligente)
+
+A partir da Onda 9, o roadmap detalhado está em `docs/PLATFORM-ROADMAP.md`, que cobre a
 evolução do FeedFlow de leitor RSS local-first para plataforma de inteligência pessoal
-(ingestão universal, knowledge base, knowledge graph, planejamento, execução com
-aprovação, agentes, memória e plataforma/SDK). Numeração de workstreams retomada em
-**WS-18** (WS-17 = FTS5, última usada em sequência). A onda em execução no momento tem
-seu plano de implementação detalhado em `Onda 5.md` na raiz do repo, seguindo o mesmo
-formato de `Onda 2.md`/`Onda 4.md`.
+(conectores de arquivos, email, Hub, sync multi-dispositivo, conectores SaaS, inteligência,
+planejamento, execução com aprovação, agentes, memória e plataforma/SDK). Próximas ondas:
+
+- **Onda 9**: Conectores de arquivos (pasta local, Markdown/Obsidian, PDF, Office)
+- **Onda 10**: Email (IMAP) como fonte
+- **Onda 11**: FeedFlow Hub (backend opcional)
+- **Onda 12**: Sync multi-dispositivo
+- **Onda 13-14**: Conectores SaaS I/II
+- **Onda 15-22**: Fase B (inteligência): enriquecimento industrial, embeddings, clustering, grafo de conhecimento
+- **Onda 23-26**: Fase C (planejamento): domínio, roadmaps, planos IA, inteligência contínua
+- **Onda 27-31**: Fase D (execução e agentes): executor com aprovação, MCP client, runtime, especialistas, memória
+- **Onda 32-34**: Fase E (plataforma): SDK, API pública/MCP server, marketplace/billing
 
 ## Conflitos de arquivo — resumo
 
