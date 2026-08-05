@@ -60,6 +60,132 @@ Acompanhe seus feeds RSS favoritos com uma interface limpa, rápida e responsiva
 
 ---
 
+## 🔀 Diagramas de Fluxo de Dados (DFD)
+
+Três níveis de decomposição do fluxo de dados do FeedFlow — do contexto externo até o Motor de Regras.
+
+<details>
+<summary><b>Nível 0 — Contexto</b></summary>
+
+```mermaid
+flowchart LR
+    Usuario(["Usuário"])
+    FeedFlow(("FeedFlow"))
+    DB[("Banco Local
+    (SQLite)")]
+    Providers[("Providers RSS")]
+
+    Usuario -->|"Credenciais / Login"| FeedFlow
+    FeedFlow -->|"Consulta Feeds / Artigos"| Providers
+    Providers -->|"Retorna Feeds / Artigos"| FeedFlow
+    FeedFlow -->|"Grava Artigos + Status"| DB
+    FeedFlow -->|"Lista de Feeds / Artigos"| Usuario
+```
+
+</details>
+
+<details>
+<summary><b>Nível 1 — Decomposição do FeedFlow</b></summary>
+
+```mermaid
+flowchart TB
+    Usuario(["Usuário"])
+    Providers[("Providers RSS")]
+    DB[("Banco Local
+    (SQLite)")]
+
+    P1(("1.0
+    Login
+    Multi-Provider"))
+    P2(("2.0
+    Sincronização
+    de Feeds"))
+    P3(("3.0
+    Triagem Local
+    (Inbox)"))
+    P4(("4.0
+    Motor de
+    Regras"))
+    P5(("5.0
+    Enriquecimento
+    por IA"))
+
+    Usuario -->|"Credenciais"| P1
+    P1 -->|"Autentica"| Providers
+    P1 -->|"Token / Config de Auth"| DB
+
+    P2 -->|"Requisita Feeds / Artigos"| Providers
+    Providers -->|"Feeds / Artigos brutos"| P2
+    P2 -->|"WorkItems ingeridos"| DB
+    P2 -->|"Evento ArticleIngested"| P4
+
+    Usuario -->|"Ações de triagem
+    (status, snooze, star)"| P3
+    P3 -->|"Lê / Atualiza WorkItems"| DB
+    P3 -->|"Fila de Inbox"| Usuario
+    P3 -->|"Evento StatusChanged"| P4
+
+    P4 -->|"Avalia condições"| DB
+    P4 -->|"Dispara Ações
+    (tag, arquivar, exportar)"| DB
+    P4 -->|"Solicita Enriquecimento"| P5
+
+    P5 -->|"Grava Resultado
+    (summary/translation/classification)"| DB
+    P5 -->|"Evento EnrichmentCompleted"| P4
+
+    DB -->|"Artigos + Status"| Usuario
+```
+
+</details>
+
+<details>
+<summary><b>Nível 2 — Detalhamento do Motor de Regras (4.0)</b></summary>
+
+```mermaid
+flowchart TB
+    Inbox[("Inbox Local
+    (WorkItems)")]
+    Usuario(["Usuário"])
+    Notion[("Notion")]
+    Obsidian[("Obsidian")]
+    Webhook[("Webhook
+    Externo")]
+
+    G(("4.1
+    Gatilhos
+    ingestão / status /
+    manual / agendado"))
+    C(("4.2
+    Condições
+    ex.: contém
+    palavra-chave"))
+    A(("4.3
+    Ações
+    tag / arquivar / snooze /
+    exportar"))
+
+    Inbox -->|"Evento ArticleIngested
+    StatusChanged"| G
+    Usuario -->|"Disparo manual"| G
+
+    G -->|"Regra + WorkItem candidato"| C
+    C -->|"Consulta atributos
+    (status, tags, título, feedId)"| Inbox
+    C -->|"Resultado da avaliação
+    (match / no match)"| A
+
+    A -->|"Atualiza status / tags / snooze"| Inbox
+    A -->|"Exporta nota"| Notion
+    A -->|"Exporta nota"| Obsidian
+    A -->|"POST payload"| Webhook
+    A -->|"Evento RuleMatched / ActionExecuted"| Usuario
+```
+
+</details>
+
+---
+
 ## 🚀 Começando
 
 ### Pré-requisitos
