@@ -1,8 +1,10 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:feedflow/application/sync_service.dart';
+import 'package:feedflow/domain/document.dart';
 import 'package:feedflow/domain/triage_status.dart';
 import 'package:feedflow/infrastructure/db/database.dart';
+import 'package:feedflow/infrastructure/repositories/document_repository_drift.dart';
 import 'package:feedflow/infrastructure/repositories/outbox_repository_drift.dart';
 import 'package:feedflow/infrastructure/repositories/work_item_repository_drift.dart';
 import 'package:feedflow/models/article.dart';
@@ -13,13 +15,15 @@ void main() {
   late AppDatabase db;
   late WorkItemRepositoryDrift workItems;
   late OutboxRepositoryDrift outbox;
+  late DocumentRepositoryDrift documents;
   late SyncService sync;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     workItems = WorkItemRepositoryDrift(db);
     outbox = OutboxRepositoryDrift(db);
-    sync = SyncService(workItemRepository: workItems, outboxRepository: outbox);
+    documents = DocumentRepositoryDrift(db);
+    sync = SyncService(workItemRepository: workItems, outboxRepository: outbox, documentRepository: documents);
   });
 
   tearDown(() async {
@@ -32,6 +36,20 @@ void main() {
       final item = await workItems.byId('fake:a1');
       expect(item, isNotNull);
       expect(item!.status, TriageStatus.novo);
+    });
+
+    test('ingestDocuments popula ambas WorkItems e Documents', () async {
+      final article = Article(id: 'a1', feedId: 'f1', title: 'T1', url: 'https://example.com');
+      final doc = Document.fromArticle(article, 'test-provider');
+
+      await sync.ingestDocuments([doc], 'test-provider');
+
+      final workItem = await workItems.byId('test-provider:a1');
+      final document = await documents.byId(doc.id);
+
+      expect(workItem, isNotNull, reason: 'WorkItem deve ser gravado em ingestDocuments');
+      expect(document, isNotNull, reason: 'Document deve ser gravado em ingestDocuments');
+      expect(document!.sourceConnectorId, 'rss:test-provider');
     });
   });
 

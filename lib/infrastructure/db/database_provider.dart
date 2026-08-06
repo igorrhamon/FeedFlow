@@ -107,8 +107,9 @@ class DatabaseProvider {
   static SyncService? get syncService {
     final workItems = repository;
     final outbox = outboxRepository;
-    if (workItems == null || outbox == null) return null;
-    return _syncService ??= SyncService(workItemRepository: workItems, outboxRepository: outbox);
+    final documents = documentRepository;
+    if (workItems == null || outbox == null || documents == null) return null;
+    return _syncService ??= SyncService(workItemRepository: workItems, outboxRepository: outbox, documentRepository: documents);
   }
 
   static ActionExecutor? get actionExecutor {

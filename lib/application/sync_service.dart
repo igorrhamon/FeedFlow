@@ -1,5 +1,6 @@
 import '../domain/document.dart';
 import '../domain/outbox_entry.dart';
+import '../domain/repositories/document_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
 import '../domain/repositories/work_item_repository.dart';
 import '../domain/work_item.dart';
@@ -21,11 +22,14 @@ class SyncService {
   SyncService({
     required WorkItemRepository workItemRepository,
     required OutboxRepository outboxRepository,
+    required DocumentRepository documentRepository,
   })  : _workItems = workItemRepository,
-        _outbox = outboxRepository;
+        _outbox = outboxRepository,
+        _documents = documentRepository;
 
   final WorkItemRepository _workItems;
   final OutboxRepository _outbox;
+  final DocumentRepository _documents;
 
   /// Ingestão: grava/atualiza os [WorkItem]s a partir de artigos recém
   /// carregados de um provider (shadow-write da Fase 1, agora centralizado
@@ -43,7 +47,8 @@ class SyncService {
   ///
   /// Nota: [providerId] aqui é o id do conector, não necessariamente o mesmo
   /// de um [FeedProvider]. Para RSS, é `rss:the-old-reader` etc.
-  Future<void> ingestDocuments(List<Document> documents, String providerId) {
+  Future<void> ingestDocuments(List<Document> documents, String providerId) async {
+    await _documents.upsertAll(documents);
     return _workItems.upsertFromDocuments(documents, providerId);
   }
 
