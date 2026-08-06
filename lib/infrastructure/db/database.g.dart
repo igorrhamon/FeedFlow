@@ -5726,6 +5726,484 @@ class DocumentVersionsCompanion extends UpdateCompanion<DocumentVersionRow> {
   }
 }
 
+class $LocalSourceConfigsTable extends LocalSourceConfigs
+    with TableInfo<$LocalSourceConfigsTable, LocalSourceConfigRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSourceConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  @override
+  late final GeneratedColumn<bool> enabled = GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _lastSyncAtMeta = const VerificationMeta(
+    'lastSyncAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
+    'last_sync_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    type,
+    path,
+    label,
+    enabled,
+    lastSyncAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_source_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSourceConfigRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('last_sync_at')) {
+      context.handle(
+        _lastSyncAtMeta,
+        lastSyncAt.isAcceptableOrUnknown(
+          data['last_sync_at']!,
+          _lastSyncAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalSourceConfigRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalSourceConfigRow(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      type:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}type'],
+          )!,
+      path:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}path'],
+          )!,
+      label:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}label'],
+          )!,
+      enabled:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}enabled'],
+          )!,
+      lastSyncAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_sync_at'],
+      ),
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $LocalSourceConfigsTable createAlias(String alias) {
+    return $LocalSourceConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalSourceConfigRow extends DataClass
+    implements Insertable<LocalSourceConfigRow> {
+  final String id;
+
+  /// Tipo da fonte: 'folder', 'markdownVault', 'pdf', 'office'
+  final String type;
+
+  /// Caminho absoluto no disco
+  final String path;
+
+  /// Rótulo humanizado
+  final String label;
+
+  /// Se a fonte está habilitada para sincronização
+  final bool enabled;
+
+  /// Última sincronização bem-sucedida
+  final DateTime? lastSyncAt;
+
+  /// Quando foi criada
+  final DateTime createdAt;
+  const LocalSourceConfigRow({
+    required this.id,
+    required this.type,
+    required this.path,
+    required this.label,
+    required this.enabled,
+    this.lastSyncAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['type'] = Variable<String>(type);
+    map['path'] = Variable<String>(path);
+    map['label'] = Variable<String>(label);
+    map['enabled'] = Variable<bool>(enabled);
+    if (!nullToAbsent || lastSyncAt != null) {
+      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  LocalSourceConfigsCompanion toCompanion(bool nullToAbsent) {
+    return LocalSourceConfigsCompanion(
+      id: Value(id),
+      type: Value(type),
+      path: Value(path),
+      label: Value(label),
+      enabled: Value(enabled),
+      lastSyncAt:
+          lastSyncAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastSyncAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LocalSourceConfigRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalSourceConfigRow(
+      id: serializer.fromJson<String>(json['id']),
+      type: serializer.fromJson<String>(json['type']),
+      path: serializer.fromJson<String>(json['path']),
+      label: serializer.fromJson<String>(json['label']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'type': serializer.toJson<String>(type),
+      'path': serializer.toJson<String>(path),
+      'label': serializer.toJson<String>(label),
+      'enabled': serializer.toJson<bool>(enabled),
+      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  LocalSourceConfigRow copyWith({
+    String? id,
+    String? type,
+    String? path,
+    String? label,
+    bool? enabled,
+    Value<DateTime?> lastSyncAt = const Value.absent(),
+    DateTime? createdAt,
+  }) => LocalSourceConfigRow(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    path: path ?? this.path,
+    label: label ?? this.label,
+    enabled: enabled ?? this.enabled,
+    lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  LocalSourceConfigRow copyWithCompanion(LocalSourceConfigsCompanion data) {
+    return LocalSourceConfigRow(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      path: data.path.present ? data.path.value : this.path,
+      label: data.label.present ? data.label.value : this.label,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      lastSyncAt:
+          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSourceConfigRow(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('path: $path, ')
+          ..write('label: $label, ')
+          ..write('enabled: $enabled, ')
+          ..write('lastSyncAt: $lastSyncAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, type, path, label, enabled, lastSyncAt, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalSourceConfigRow &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.path == this.path &&
+          other.label == this.label &&
+          other.enabled == this.enabled &&
+          other.lastSyncAt == this.lastSyncAt &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalSourceConfigsCompanion
+    extends UpdateCompanion<LocalSourceConfigRow> {
+  final Value<String> id;
+  final Value<String> type;
+  final Value<String> path;
+  final Value<String> label;
+  final Value<bool> enabled;
+  final Value<DateTime?> lastSyncAt;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const LocalSourceConfigsCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.path = const Value.absent(),
+    this.label = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.lastSyncAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalSourceConfigsCompanion.insert({
+    required String id,
+    required String type,
+    required String path,
+    required String label,
+    this.enabled = const Value.absent(),
+    this.lastSyncAt = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       type = Value(type),
+       path = Value(path),
+       label = Value(label),
+       createdAt = Value(createdAt);
+  static Insertable<LocalSourceConfigRow> custom({
+    Expression<String>? id,
+    Expression<String>? type,
+    Expression<String>? path,
+    Expression<String>? label,
+    Expression<bool>? enabled,
+    Expression<DateTime>? lastSyncAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (path != null) 'path': path,
+      if (label != null) 'label': label,
+      if (enabled != null) 'enabled': enabled,
+      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalSourceConfigsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? type,
+    Value<String>? path,
+    Value<String>? label,
+    Value<bool>? enabled,
+    Value<DateTime?>? lastSyncAt,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return LocalSourceConfigsCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      path: path ?? this.path,
+      label: label ?? this.label,
+      enabled: enabled ?? this.enabled,
+      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<bool>(enabled.value);
+    }
+    if (lastSyncAt.present) {
+      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalSourceConfigsCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('path: $path, ')
+          ..write('label: $label, ')
+          ..write('enabled: $enabled, ')
+          ..write('lastSyncAt: $lastSyncAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5741,6 +6219,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DocumentVersionsTable documentVersions = $DocumentVersionsTable(
     this,
   );
+  late final $LocalSourceConfigsTable localSourceConfigs =
+      $LocalSourceConfigsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5756,6 +6236,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     jobRuns,
     documents,
     documentVersions,
+    localSourceConfigs,
   ];
 }
 
@@ -8616,6 +9097,272 @@ typedef $$DocumentVersionsTableProcessedTableManager =
       DocumentVersionRow,
       PrefetchHooks Function()
     >;
+typedef $$LocalSourceConfigsTableCreateCompanionBuilder =
+    LocalSourceConfigsCompanion Function({
+      required String id,
+      required String type,
+      required String path,
+      required String label,
+      Value<bool> enabled,
+      Value<DateTime?> lastSyncAt,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$LocalSourceConfigsTableUpdateCompanionBuilder =
+    LocalSourceConfigsCompanion Function({
+      Value<String> id,
+      Value<String> type,
+      Value<String> path,
+      Value<String> label,
+      Value<bool> enabled,
+      Value<DateTime?> lastSyncAt,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$LocalSourceConfigsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSourceConfigsTable> {
+  $$LocalSourceConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
+    column: $table.lastSyncAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalSourceConfigsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSourceConfigsTable> {
+  $$LocalSourceConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
+    column: $table.lastSyncAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalSourceConfigsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSourceConfigsTable> {
+  $$LocalSourceConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
+    column: $table.lastSyncAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalSourceConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalSourceConfigsTable,
+          LocalSourceConfigRow,
+          $$LocalSourceConfigsTableFilterComposer,
+          $$LocalSourceConfigsTableOrderingComposer,
+          $$LocalSourceConfigsTableAnnotationComposer,
+          $$LocalSourceConfigsTableCreateCompanionBuilder,
+          $$LocalSourceConfigsTableUpdateCompanionBuilder,
+          (
+            LocalSourceConfigRow,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalSourceConfigsTable,
+              LocalSourceConfigRow
+            >,
+          ),
+          LocalSourceConfigRow,
+          PrefetchHooks Function()
+        > {
+  $$LocalSourceConfigsTableTableManager(
+    _$AppDatabase db,
+    $LocalSourceConfigsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$LocalSourceConfigsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$LocalSourceConfigsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$LocalSourceConfigsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<DateTime?> lastSyncAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSourceConfigsCompanion(
+                id: id,
+                type: type,
+                path: path,
+                label: label,
+                enabled: enabled,
+                lastSyncAt: lastSyncAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String type,
+                required String path,
+                required String label,
+                Value<bool> enabled = const Value.absent(),
+                Value<DateTime?> lastSyncAt = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalSourceConfigsCompanion.insert(
+                id: id,
+                type: type,
+                path: path,
+                label: label,
+                enabled: enabled,
+                lastSyncAt: lastSyncAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalSourceConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalSourceConfigsTable,
+      LocalSourceConfigRow,
+      $$LocalSourceConfigsTableFilterComposer,
+      $$LocalSourceConfigsTableOrderingComposer,
+      $$LocalSourceConfigsTableAnnotationComposer,
+      $$LocalSourceConfigsTableCreateCompanionBuilder,
+      $$LocalSourceConfigsTableUpdateCompanionBuilder,
+      (
+        LocalSourceConfigRow,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalSourceConfigsTable,
+          LocalSourceConfigRow
+        >,
+      ),
+      LocalSourceConfigRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8639,4 +9386,6 @@ class $AppDatabaseManager {
       $$DocumentsTableTableManager(_db, _db.documents);
   $$DocumentVersionsTableTableManager get documentVersions =>
       $$DocumentVersionsTableTableManager(_db, _db.documentVersions);
+  $$LocalSourceConfigsTableTableManager get localSourceConfigs =>
+      $$LocalSourceConfigsTableTableManager(_db, _db.localSourceConfigs);
 }

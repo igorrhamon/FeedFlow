@@ -203,15 +203,27 @@ Cada fase termina com: app compilando, `flutter analyze` limpo, todos os testes 
 
 ### Fase 1 — Persistência local (fundação) ✅ concluída
 
-### Fase 2 — Leitura local + SyncService + outbox 🟡 parcial (outbox/SyncService prontos; migração de leitura das páginas em andamento — ver `docs/PARALLEL-EXECUTION-PLAN.md`)
+### Fase 2 — Leitura local + SyncService + outbox ✅ concluída
 
-### Fase 3 — Triagem + Filas + Ações ⬜ planejada
+Todas as páginas (Favoritos, Feed Articles, Home) leem via `WorkItemRepository` local. SyncService integrado ao background sync. Outbox funcional para read/star.
 
-### Fase 4 — Motor de regras ⬜ planejada
+### Fase 3 — Triagem + Filas + Ações ✅ concluída
 
-### Fase 5 — IA, workflows e background sync ⬜ planejada
+Inbox page com triage queue, ações via ActionRegistry (13 ações: add_tag, archive, complete, copy_link, share, snooze, toggle_star, webhook, notion_export, obsidian_export, summarize, translate, classify). RuleEngine processando triggers corretamente.
 
-(Detalhes de escopo de cada fase e como o trabalho está dividido entre workstreams paralelas: ver `docs/PARALLEL-EXECUTION-PLAN.md`.)
+### Fase 4 — Motor de regras ✅ concluída
+
+RuleEngine ↔ ActionExecutor real. RuleRepository/Editor com dry-run preview. Workflows persistidos via JobRunner DAG. Undo de regras funcional (WS-16).
+
+### Fase 5 — IA, workflows e background sync ✅ concluída
+
+Enriquecimento (summary/translation/classification) via LlmAdapter (Anthropic/OpenRouter/Google AI Studio). Workflows lineares e DAGs. Background sync via workmanager. Event bus assíncrono com journal persistido (Onda 5). Job queue com retry/idempotência (Onda 6).
+
+### Fase 6 — Ingestão universal ✅ concluída (Ondas 7-8 implementadas)
+
+`Document` abstração unificada. `SourceConnector` interface. Knowledge Base com notas versionadas e busca unificada (FTS5). Próximas ondas (9+) adicionarão conectores de arquivos, email, hub.
+
+(Detalhes de execução paralela e status de ondas: ver `docs/PARALLEL-EXECUTION-PLAN.md`.)
 
 ---
 

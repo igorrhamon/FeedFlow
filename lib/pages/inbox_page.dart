@@ -49,12 +49,40 @@ class _InboxPageState extends State<InboxPage> {
     TriageStatus.emAndamento,
   };
 
+  static const String _folderTagPrefix = 'folder:';
+  String? _selectedFolder;
+
   late ActionExecutor _actionExecutor;
 
   @override
   void initState() {
     super.initState();
     _actionExecutor = ActionExecutor(eventBus: eventBus);
+  }
+
+  /// Extrai os nomes de pasta (tags `folder:<nome>`) presentes nos itens
+  /// atualmente carregados, para popular os chips de filtro por pasta.
+  Set<String> _foldersFrom(List<WorkItem> items) {
+    final folders = <String>{};
+    for (final item in items) {
+      for (final tag in item.tags) {
+        if (tag.startsWith(_folderTagPrefix)) {
+          folders.add(tag.substring(_folderTagPrefix.length));
+        }
+      }
+    }
+    return folders;
+  }
+
+  List<WorkItem> _applyFolderFilter(List<WorkItem> items) {
+    final folder = _selectedFolder;
+    if (folder == null) return items;
+    final tag = '$_folderTagPrefix$folder';
+    return items.where((item) => item.tags.contains(tag)).toList();
+  }
+
+  void _selectFolder(String? folder) {
+    setState(() => _selectedFolder = folder);
   }
 
   void _toggleStatus(TriageStatus status) {
@@ -312,11 +340,41 @@ class _InboxPageState extends State<InboxPage> {
               if (snapshot.hasError) {
                 return Center(child: Text('Erro: ${snapshot.error}'));
               }
-              final items = snapshot.data ?? [];
-              if (items.isEmpty) {
+              final allItems = snapshot.data ?? [];
+              final folders = _foldersFrom(allItems);
+              final items = _applyFolderFilter(allItems);
+
+              if (allItems.isEmpty) {
                 return const Center(child: Text('Nada na Inbox para os filtros selecionados.'));
               }
-              return ListView.builder(
+
+              return Column(
+                children: [
+                  if (folders.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          ChoiceChip(
+                            label: const Text('Todas as pastas'),
+                            selected: _selectedFolder == null,
+                            onSelected: (_) => _selectFolder(null),
+                          ),
+                          ...folders.map((folder) {
+                            return ChoiceChip(
+                              label: Text(folder),
+                              selected: _selectedFolder == folder,
+                              onSelected: (_) => _selectFolder(folder),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: items.isEmpty
+                        ? const Center(child: Text('Nada na Inbox para os filtros selecionados.'))
+                        : ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
@@ -348,6 +406,9 @@ class _InboxPageState extends State<InboxPage> {
                           ),
                   );
                 },
+              ),
+                  ),
+                ],
               );
             },
           ),

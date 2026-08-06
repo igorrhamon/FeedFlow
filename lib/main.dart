@@ -10,6 +10,7 @@ import 'providers/provider_registry.dart';
 import 'services/background_sync_scheduler.dart';
 import 'services/provider_settings.dart';
 import 'application/actions/actions_init.dart';
+import 'infrastructure/connectors/local_connectors_init.dart';
 import 'infrastructure/db/database_provider.dart';
 
 import 'pages/login_page.dart';
@@ -29,6 +30,7 @@ void main() async {
     await FeedWidgetService.initialize();
   }
   initializeProviders();
+  initializeLocalConnectors();
   final repo = DatabaseProvider.repository;
   if (repo != null) {
     initializeActions(

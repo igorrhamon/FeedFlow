@@ -107,6 +107,13 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
     'addTag',
   ];
 
+  /// Preset amigável de UI: "Mover para pasta" não é um actionId próprio —
+  /// internamente constrói o mesmo `ActionInvocation` de `addTag` com
+  /// `params['tag'] = 'folder:<nome>'` (Onda 9). O valor abaixo é usado só
+  /// no dropdown, nunca persistido como `actionId`.
+  static const String _moveToFolderPresetValue = 'moveToFolder';
+  bool get _isMoveToFolderPreset => _actionIdController.text == _moveToFolderPresetValue;
+
   @override
   void initState() {
     super.initState();
@@ -223,7 +230,7 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
       final field = _fieldController.text.trim();
       final operator = _operatorController.text.trim();
       final value = _valueController.text.trim();
-      final actionId = _actionIdController.text.trim();
+      final actionId = _isMoveToFolderPreset ? 'addTag' : _actionIdController.text.trim();
 
       // Constrói a condição simples
       dynamic parsedValue = value;
@@ -242,7 +249,11 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
       );
 
       final params = switch (actionId) {
-        'addTag' => {'tag': _tagController.text.trim()},
+        'addTag' => {
+            'tag': _isMoveToFolderPreset
+                ? 'folder:${_tagController.text.trim()}'
+                : _tagController.text.trim(),
+          },
         'snooze' => {'days': int.tryParse(_daysController.text) ?? 1},
         _ => <String, dynamic>{},
       };
@@ -528,6 +539,10 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                               initialValue: _actionIdController.text.isEmpty ? null : _actionIdController.text,
                               items: [
                                 const DropdownMenuItem<String?>(value: null, child: Text('Nenhuma')),
+                                const DropdownMenuItem<String?>(
+                                  value: _moveToFolderPresetValue,
+                                  child: Text('Mover para pasta'),
+                                ),
                                 ..._actionIds.map((a) => DropdownMenuItem<String?>(value: a, child: Text(a))),
                               ],
                               onChanged: (value) {
@@ -538,7 +553,23 @@ class _RuleEditorPageState extends State<RuleEditorPage> {
                                 border: OutlineInputBorder(),
                               ),
                             ),
-                            if (_actionIdController.text == 'addTag') ...[
+                            if (_isMoveToFolderPreset) ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _tagController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nome da pasta',
+                                  border: OutlineInputBorder(),
+                                  hintText: 'Ex: "Importante"',
+                                ),
+                                validator: (value) {
+                                  if (!_isMoveToFolderPreset) return null;
+                                  return (value?.trim().isEmpty ?? true)
+                                      ? 'Obrigatório para mover para pasta'
+                                      : null;
+                                },
+                              ),
+                            ] else if (_actionIdController.text == 'addTag') ...[
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: _tagController,

@@ -233,3 +233,28 @@ class DocumentVersions extends Table {
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get changeNote => text().nullable()();
 }
+
+/// Configurações de fontes locais (Onda 9 — conectores de arquivos).
+/// Persiste metadados sobre as pastas/arquivos que o usuário deseja ingerir.
+///
+/// `@DataClassName('LocalSourceConfigRow')` evita colisão com a classe de domínio
+/// `LocalSourceConfig` (Freezed).
+@DataClassName('LocalSourceConfigRow')
+class LocalSourceConfigs extends Table {
+  TextColumn get id => text()();
+  /// Tipo da fonte: 'folder', 'markdownVault', 'pdf', 'office'
+  TextColumn get type => text()();
+  /// Caminho absoluto no disco
+  TextColumn get path => text()();
+  /// Rótulo humanizado
+  TextColumn get label => text()();
+  /// Se a fonte está habilitada para sincronização
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  /// Última sincronização bem-sucedida
+  DateTimeColumn get lastSyncAt => dateTime().nullable()();
+  /// Quando foi criada
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

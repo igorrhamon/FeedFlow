@@ -19,8 +19,10 @@ import '../../domain/repositories/rule_repository.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../../domain/repositories/work_item_event_repository.dart';
 import '../../domain/repositories/work_item_repository.dart';
+import '../../domain/repositories/local_source_config_repository.dart';
 import '../llm/llm_enricher_router.dart';
 import '../repositories/document_repository_drift.dart';
+import '../repositories/local_source_config_repository_drift.dart';
 import '../repositories/document_version_repository_drift.dart';
 import '../repositories/enrichment_repository_drift.dart';
 import '../repositories/event_emitting_work_item_repository.dart';
@@ -60,6 +62,7 @@ class DatabaseProvider {
   static DocumentRepository? _documentRepository;
   static KnowledgeBaseRepository? _knowledgeBaseRepository;
   static DocumentVersionRepositoryDrift? _documentVersionRepository;
+  static LocalSourceConfigRepository? _localSourceConfigRepository;
 
   static WorkItemRepository? get repository {
     if (kIsWeb) return null;
@@ -104,8 +107,9 @@ class DatabaseProvider {
   static SyncService? get syncService {
     final workItems = repository;
     final outbox = outboxRepository;
-    if (workItems == null || outbox == null) return null;
-    return _syncService ??= SyncService(workItemRepository: workItems, outboxRepository: outbox);
+    final documents = documentRepository;
+    if (workItems == null || outbox == null || documents == null) return null;
+    return _syncService ??= SyncService(workItemRepository: workItems, outboxRepository: outbox, documentRepository: documents);
   }
 
   static ActionExecutor? get actionExecutor {
@@ -179,6 +183,8 @@ class DatabaseProvider {
     initializeJobHandlers(
       workItemRepository: repository!,
       actionExecutor: actionExecutor!,
+      localSourceConfigRepository: localSourceConfigRepository,
+      syncService: syncService,
     );
     return _jobRunner;
   }
@@ -206,5 +212,12 @@ class DatabaseProvider {
     if (kIsWeb) return null;
     _database ??= AppDatabase();
     return _documentVersionRepository ??= DocumentVersionRepositoryDrift(_database!);
+  }
+
+  /// Repositório de configurações de fontes locais (Onda 9).
+  static LocalSourceConfigRepository? get localSourceConfigRepository {
+    if (kIsWeb) return null;
+    _database ??= AppDatabase();
+    return _localSourceConfigRepository ??= LocalSourceConfigRepositoryDrift(_database!);
   }
 }
