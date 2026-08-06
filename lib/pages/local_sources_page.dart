@@ -2,13 +2,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../application/source_connector_registry.dart';
 import '../domain/local_source_config.dart';
+import '../domain/local_source_type_ext.dart';
 import '../domain/repositories/local_source_config_repository.dart';
-import '../domain/source_connector.dart';
-import '../infrastructure/connectors/folder_source_connector.dart';
-import '../infrastructure/connectors/markdown_vault_connector.dart';
-import '../infrastructure/connectors/office_source_connector.dart';
-import '../infrastructure/connectors/pdf_source_connector.dart';
 import '../infrastructure/db/database_provider.dart';
 
 /// Página de gestão de fontes locais de documentos (Onda 9): pastas,
@@ -73,27 +70,17 @@ class _LocalSourcesPageState extends State<LocalSourcesPage> {
     return 'Sincronizado há ${diff.inDays}d';
   }
 
-  SourceConnector _connectorFor(LocalSourceConfig config) {
-    switch (config.type) {
-      case LocalSourceType.folder:
-        return FolderSourceConnector(config);
-      case LocalSourceType.markdownVault:
-        return MarkdownVaultConnector(config);
-      case LocalSourceType.pdf:
-        return PdfSourceConnector(config);
-      case LocalSourceType.office:
-        return OfficeSourceConnector(config);
-    }
-  }
-
   Future<void> _syncNow(LocalSourceConfig config) async {
     final repository = _repository;
     if (repository == null) return;
 
     setState(() => _syncingIds.add(config.id));
     try {
-      final connector = _connectorFor(config);
-      final documents = await connector.pull();
+      final connector = SourceConnectorRegistry.create(config.type.toShortString(), config);
+      if (connector == null) {
+        throw StateError('Conector não registrado para tipo: ${config.type}');
+      }
+      final documents = await connector.pull(since: config.lastSyncAt);
       await connector.close();
 
       final syncService = DatabaseProvider.syncService;

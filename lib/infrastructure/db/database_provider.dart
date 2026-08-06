@@ -183,6 +183,8 @@ class DatabaseProvider {
     initializeJobHandlers(
       workItemRepository: repository!,
       actionExecutor: actionExecutor!,
+      localSourceConfigRepository: localSourceConfigRepository,
+      syncService: syncService,
     );
     return _jobRunner;
   }
