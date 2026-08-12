@@ -10,12 +10,12 @@ part 'database.g.dart';
 /// eventos/enriquecimentos). Suporte nativo (Android/iOS/desktop) apenas
 /// nesta fase — web/WASM fica para uma iteração futura (ver EVOLUTION-PLAN,
 /// Fase 1: "web via WASM/OPFS" listado como risco a validar cedo no CI).
-@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries, Rules, Queues, Jobs, JobRuns, Documents, DocumentVersions])
+@DriftDatabase(tables: [WorkItems, WorkItemEvents, Enrichments, OutboxEntries, Rules, Queues, Jobs, JobRuns, Documents, DocumentVersions, LocalSourceConfigs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   /// Executa `m.addColumn` apenas se a coluna ainda não existir na tabela.
   ///
@@ -95,6 +95,11 @@ class AppDatabase extends _$AppDatabase {
         if (from < 11) {
           await _addColumnIfMissing(m, workItems, workItems.updatedAt);
           await _addColumnIfMissing(m, documents, documents.updatedAt);
+        }
+        // v11 -> v12: Configurações de fontes locais (Onda 9) — nova tabela
+        // LocalSourceConfigs para persitência de pastas/arquivos a ingerir.
+        if (from < 12) {
+          await m.createTable(localSourceConfigs);
         }
       },
       // `beforeOpen` é aguardado internamente pelo drift antes de processar

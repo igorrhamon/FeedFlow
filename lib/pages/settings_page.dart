@@ -9,6 +9,7 @@ import '../services/provider_settings.dart';
 import '../services/app_settings.dart';
 import 'knowledge_base_page.dart';
 import 'llm_settings_page.dart';
+import 'local_sources_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final FeedProvider provider;
@@ -208,6 +209,15 @@ class _SettingsPageState extends State<SettingsPage> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const KnowledgeBasePage()),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.folder),
+          title: const Text('Fontes locais'),
+          subtitle: const Text('Pastas, vaults Markdown, PDFs e arquivos Office'),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LocalSourcesPage()),
           ),
         ),
         const Divider(),
